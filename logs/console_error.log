@@ -1,0 +1,11 @@
+java.sql.SQLException: Column 'option1' not found.
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:1075)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:989)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:984)
+	at com.mysql.jdbc.SQLError.createSQLException(SQLError.java:929)
+	at com.mysql.jdbc.ResultSetImpl.findColumn(ResultSetImpl.java:1145)
+	at com.mysql.jdbc.ResultSetImpl.getInt(ResultSetImpl.java:2814)
+	at server.MapleItemInformationProvider.initItemInformation(MapleItemInformationProvider.java:1590)
+	at server.MapleItemInformationProvider.runItems(MapleItemInformationProvider.java:347)
+	at server.Start.run(Start.java:96)
+	at server.Start.main(Start.java:156)
