@@ -237,11 +237,10 @@ public class CheatTracker {
     public boolean checkPacket() {
         final long now = System.currentTimeMillis();
         if (now - packetWindowStart > PACKET_WINDOW_MS) {
-            packetCount = 0;
+            packetCount.set(0);
             packetWindowStart = now;
         }
-        packetCount++;
-        return packetCount <= PACKET_LIMIT_PER_SECOND;
+        return packetCount.incrementAndGet() <= PACKET_LIMIT_PER_SECOND;
     }
 
     public final void checkDrop() {

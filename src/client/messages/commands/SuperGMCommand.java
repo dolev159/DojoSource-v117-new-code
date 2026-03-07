@@ -1360,7 +1360,7 @@ public static class Mute extends CommandExecute {
         public int execute(MapleClient c, String[] splitted) {
             if (splitted.length > 1) {
                 try {
-                    c.getSession().getHandler().messageReceived(c.getSession(), (Object) CField.getPacketFromHexString(StringUtil.joinStringFrom(splitted, 1)));
+                    MapleServerHandler.handlePacket(CField.getPacketFromHexString(StringUtil.joinStringFrom(splitted, 1)), c);
                 } catch (Exception e) {
                     c.getPlayer().dropMessage(6, "Error: " + e);
                 }

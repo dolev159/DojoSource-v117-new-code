@@ -165,6 +165,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
     private int todo;
     private int location;
     private int birthday;
+    private final Lock inventoryLock = new java.util.concurrent.locks.ReentrantLock();
 
     private MapleCharacter(final boolean ChannelServer) {
         setStance(0);
@@ -3852,31 +3853,27 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             }
             if (level >= 250 || (GameConstants.isKOC(job) && level >= 250)) {
                 setExp(0);
-                //if (exp + total > needed) {
-                //    setExp(needed);
-                //} else {
-                //    exp += total;
-                //}
             } else {
-                boolean leveled = false;
-                long tot = exp + total;
-                while (tot >= needed && level < 250) {
-                    exp += total;
-                    levelUp();
-                    leveled = true;
-                    if ((level >= 250 || (GameConstants.isKOC(job) && level >= 250)) && !isIntern()) {
-                        setExp(0);
-                    } else {
-                        needed = getNeededExp();
-                        //if (exp >= needed) {
-                        //    setExp(needed - 1);
-                        //}
-                    }
-                }// else {
-                exp += total;
-                //}
                 if (total > 0) {
+                    boolean leveled = false;
+                    if (exp + total < 0) { // Overflow check
+                        exp = needed;
+                    } else {
+                        while (exp + total >= needed && level < 250) {
+                            exp += total;
+                            levelUp();
+                            leveled = true;
+                            if ((level >= 250 || (GameConstants.isKOC(job) && level >= 250)) && !isIntern()) {
+                                setExp(0);
+                            } else {
+                                needed = getNeededExp();
+                            }
+                        }
+                        exp += total;
+                    }
                     familyRep(prevexp, needed, leveled);
+                } else if (total < 0) {
+                    exp = Math.max(0, exp + total);
                 }
             }
             if (total != 0) {
@@ -4202,11 +4199,14 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
     }
 
     public void gainMeso(int gain, boolean show, boolean inChat) {
-        if (meso + gain < 0) {
+        if (gain > 0 && meso + gain < 0) { // Overflow check
+            meso = Integer.MAX_VALUE;
+        } else if (gain < 0 && meso + gain < 0) {
             client.getSession().write(CWvsContext.enableActions());
             return;
+        } else {
+            meso += gain;
         }
-        meso += gain;
         if (meso >= 1) {
             finishAchievement(31);
         }
@@ -9300,7 +9300,10 @@ public void withdrawMesosFromBank(long mesos) {
             } else {
                 sb.append(MapleItemInformationProvider.getInstance().getName(medal.getItemId()));
             }
-            sb.append("> ");
         }
-    }   
+    }
+
+    public java.util.concurrent.locks.Lock getInventoryLock() {
+        return inventoryLock;
+    }
 }

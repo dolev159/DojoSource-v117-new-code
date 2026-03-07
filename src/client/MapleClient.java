@@ -35,7 +35,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.script.ScriptEngine;
-import org.apache.mina.common.IoSession;
+// import org.apache.mina.common.IoSession;
 import io.netty.channel.Channel;
 
 import server.CharacterCardFactory;
@@ -59,7 +59,7 @@ public class MapleClient implements Serializable {
     public static final int DEFAULT_CHARSLOT = 6;
     public static final String CLIENT_KEY = "CLIENT";
     private transient MapleAESOFB send, receive;
-    private transient IoSession session;
+    private transient Object session; // Legacy Mina support placeholder if needed
     private transient Channel nettyChannel;
 
     private MapleCharacter player;
@@ -85,7 +85,7 @@ public class MapleClient implements Serializable {
     private final static Lock login_mutex = new ReentrantLock(true);
     private Map<Integer, Pair<Short, Short>> charInfo = new LinkedHashMap<>();
 
-    public MapleClient(MapleAESOFB send, MapleAESOFB receive, IoSession session) {
+    public MapleClient(MapleAESOFB send, MapleAESOFB receive, Object session) {
         this.send = send;
         this.receive = receive;
         this.session = session;
@@ -113,8 +113,14 @@ public class MapleClient implements Serializable {
         return send;
     }
 
-    public final IoSession getSession() {
-        return session;
+    public final MapleClient getSession() {
+        return this;
+    }
+
+    public final void write(Object packet) {
+        if (packet instanceof byte[] byteArray) {
+            sendPacket(byteArray);
+        }
     }
 
     public final void setNettyChannel(Channel channel) {
@@ -128,8 +134,10 @@ public class MapleClient implements Serializable {
     public final void sendPacket(byte[] packet) {
         if (nettyChannel != null && nettyChannel.isActive()) {
             nettyChannel.writeAndFlush(packet);
-        } else if (session != null && session.isConnected()) {
-            session.write(packet);
+        } else if (session != null) {
+            // For transition: We can't call .write() on Object without reflection
+            // But since we want to abandon Mina, we should focus on nettyChannel.
+            // If session is still used, it will need a proper cast or reflection.
         }
     }
 
@@ -137,13 +145,31 @@ public class MapleClient implements Serializable {
         disconnect(false, false);
     }
 
-    public final void disconnect(final boolean b, final boolean b2) {
-        if (nettyChannel != null && nettyChannel.isActive()) {
-            nettyChannel.close();
+    public final void close() {
+        disconnect();
+    }
+
+    public final String getRemoteAddress() {
+        if (nettyChannel != null) {
+            return nettyChannel.remoteAddress().toString();
         }
-        if (session != null && session.isConnected()) {
-            session.close();
-        }
+        return "0.0.0.0";
+    }
+
+    public final Object getHandler() {
+        return null; // Stub for legacy command support
+    }
+
+    public final boolean isConnected() {
+        return nettyChannel != null && nettyChannel.isActive();
+    }
+
+    public final boolean isClosing() {
+        return nettyChannel != null && !nettyChannel.isOpen();
+    }
+
+    public final Object getAttribute(String key) {
+        return null; // Stub for legacy session attributes
     }
 
     public final Lock getLock() {
@@ -823,7 +849,7 @@ public boolean messageOn() {
             if (!rs.next() || rs.getInt("banned") > 0) {
                 ps.close();
                 rs.close();
-                session.close();
+                disconnect();
                 throw new DatabaseException("Account doesn't exist or is banned");
             }
             birthday = rs.getInt("bday");
@@ -966,6 +992,9 @@ public boolean messageOn() {
     }
 
     public final void disconnect(final boolean RemoveInChannelServer, final boolean fromCS, final boolean shutdown) {
+        if (nettyChannel != null && nettyChannel.isActive()) {
+            nettyChannel.close();
+        }
         if (player != null) {
             MapleMap map = player.getMap();
             final MapleParty party = player.getParty();
@@ -1084,7 +1113,7 @@ public boolean messageOn() {
     }
 
     public final String getSessionIPAddress() {
-        return session.getRemoteAddress().toString().split(":")[0];
+        return getRemoteAddress().split(":")[0];
     }
 
     public final boolean CheckIPAddress() {
@@ -1254,7 +1283,7 @@ public boolean messageOn() {
 
     public final void sendPing() {
         lastPing = System.currentTimeMillis();
-        session.write(LoginPacket.getPing());
+        write(LoginPacket.getPing());
 
         PingTimer.getInstance().schedule(new Runnable() {
             @Override
@@ -1262,8 +1291,8 @@ public boolean messageOn() {
                 try {
                     if (getLatency() < 0) {
                         disconnect(true, false);
-                        if (getSession().isConnected()) {
-                            getSession().close();
+                        if (isConnected()) {
+                            close();
                         }
                     }
                 } catch (final NullPointerException e) {
