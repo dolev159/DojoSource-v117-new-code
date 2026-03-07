@@ -234,6 +234,16 @@ public class CheatTracker {
         return true;
     }
 
+    public boolean checkPacket() {
+        final long now = System.currentTimeMillis();
+        if (now - packetWindowStart > PACKET_WINDOW_MS) {
+            packetCount = 0;
+            packetWindowStart = now;
+        }
+        packetCount++;
+        return packetCount <= PACKET_LIMIT_PER_SECOND;
+    }
+
     public final void checkDrop() {
         checkDrop(false);
     }
@@ -243,7 +253,7 @@ public class CheatTracker {
             dropsPerSecond++;
             if (dropsPerSecond >= (dc ? 32 : 16) && chr.get() != null && !chr.get().isGM()) {
                 if (dc) {
-                    chr.get().getClient().getSession().close();
+                    chr.get().getClient().disconnect();
                 } else {
                     chr.get().getClient().setMonitored(true);
                 }
@@ -258,7 +268,7 @@ public class CheatTracker {
         if ((System.currentTimeMillis() - lastMsgTime) < 1000) { // Luckily maplestory has auto-check for too much msging
             msgsPerSecond++;
             if (msgsPerSecond > 10 && chr.get() != null && !chr.get().isGM()) {
-                chr.get().getClient().getSession().close();
+                chr.get().getClient().disconnect();
             }
         } else {
             msgsPerSecond = 0;
@@ -312,7 +322,7 @@ public class CheatTracker {
             if (type == 1) {
                // AutobanManager.getInstance().autoban(chrhardref.getClient(), StringUtil.makeEnumHumanReadable(offense.name()));
             } else if (type == 2) {
-                chrhardref.getClient().getSession().close();
+                chrhardref.getClient().disconnect();
             }
             gm_message = 0;
             return;
@@ -357,7 +367,7 @@ public class CheatTracker {
     public void updateTick(int newTick) {
 	if (newTick <= lastTickCount) { // Definitely packet spamming or the added feature in many PEs which is to generate random tick
 	    if (tickSame >= 5 && chr.get() != null && !chr.get().isGM()) {
-	        chr.get().getClient().getSession().close();
+	        chr.get().getClient().disconnect();
 	    } else {
 		tickSame++;
 	    }

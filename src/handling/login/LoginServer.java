@@ -24,7 +24,7 @@ import constants.GameConstants;
 import constants.WorldConstants.Servers;
 import constants.WorldConstants.TespiaServers;
 import handling.MapleServerHandler;
-import handling.mina.MapleCodecFactory;
+import handling.netty.NettyServerAcceptor;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -44,7 +44,7 @@ public class LoginServer {
 
     public static final int PORT = 8484;
     private static InetSocketAddress InetSocketadd;
-    private static IoAcceptor acceptor;
+    private static NettyServerAcceptor acceptor;
     // Thread-safe: multiple channels write/read concurrently
     private static final Map<Integer, Integer> load = new ConcurrentHashMap<>();
     private static volatile String serverName, eventMessage;
@@ -96,22 +96,8 @@ public class LoginServer {
         adminOnly = Boolean.parseBoolean(ServerProperties.getProperty("admin", "false"));
         maxCharacters = Integer.parseInt(ServerProperties.getProperty("maxCharacters"));
 
-        ByteBuffer.setUseDirectBuffers(false);
-        ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
-
-        acceptor = new SocketAcceptor();
-        final SocketAcceptorConfig cfg = new SocketAcceptorConfig();
-        cfg.getSessionConfig().setTcpNoDelay(true);
-        cfg.setDisconnectOnUnbind(true);
-        cfg.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MapleCodecFactory()));
-
-        try {
-            InetSocketadd = new InetSocketAddress(PORT);
-            acceptor.bind(InetSocketadd, new MapleServerHandler(), cfg);
-            System.out.println("Login Server is listening on port " + PORT + ".");
-        } catch (IOException e) {
-            System.err.println("Binding to port " + PORT + " failed." + e);
-        }
+        acceptor = new NettyServerAcceptor(PORT);
+        acceptor.run();
     }
 
     public static final void shutdown() {
@@ -119,8 +105,10 @@ public class LoginServer {
             return;
         }
         System.out.println("Shutting down login...");
-        acceptor.unbindAll();
-        finishedShutdown = true; // Nothing. lol
+        if (acceptor != null) {
+            acceptor.close();
+        }
+        finishedShutdown = true;
     }
 
     public static final String getServerName() {
@@ -183,7 +171,7 @@ public class LoginServer {
     }
 
     public static final int getNumberOfSessions() {
-        return acceptor.getManagedSessions(InetSocketadd).size();
+        return 0; // Netty session count not implemented here yet
     }
 
     public static final boolean isAdminOnly() {

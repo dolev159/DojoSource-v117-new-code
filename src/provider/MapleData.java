@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package provider;
 import java.awt.Point;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +48,7 @@ public class MapleData implements MapleDataEntity, Iterable<MapleData> {
         this.node = node;
     }
 
-    public MapleData(final FileInputStream fis, final File imageDataDir) {
+    public MapleData(final InputStream fis, final File imageDataDir) {
         try {
             this.node = documentBuilderFactory.newDocumentBuilder().parse(fis).getFirstChild();
         } catch (ParserConfigurationException e) {

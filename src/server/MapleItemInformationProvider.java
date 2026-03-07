@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import provider.MapleData;
 import provider.MapleDataDirectoryEntry;
 import provider.MapleDataEntry;
@@ -44,20 +45,20 @@ public class MapleItemInformationProvider {
     protected final MapleDataProvider etcData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Etc.wz"));
     protected final MapleDataProvider itemData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Item.wz"));
     protected final MapleDataProvider stringData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/String.wz"));
-    protected final Map<Integer, ItemInformation> dataCache = new HashMap<>();
-    protected final Map<String, List<Triple<String, Point, Point>>> afterImage = new HashMap<>();
-    protected final Map<Integer, List<StructItemOption>> potentialCache = new HashMap<>();
-    protected final Map<Integer, Map<Integer, StructItemOption>> socketCache = new HashMap<>(); // Grade, (id, data)
-    protected final Map<Integer, MapleStatEffect> itemEffects = new HashMap<>();
-    protected final Map<Integer, MapleStatEffect> itemEffectsEx = new HashMap<>();
-    protected final Map<Integer, Integer> mobIds = new HashMap<>();
-    protected final Map<Integer, Pair<Integer, Integer>> potLife = new HashMap<>(); // itemid to lifeid, levels
-    protected final Map<Integer, StructFamiliar> familiars = new HashMap<>(); // By familiarID
-    protected final Map<Integer, StructFamiliar> familiars_Item = new HashMap<>(); // By cardID
-    protected final Map<Integer, StructFamiliar> familiars_Mob = new HashMap<>(); // By mobID
-    protected final Map<Integer, Pair<List<Integer>, List<Integer>>> androids = new HashMap<>();
-    protected final Map<Integer, Triple<Integer, List<Integer>, List<Integer>>> monsterBookSets = new HashMap<>();
-    protected final Map<Byte, StructSetItem> setItems = new HashMap<>();
+    protected final Map<Integer, ItemInformation> dataCache = new ConcurrentHashMap<>();
+    protected final Map<String, List<Triple<String, Point, Point>>> afterImage = new ConcurrentHashMap<>();
+    protected final Map<Integer, List<StructItemOption>> potentialCache = new ConcurrentHashMap<>();
+    protected final Map<Integer, Map<Integer, StructItemOption>> socketCache = new ConcurrentHashMap<>();
+    protected final Map<Integer, MapleStatEffect> itemEffects = new ConcurrentHashMap<>();
+    protected final Map<Integer, MapleStatEffect> itemEffectsEx = new ConcurrentHashMap<>();
+    protected final Map<Integer, Integer> mobIds = new ConcurrentHashMap<>();
+    protected final Map<Integer, Pair<Integer, Integer>> potLife = new ConcurrentHashMap<>();
+    protected final Map<Integer, StructFamiliar> familiars = new ConcurrentHashMap<>();
+    protected final Map<Integer, StructFamiliar> familiars_Item = new ConcurrentHashMap<>();
+    protected final Map<Integer, StructFamiliar> familiars_Mob = new ConcurrentHashMap<>();
+    protected final Map<Integer, Pair<List<Integer>, List<Integer>>> androids = new ConcurrentHashMap<>();
+    protected final Map<Integer, Triple<Integer, List<Integer>, List<Integer>>> monsterBookSets = new ConcurrentHashMap<>();
+    protected final Map<Byte, StructSetItem> setItems = new ConcurrentHashMap<>();
 
     public void runEtc() {
         if (!setItems.isEmpty() || !potentialCache.isEmpty() || !socketCache.isEmpty()) {
@@ -121,8 +122,8 @@ public class MapleItemInformationProvider {
                         item.face = MapleDataTool.getString("face", potLevel, "");
                     } else {
                         final int level = MapleDataTool.getIntConvert(i, potLevel, 0);
-                        if (level > 0) { // Save memory
-                            item.data.put(i, level);
+                        if (level > 0) {
+                            item.data.put(i.intern(), level);
                         }
                     }
                 }
@@ -1587,8 +1588,8 @@ public class MapleItemInformationProvider {
         add.period = (add.itemid == 1122017 ? Math.max(sqlRewardData.getInt("period"), 7200) : sqlRewardData.getInt("period"));
         add.prob = sqlRewardData.getInt("prob");
         add.quantity = sqlRewardData.getShort("quantity");
-        add.worldmsg = sqlRewardData.getString("worldMsg").length() <= 0 ? null : sqlRewardData.getString("worldMsg");
-        add.effect = sqlRewardData.getString("effect");
+        add.worldmsg = sqlRewardData.getString("worldMsg").length() <= 0 ? null : sqlRewardData.getString("worldMsg").intern();
+        add.effect = sqlRewardData.getString("effect").intern();
 
         tmpInfo.rewardItems.add(add);
     }
@@ -1608,7 +1609,7 @@ public class MapleItemInformationProvider {
         }
 
         while (sqlAddData.next()) {
-            tmpInfo.equipAdditions.add(new Triple<>(sqlAddData.getString("key"), sqlAddData.getString("subKey"), sqlAddData.getString("value")));
+            tmpInfo.equipAdditions.add(new Triple<>(sqlAddData.getString("key").intern(), sqlAddData.getString("subKey").intern(), sqlAddData.getString("value").intern()));
         }
     }
 
@@ -1628,7 +1629,7 @@ public class MapleItemInformationProvider {
 
         final int itemLevel = sqlEquipData.getInt("itemLevel");
         if (itemLevel == -1) {
-            tmpInfo.equipStats.put(sqlEquipData.getString("key"), sqlEquipData.getInt("value"));
+            tmpInfo.equipStats.put(sqlEquipData.getString("key").intern(), sqlEquipData.getInt("value"));
         } else {
             if (tmpInfo.equipIncs == null) {
                 tmpInfo.equipIncs = new HashMap<Integer, Map<String, Integer>>();

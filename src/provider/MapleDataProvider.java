@@ -21,13 +21,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package provider;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.nio.file.Paths;
 
 public class MapleDataProvider {
     private File root;
     private MapleDataDirectoryEntry rootForNavigation;
+    private final ConcurrentMap<String, MapleData> cache = new ConcurrentHashMap<>();
 
     public MapleDataProvider(File fileIn) {
         root = fileIn;
@@ -51,28 +54,23 @@ public class MapleDataProvider {
     }
 
     public MapleData getData(String path) {
+        if (cache.containsKey(path)) {
+            return cache.get(path);
+        }
         File dataFile = new File(root, path + ".xml");
         File imageDataDir = new File(root, path);
-        /*		if (!dataFile.exists()) {
-        throw new RuntimeException("Datafile " + path + " does not exist in " + root.getAbsolutePath());
-        }*/
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream(dataFile);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Datafile " + path + " does not exist in " + root.getAbsolutePath());
+        
+        if (!dataFile.exists()) {
+             throw new RuntimeException("Datafile " + path + " does not exist in " + root.getAbsolutePath());
         }
-        final MapleData domMapleData;
-        try {
-            domMapleData = new MapleData(fis, imageDataDir.getParentFile());
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+
+        try (MappedInputStream mis = new MappedInputStream(Paths.get(dataFile.getAbsoluteFile().toURI()))) {
+             final MapleData domMapleData = new MapleData(mis, imageDataDir.getParentFile());
+             cache.put(path, domMapleData);
+             return domMapleData;
+        } catch (IOException e) {
+            throw new RuntimeException("Error loading data from " + path, e);
         }
-        return domMapleData;
     }
 
     public MapleDataDirectoryEntry getRoot() {

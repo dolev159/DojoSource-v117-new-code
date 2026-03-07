@@ -449,13 +449,15 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                         return;
                     }
                 }
+                try {
+                    handlePacket(recv, slea, c);
+                } catch (Exception e) {
+                    FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
+                    FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Packet: " + header_num + "\n" + slea.toString(true));
+                }
                 return;
             }
         }
-    }
-        //final StringBuilder sb = new StringBuilder("Received data : (Unhandled)\n");
-        //sb.append(HexTool.toString((byte[]) message)).append("\n").append(HexTool.toStringFromAscii((byte[]) message));
-        //System.out.println(sb.toString());
     }
 
     public static final void handlePacket(final RecvPacketOpcode header, final LittleEndianAccessor slea, final MapleClient c) throws Exception {

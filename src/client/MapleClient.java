@@ -92,6 +92,9 @@ public class MapleClient implements Serializable {
     }
 
     public final boolean checkPacket() {
+        if (player != null && player.getCheatTracker() != null) {
+            return player.getCheatTracker().checkPacket();
+        }
         final long now = System.currentTimeMillis();
         if (now - lastPacketTime < 1000) {
             packetCount++;
@@ -123,10 +126,23 @@ public class MapleClient implements Serializable {
     }
 
     public final void sendPacket(byte[] packet) {
-        if (nettyChannel != null) {
+        if (nettyChannel != null && nettyChannel.isActive()) {
             nettyChannel.writeAndFlush(packet);
-        } else if (session != null) {
+        } else if (session != null && session.isConnected()) {
             session.write(packet);
+        }
+    }
+
+    public final void disconnect() {
+        disconnect(false, false);
+    }
+
+    public final void disconnect(final boolean b, final boolean b2) {
+        if (nettyChannel != null && nettyChannel.isActive()) {
+            nettyChannel.close();
+        }
+        if (session != null && session.isConnected()) {
+            session.close();
         }
     }
 

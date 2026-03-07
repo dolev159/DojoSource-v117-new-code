@@ -11,6 +11,7 @@ import tools.MapleAESOFB;
 import tools.Randomizer;
 import tools.packet.LoginPacket;
 import constants.ServerConstants;
+import io.netty.util.AttributeKey;
 
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
@@ -28,10 +29,9 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                 new MapleAESOFB(ivRecv, ServerConstants.MAPLE_VERSION),
                 null // We'll need to update MapleClient to handle Netty Channel or null-Mina Session
         );
-        client.setChannel(-1);
-        client.setNettyChannel(ctx.channel()); // Adding this method to MapleClient
+        client.setNettyChannel(ctx.channel());
 
-        ctx.channel().attr(MapleClient.CLIENT_KEY).set(client);
+        ctx.channel().attr(CLIENT_KEY).set(client);
 
         // Send Hello packet
         byte[] hello = LoginPacket.getHello(ServerConstants.MAPLE_VERSION, ivSend, ivRecv);
@@ -42,10 +42,10 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
+        MapleClient client = ctx.channel().attr(CLIENT_KEY).get();
         if (client != null) {
             client.disconnect(true, true);
-            ctx.channel().attr(MapleClient.CLIENT_KEY).set(null);
+            ctx.channel().attr(CLIENT_KEY).set(null);
         }
         System.out.println("[Netty] Session closed: " + ctx.channel().remoteAddress());
         super.channelInactive(ctx);
@@ -54,7 +54,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         byte[] packet = (byte[]) msg;
-        MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
+        MapleClient client = ctx.channel().attr(CLIENT_KEY).get();
         
         if (client != null) {
             // Processing packet using the existing logic in MapleServerHandler

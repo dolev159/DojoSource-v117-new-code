@@ -24,7 +24,7 @@ import client.MapleCharacter;
 import constants.WorldConstants.Servers;
 import handling.MapleServerHandler;
 import handling.login.LoginServer;
-import handling.mina.MapleCodecFactory;
+import handling.netty.NettyServerAcceptor;
 import handling.world.CheaterData;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -64,7 +64,7 @@ public class ChannelServer {
     // volatile: read by many threads that check shutdown state
     private volatile boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false, adminOnly = false;
     private PlayerStorage players;
-    private IoAcceptor acceptor;
+    private NettyServerAcceptor acceptor;
     private final MapleMapFactory mapFactory;
     private EventScriptManager eventSM;
     private AramiaFireWorks works = new AramiaFireWorks();
@@ -128,24 +128,12 @@ public class ChannelServer {
         }
         ip = ServerProperties.getProperty("interface") + ":" + port;
 
-        ByteBuffer.setUseDirectBuffers(false);
-        ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
-
-        acceptor = new SocketAcceptor();
-        final SocketAcceptorConfig acceptor_config = new SocketAcceptorConfig();
-        acceptor_config.getSessionConfig().setTcpNoDelay(true);
-        acceptor_config.setDisconnectOnUnbind(true);
-        acceptor_config.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MapleCodecFactory()));
         players = new PlayerStorage(channel);
         loadEvents();
 
-        try {
-            acceptor.bind(new InetSocketAddress(port), new MapleServerHandler(), acceptor_config);
-            System.out.println("Channel " + channel + " is listening on port " + port + ".");
-            eventSM.init();
-        } catch (IOException e) {
-            System.out.println("Binding to port " + port + " failed (ch: " + getChannel() + ")" + e);
-        }
+        acceptor = new NettyServerAcceptor(port);
+        acceptor.run();
+        eventSM.init();
     }
 
     public final void shutdown() {
@@ -153,16 +141,16 @@ public class ChannelServer {
             return;
         }
         broadcastPacket(CWvsContext.serverNotice(0, "This channel will now shut down."));
-        // Disconnect all clients by hand so we get sessionClosed...
         shutdown = true;
 
         System.out.println("Channel " + channel + ", Saving characters...");
-
         getPlayerStorage().disconnectAll();
 
         System.out.println("Channel " + channel + ", Unbinding...");
+        if (acceptor != null) {
+            acceptor.close();
+        }
 
-        // Temporary while we dont have !addchannel
         instances.remove(channel);
         setFinishShutdown();
     }
