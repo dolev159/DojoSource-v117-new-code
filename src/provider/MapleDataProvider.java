@@ -30,7 +30,7 @@ import java.nio.file.Paths;
 public class MapleDataProvider {
     private File root;
     private MapleDataDirectoryEntry rootForNavigation;
-    private final ConcurrentMap<String, MapleData> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, java.lang.ref.SoftReference<MapleData>> cache = new ConcurrentHashMap<>();
 
     public MapleDataProvider(File fileIn) {
         root = fileIn;
@@ -54,8 +54,12 @@ public class MapleDataProvider {
     }
 
     public MapleData getData(String path) {
-        if (cache.containsKey(path)) {
-            return cache.get(path);
+        java.lang.ref.SoftReference<MapleData> ref = cache.get(path);
+        if (ref != null) {
+            MapleData data = ref.get();
+            if (data != null) {
+                return data;
+            }
         }
         File dataFile = new File(root, path + ".xml");
         File imageDataDir = new File(root, path);
@@ -66,7 +70,7 @@ public class MapleDataProvider {
 
         try (MappedInputStream mis = new MappedInputStream(Paths.get(dataFile.getAbsoluteFile().toURI()))) {
              final MapleData domMapleData = new MapleData(mis, imageDataDir.getParentFile());
-             cache.put(path, domMapleData);
+             cache.put(path, new java.lang.ref.SoftReference<>(domMapleData));
              return domMapleData;
         } catch (IOException e) {
             throw new RuntimeException("Error loading data from " + path, e);

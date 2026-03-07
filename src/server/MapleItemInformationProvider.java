@@ -337,51 +337,40 @@ public class MapleItemInformationProvider {
             }
         }
 
-        try {
-            Connection con = DatabaseConnection.getConnection();
-
+        try (Connection con = DatabaseConnection.getConnection()) {
             // Load Item Data
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemdata");
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                initItemInformation(rs);
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemdata");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    initItemInformation(rs);
+                }
             }
-            rs.close();
-            ps.close();
 
             // Load Item Equipment Data
-
-            ps = con.prepareStatement("SELECT * FROM wz_itemequipdata ORDER BY itemid");
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                initItemEquipData(rs);
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemequipdata ORDER BY itemid");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    initItemEquipData(rs);
+                }
             }
-            rs.close();
-            ps.close();
 
             // Load Item Addition Data
-
-            ps = con.prepareStatement("SELECT * FROM wz_itemadddata ORDER BY itemid");
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                initItemAddData(rs);
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemadddata ORDER BY itemid");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    initItemAddData(rs);
+                }
             }
-            rs.close();
-            ps.close();
 
             // Load Item Reward Data
-
-            ps = con.prepareStatement("SELECT * FROM wz_itemrewarddata ORDER BY itemid");
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                initItemRewardData(rs);
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemrewarddata ORDER BY itemid");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    initItemRewardData(rs);
+                }
             }
-            rs.close();
-            ps.close();
 
             // Finalize all Equipments
-
             for (Entry<Integer, ItemInformation> entry : dataCache.entrySet()) {
                 if (GameConstants.getInventoryType(entry.getKey()) == MapleInventoryType.EQUIP) {
                     finalizeEquipData(entry.getValue());
