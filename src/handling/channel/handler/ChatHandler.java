@@ -79,7 +79,7 @@ public class ChatHandler {
                     }
                 } 
             }
-              if (text.equalsIgnoreCase("I like CloudMs")) {
+              if (text.equalsIgnoreCase("I like Zipangu")) {
                     chr.finishAchievement(11);
             } if (text.equalsIgnoreCase("CloudNX")) {
                     chr.finishAchievement(54);
@@ -99,7 +99,7 @@ public class ChatHandler {
                     chr.finishAchievement(61);
             } if (text.equalsIgnoreCase("i h473 h4(k3r!")) {
                     chr.finishAchievement(62);
-            } if (text.equalsIgnoreCase("i 11k3 Jud0M$")) {
+            } if (text.equalsIgnoreCase("i 11k3 Z1p4ngu")) {
                     chr.finishAchievement(63);
             } if (text.equalsIgnoreCase("v0734nX")) {
                     chr.finishAchievement(64);

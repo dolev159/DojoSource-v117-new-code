@@ -32,10 +32,7 @@ function action(mode, type, selection) {
 	
     } else if (status == 1) {
 	if (selection == 0) { //Start
-	    if (cm.getPlayerStat("GID") == 0 || cm.getPlayerStat("GRANK") >= 3) { //no guild or not guild master/jr. master
-		cm.sendNext("Only a Master or Jr. Master of the guild can start an instance.");
-		cm.dispose();
-	    } else {
+	    if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), Packages.server.MaplePQManager.PQType.GUILD_PQ)) {
 		var em = cm.getEventManager("GuildQuest");
 		if (em == null) {
 		    cm.sendOk("This trial is currently under construction.");

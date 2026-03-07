@@ -90,10 +90,7 @@ em.setProperty("state", "1");
         eim.setInstanceMap(920010000).resetPQ(level);
         var center = eim.setInstanceMap(920010100);
 	center.resetPQ(level);
-	//MSEA remove 2 stages: sealed room + lounge
-	center.getReactorByName("minerva").forceHitReactor(2);
-	center.getReactorByName("scar3").forceHitReactor(1); //sealed room
-	center.getReactorByName("scar5").forceHitReactor(1); //lounge
+	// Authentically progression: do not force hit reactors
         eim.setInstanceMap(920010200).resetPQ(level);
         eim.setInstanceMap(920010300).resetPQ(level);
         eim.setInstanceMap(920010400).resetPQ(level);

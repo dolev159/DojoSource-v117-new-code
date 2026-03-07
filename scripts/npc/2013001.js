@@ -1,192 +1,130 @@
+var status = -1;
+
+function start() {
+    status = -1;
+    action(1, 0, 0);
+}
+
 function action(mode, type, selection) {
-    if (cm.getPlayer().getMapId() == 920011200) { //exit
-	for (var i = 4001044; i < 4001064; i++) {
-		cm.removeAll(i); //holy
-	}
-	cm.warp(200080101);
-	cm.dispose();
-	return;
+    if (mode == 1) {
+        status++;
+    } else {
+        cm.dispose();
+        return;
     }
+
     var em = cm.getEventManager("OrbisPQ");
     if (em == null) {
-	cm.sendOk("Please try again later.");
-	cm.dispose();
-	return;
+        cm.sendOk("The PQ system is currently unavailable.");
+        cm.dispose();
+        return;
     }
+
+    if (cm.getMapId() == 920011200) { // exit map
+        for (var i = 4001044; i < 4001064; i++) {
+            cm.removeAll(i);
+        }
+        cm.warp(200080101);
+        cm.dispose();
+        return;
+    }
+
     if (!cm.isLeader()) {
-	cm.sendOk("I only wish to speak to your leader!");
-	cm.dispose();
-	return;
+        cm.sendOk("I only wish to speak to your leader!");
+        cm.dispose();
+        return;
     }
-    if (em.getProperty("pre").equals("0")) {
-	for (var i = 4001044; i < 4001064; i++) {
-		cm.removeAll(i); //holy
-	}
-	cm.sendNext("Please save me, I've been trapped in the seal by Papa Pixie, the terror of our tower! He's misplaced all of our Minerva Statue's parts and we have to get it all back! Oh pardon me, I am the tower's Chamberlain, Eak. I am Minerva's royal servant. Please, help me by placing 20 Cloud Pieces in the orb you see!");
-	cm.dispose();
-	return;
+
+    if (em.getProperty("pre") == "0") {
+        for (var i = 4001044; i < 4001064; i++) {
+            cm.removeAll(i);
+        }
+        cm.sendNext("Please save Minerva! She has been sealed by Papa Pixie. Collect the 20 Cloud Pieces and place them in the orb behind me!");
+        cm.dispose();
+        return;
     }
-    switch(cm.getPlayer().getMapId()) {
-	case 920010000:
-	    cm.warpParty(920010000, 2);
-	    break;
-	case 920010100:
-	    if (em.getProperty("stage").equals("4")) {
-		if (em.getProperty("finished").equals("0")) {
-		    cm.warpParty(920010800); //GARDEN.	
-		} else {
-		    cm.sendOk("Thank you for saving Minerva! Please, talk to her!");
-		}
-	    } else {
-		cm.sendOk("Please, save Minerva! Gather the six pieces of her statue and talk to me to retrieve the final piece!");
-	    } 
-	    break;
-	case 920010200: //walkway
-	    if (!cm.haveItem(4001050,30)) {
-		cm.sendOk("Gather the 30 Statue Pieces from the monsters in this stage, and please bring them to me so I can put them together!");
-	    } else {
-		cm.removeAll(4001050);
-		cm.gainItem(4001044,1); //first piece
-		cm.givePartyExp(3500);
-		clear();
-	    }
-	    break;
-	case 920010300: //storage
-	    if (!cm.haveItem(4001051,15)) {
-		cm.sendOk("Gather the 15 Statue Pieces from the monsters in this stage, and please bring them to me so I can put them together!");
-	    } else {
-		cm.removeAll(4001051);
-		cm.gainItem(4001045,1); //second piece
-		cm.givePartyExp(3500);
-		clear();
-	    }
-	    break;
-	case 920010400: //lobby
-	    if (em.getProperty("stage3").equals("0")) {
-		cm.sendOk("Please, find the LP for the current day of week and place it on the music player.\r\n#v4001056#Sunday\r\n#v4001057#Monday\r\n#v4001058#Tuesday\r\n#v4001059#Wednesday\r\n#v4001060#Thursday\r\n#v4001061#Friday\r\n#v4001062#Saturday\r\n");
-	    } else if (em.getProperty("stage3").equals("1")) {
-		if (cm.canHold(4001046,1)) {
-		    cm.gainItem(4001046,1); //third piece
-		    cm.givePartyExp(3500);
-		    clear();
-		    em.setProperty("stage3", "2");
-		} else {
-		    cm.sendOk("Please make room!");
-		}
-	    } else {
-		cm.sendOk("Thank you so much!");
-	    }
-	    break;
-	case 920010500: //sealed
-	    if (em.getProperty("stage4").equals("0")) {
-		var players = Array();
-		var total = 0;
-		for (var i = 0; i < 3; i++) {
-		    var z = cm.getMap().getNumPlayersItemsInArea(i);
-		    players.push(z);
-		    total += z;
-		}
-		if (total != 3) {
-		    cm.sendOk("There needs to be 3 players OR items on the platforms.");
-		} else {
-		    var num_correct = 0;
-		    for (var i = 0; i < 3; i++) {
-			if (em.getProperty("stage4_" + i).equals("" + players[i])) {
-			    num_correct++;
-			}
-		    }
-		    if (num_correct == 3) {
-			if (cm.canHold(4001047,1)) {
-	    		    clear();
-			    cm.gainItem(4001047,1); //fourth
-			    cm.givePartyExp(3500);
-	    		    em.setProperty("stage4", "1");
-			} else {
-			    cm.sendOk("Please make room!");
-			}
-		    } else {
-    	    		cm.showEffect(true, "quest/party/wrong_kor");
-    	    		cm.playSound(true, "Party1/Failed");
-			if (num_correct > 0) {
-			    cm.sendOk("One of the platforms is correct.");
-			} else {
-			    cm.sendOk("All of the platforms are wrong.");
-			}
-		    }
-		}
-	    } else {
-		cm.sendOk("The portal is opened! Go!");
-	    }
-	    cm.dispose();
-	    break;
-	case 920010600: //lounge
-	    if (!cm.haveItem(4001052,30)) {
-		cm.sendOk("Gather the 30 Statue Pieces from the monsters in this stage, and please bring them to me so I can put them together!");
-	    } else {
-		cm.removeAll(4001052);
-		cm.gainItem(4001048,1); //fifth piece
-		cm.givePartyExp(3500);
-		clear();
-	    }
-	    break;
-	case 920010700: //on the way up
-	    if (em.getProperty("stage6").equals("0")) {
-		var react = Array();
-		var total = 0;
-	    	for(var i = 0; i < 3; i++) {
-		    if (cm.getMap().getReactorByName("" + (i + 1)).getState() > 0) {
-			react.push("1");
-			total += 1;
-		    } else {
-			react.push("0");
-		    }
-	    	}
-		if (total != 2) {
-		    cm.sendOk("There needs to be 2 levers at the top of the map pushed on.");
-		} else {
-		    var num_correct = 0;
-		    for (var i = 0; i < 3; i++) {
-			if (em.getProperty("stage62_" + i).equals("" + react[i])) {
-			    num_correct++;
-			}
-		    }
-		    if (num_correct == 3) {
-			if (cm.canHold(4001049,1)) {
-	    		    clear();
-			    cm.gainItem(4001049,1); //sixth
-			    cm.givePartyExp(3500);
-	    		    em.setProperty("stage6", "1");
-			} else {
-			    cm.sendOk("Please make room!");
-			}
-		    } else {
-    	    		cm.showEffect(true, "quest/party/wrong_kor");
-    	    		cm.playSound(true, "Party1/Failed");
-			if (num_correct >= 1) { //this should always be true
-			    cm.sendOk("One of the levers is correct.");
-			} else {
-			    cm.sendOk("Both of the levers are wrong.");
-			}
-		    }
-		}
-	    } else {
-		cm.sendOk("Thank you!!");
-	    }
-	    break;
-	case 920010800:
-	    cm.sendNext("Please, find a way to defeat Papa Pixie! Once you've found the Dark Nependeath by placing seeds, you've found Papa Pixie! Defeat it, and get the Root of Life to save Minerva!!!"); 
-	    break;
-	case 920010900:
-	    cm.sendNext("This is the jail of the tower. You may find some goodies here, but other than that I don't think we have any pieces here."); 
-	    break;
-	case 920011000:
-	    cm.sendNext("This is the hidden room of the tower. You may find some goodies here, but other than that I don't think we have any pieces here."); 
-	    break;
+
+    var mapId = cm.getMapId();
+    switch(mapId) {
+        case 920010100: // Center stage
+            if (em.getProperty("stage").equals("4")) {
+                if (Packages.server.MaplePQManager.checkOrbisPQStatue(cm.getPlayer())) {
+                    cm.sendOk("The Statue is restored! Please talk to Minerva to receive your reward.");
+                } else {
+                    cm.warpParty(920010800); // Garden (Boss Stage)
+                }
+            } else {
+                cm.sendOk("Gather the six pieces of Minerva's statue from the various rooms!");
+            }
+            break;
+        case 920010200: // Walkway (Stage 1)
+            if (cm.haveItem(4001050, 30)) {
+                cm.gainItem(4001050, -30);
+                cm.gainItem(4001044, 1);
+                Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 101); // Custom stage for Orbis
+                cm.gainPartyExp(3500);
+            } else {
+                cm.sendOk("Gather 30 Statue Pieces (Stage 1) from the monsters here.");
+            }
+            break;
+        case 920010300: // Storage (Stage 2)
+            if (cm.haveItem(4001051, 15)) {
+                cm.gainItem(4001051, -15);
+                cm.gainItem(4001045, 1);
+                Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 102);
+                cm.gainPartyExp(3500);
+            } else {
+                cm.sendOk("Gather 15 Statue Pieces (Stage 2) from the monsters here.");
+            }
+            break;
+        case 920010400: // Lobby (Stage 3 - LP)
+            var day = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK);
+            var lpId = 4001055 + day;
+            if (cm.haveItem(lpId, 1)) {
+                cm.gainItem(lpId, -1);
+                cm.gainItem(4001046, 1);
+                Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 103);
+                cm.gainPartyExp(3500);
+            } else {
+                cm.sendOk("Find the LP for " + getDayName(day) + " and place it on the music player.");
+            }
+            break;
+        case 920010500: // Sealed (Stage 4 - Combination)
+            if (Packages.server.MaplePQManager.checkOrbisPQStage4(cm.getPlayer())) {
+                cm.gainItem(4001047, 1);
+                Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 104);
+                cm.gainPartyExp(3500);
+            } else {
+                cm.sendOk("Incorrect combination on the platforms.");
+            }
+            break;
+        case 920010600: // Lounge (Stage 5)
+            if (cm.haveItem(4001052, 30)) {
+                cm.gainItem(4001052, -30);
+                cm.gainItem(4001048, 1);
+                Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 105);
+                cm.gainPartyExp(3500);
+            } else {
+                cm.sendOk("Gather 30 Statue Pieces (Stage 5) from the monsters here.");
+            }
+            break;
+        case 920010700: // Way up (Stage 6 - Levers)
+            if (Packages.server.MaplePQManager.checkOrbisPQStage6(cm.getPlayer())) {
+                cm.gainItem(4001049, 1);
+                Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 106);
+                cm.gainPartyExp(3500);
+            } else {
+                cm.sendOk("Incorrect combination for the levers.");
+            }
+            break;
+        default:
+            cm.sendOk("Please help us restore the tower!");
+            break;
     }
     cm.dispose();
 }
 
-function clear() {
-    cm.showEffect(true, "quest/party/clear");
-    cm.playSound(true, "Party1/Clear");
+function getDayName(day) {
+    var names = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return names[day];
 }

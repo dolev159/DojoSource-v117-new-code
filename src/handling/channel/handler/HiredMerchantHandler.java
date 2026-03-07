@@ -48,6 +48,9 @@ import tools.packet.CWvsContext;
 
 public class HiredMerchantHandler {
 
+    private HiredMerchantHandler() {
+    }
+
     public static final boolean UseHiredMerchant(final MapleClient c, final boolean packet) {
         if (c.getPlayer().getMap() != null && c.getPlayer().getMap().allowPersonalShop()) {
             final byte state = checkExistance(c.getPlayer().getAccountID(), c.getPlayer().getId());
@@ -60,7 +63,7 @@ public class HiredMerchantHandler {
                     boolean merch = World.hasMerchant(c.getPlayer().getAccountID(), c.getPlayer().getId());
                     if (!merch) {
                         if (c.getChannelServer().isShutdown()) {
-                            c.getPlayer().dropMessage(1, "CloudMs is about to shut down.");
+                            c.getPlayer().dropMessage(1, "Zipangu is about to shut down.");
                             return false;
                         }
                         if (packet) {
@@ -103,28 +106,27 @@ public class HiredMerchantHandler {
         }
     }
 
-    public static void displayMerch(MapleClient c) {
+    public static synchronized void displayMerch(MapleClient c) { // Synchronized to prevent multi-retrieval
         final int conv = c.getPlayer().getConversation();
         boolean merch = World.hasMerchant(c.getPlayer().getAccountID(), c.getPlayer().getId());
         if (merch) {
             c.getPlayer().dropMessage(1, "Please close the existing store and try again.");
             c.getPlayer().setConversation(0);
         } else if (c.getChannelServer().isShutdown()) {
-            c.getPlayer().dropMessage(1, "CloudMs is going to shut down.");
+            c.getPlayer().dropMessage(1, "Zipangu is going to shut down.");
             c.getPlayer().setConversation(0);
         } else if (conv == 3) { // Hired Merch
-            final MerchItemPackage pack = loadItemFrom_Database(c.getPlayer().getAccountID());
+            final MerchItemPackage pack = loadItemFromDatabase(c.getPlayer().getAccountID());
 
             if (pack == null) {
                 c.getPlayer().dropMessage(1, "You do not have any items with Fredrick.");
                 c.getPlayer().setConversation(0);
-            } else if (pack.getItems().size() <= 0) { // Error fix for complainers.
+            } else if (pack.getItems().size() <= 0) { // Meso only retrieval
                 if (!check(c.getPlayer(), pack)) {
                     c.getSession().write(PlayerShopPacket.merchItem_Message((byte) 0x21));
                     return;
                 }
                 if (deletePackage(c.getPlayer().getAccountID(), pack.getPackageid(), c.getPlayer().getId())) {
-                    //c.getPlayer().fakeRelog();
                     c.getPlayer().gainMeso(pack.getMesos(), false);
                     c.getSession().write(PlayerShopPacket.merchItem_Message((byte) 0x1d));
                     c.getPlayer().dropMessage(1, "You have retrieved your mesos.");
@@ -133,23 +135,8 @@ public class HiredMerchantHandler {
                 }
                 c.getPlayer().setConversation(0);
             } else {
-               c.getSession().write(PlayerShopPacket.merchItemStore_ItemData(pack));
-                MapleInventoryManipulator.checkSpace(c, conv, conv, null);
-                for (final Item item : pack.getItems()) {
-                    if(c.getPlayer().getInventory(GameConstants.getInventoryType(item.getItemId())).isFull()){
-                        c.removeClickedNPC();
-                        c.getPlayer().dropMessage(1, "Sir, if you want your items back please clean up your inventory before you come here!");
-                        c.getPlayer().setConversation(0);
-                        break;
-                    }
-                    MapleInventoryManipulator.addFromDrop(c, item, true);
-                    deletePackage(c.getPlayer().getAccountID(), pack.getPackageid(), c.getPlayer().getId());
-                    //c.getPlayer().fakeRelog();
-                    c.removeClickedNPC();
-                    c.getPlayer().dropMessage(1, "You have retrived your items.");
-                    c.getPlayer().setConversation(0);
-                }
-                
+                // Just show the UI. The retrieval happens in requestItems.
+                c.getSession().write(PlayerShopPacket.merchItemStore_ItemData(pack));
             }
         }
         c.getSession().write(CWvsContext.enableActions());
@@ -167,7 +154,7 @@ public class HiredMerchantHandler {
         }
     }
 
-    private static void requestItems(final MapleClient c, final boolean request) {
+    private static synchronized void requestItems(final MapleClient c, final boolean request) { // Synchronized
         if (c.getPlayer().getConversation() != 3) {
             return;
         }
@@ -177,23 +164,23 @@ public class HiredMerchantHandler {
             c.getPlayer().setConversation(0);
             return;
         }
-        final MerchItemPackage pack = loadItemFrom_Database(c.getPlayer().getAccountID());
+        final MerchItemPackage pack = loadItemFromDatabase(c.getPlayer().getAccountID());
         if (pack == null) {
             c.getPlayer().dropMessage(1, "An unknown error occured.");
             return;
         } else if (c.getChannelServer().isShutdown()) {
-            c.getPlayer().dropMessage(1, "CloudMs is going to shut down.");
+            c.getPlayer().dropMessage(1, "Zipangu is going to shut down.");
             c.getPlayer().setConversation(0);
             return;
         }
-        final int days = StringUtil.getDaysAmount(pack.getSavedTime(), System.currentTimeMillis()); // Max 100%
+        final int days = StringUtil.getDaysAmount(pack.getSavedTime(), System.currentTimeMillis()); 
         final double percentage = days / 100.0;
-        final int fee = (int) Math.ceil(percentage * pack.getMesos()); // If no mesos = no tax
+        final int fee = (int) Math.ceil(percentage * pack.getMesos()); 
         if (request && days > 0 && percentage > 0 && pack.getMesos() > 0 && fee > 0) {
             c.getSession().write(PlayerShopPacket.merchItemStore((byte) 38, days, fee));
             return;
         }
-        if (fee < 0) { // Impossible
+        if (fee < 0) { 
             c.getSession().write(PlayerShopPacket.merchItem_Message(33));
             return;
         }
@@ -205,6 +192,9 @@ public class HiredMerchantHandler {
             c.getSession().write(PlayerShopPacket.merchItem_Message(36));
             return;
         }
+        // Safety: Give items/mesos FIRST, then delete. 
+        // If giving fails halfway, the deletePackage check (or our check()) should have caught it.
+        // Actually, we do it in a synchronized block to prevent races.
         if (deletePackage(c.getPlayer().getAccountID(), pack.getPackageid(), c.getPlayer().getId())) {
             if (fee > 0) {
                 c.getPlayer().gainMeso(-fee, true);
@@ -264,12 +254,12 @@ public class HiredMerchantHandler {
         }
     }
     
-    public static final void showFredrick(MapleClient c) {
-        final MerchItemPackage pack = HiredMerchantHandler.loadItemFrom_Database(c.getPlayer().getAccountID());
+    public static void showFredrick(MapleClient c) {
+        final MerchItemPackage pack = HiredMerchantHandler.loadItemFromDatabase(c.getPlayer().getAccountID());
         c.getSession().write(PlayerShopPacket.merchItemStore_ItemData(pack));
     }
 
-    private static final MerchItemPackage loadItemFrom_Database(final int accountid) {
+    private static final MerchItemPackage loadItemFromDatabase(final int accountid) {
         final Connection con = DatabaseConnection.getConnection();
 
         try {

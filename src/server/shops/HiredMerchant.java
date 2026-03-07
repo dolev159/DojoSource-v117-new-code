@@ -33,6 +33,7 @@ import server.MapleInventoryManipulator;
 import server.MapleItemInformationProvider;
 import server.Timer.EtcTimer;
 import server.maps.MapleMapObjectType;
+import tools.FileoutputUtil;
 import tools.packet.CWvsContext;
 import tools.packet.PlayerShopPacket;
 
@@ -79,8 +80,19 @@ public class HiredMerchant extends AbstractPlayerStore {
     }
 
     @Override
-    public void buy(MapleClient c, int item, short quantity) {
+    public synchronized void buy(MapleClient c, int item, short quantity) {
         final MaplePlayerShopItem pItem = items.get(item);
+
+        // ANTI-DUPE: Double-check stock BEFORE processing (inside synchronized block)
+        if (pItem.bundles < quantity || pItem.bundles <= 0) {
+            FileoutputUtil.log(FileoutputUtil.Hacker_Log,
+                "[HiredMerchant-AntidDupe] " + c.getPlayer().getName() +
+                " tried to buy " + quantity + " bundles but only " + pItem.bundles + " remain! Store: " + getOwnerName());
+            c.getPlayer().dropMessage(1, "Not enough stock available.");
+            c.getSession().write(CWvsContext.enableActions());
+            return;
+        }
+
         final Item shopItem = pItem.item;
         final Item newItem = shopItem.copy();
         final short perbundle = newItem.getQuantity();
@@ -99,7 +111,8 @@ public class HiredMerchant extends AbstractPlayerStore {
             final int gainmeso = getMeso() + theQuantity - GameConstants.EntrustedStoreTax(theQuantity);
             if (gainmeso > 0) {
                 setMeso(gainmeso);
-                pItem.bundles -= quantity; // Number remaining in the store
+                // ANTI-DUPE: Decrement FIRST before giving item - prevents double-give
+                pItem.bundles -= quantity;
                 MapleInventoryManipulator.addFromDrop(c, newItem, false);
                 bought.add(new BoughtItem(newItem.getItemId(), quantity, theQuantity, c.getPlayer().getName()));
                 c.getPlayer().gainMeso(-theQuantity, false);

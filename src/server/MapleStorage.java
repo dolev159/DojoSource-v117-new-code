@@ -21,6 +21,7 @@ import database.DatabaseConnection;
 import database.DatabaseException;
 import java.util.EnumMap;
 import tools.Pair;
+import tools.FileoutputUtil;
 import tools.packet.CField.NPCPacket;
 
 public class MapleStorage implements Serializable {
@@ -89,7 +90,8 @@ public class MapleStorage implements Serializable {
                 ps.close();
             }
         } catch (SQLException ex) {
-            System.err.println("Error loading storage" + ex);
+            FileoutputUtil.logDatabaseError("SELECT storages WHERE accountid=" + id, ex);
+            System.err.println("[Storage] Error loading storage for account " + id + ": " + ex.getMessage());
         }
         return ret;
     }
@@ -114,11 +116,12 @@ public class MapleStorage implements Serializable {
             }
             ItemLoader.STORAGE.saveItems(listing, accountId);
         } catch (SQLException ex) {
-            System.err.println("Error saving storage" + ex);
+            FileoutputUtil.logDatabaseError("UPDATE storages id=" + id, ex);
+            System.err.println("[Storage] Error saving storage for account " + accountId + ": " + ex.getMessage());
         }
     }
 
-    public Item takeOut(byte slot) {
+    public synchronized Item takeOut(byte slot) {
         if (slot >= items.size() || slot < 0) {
             return null;
         }
@@ -129,7 +132,7 @@ public class MapleStorage implements Serializable {
         return ret;
     }
 
-    public void store(Item item) {
+    public synchronized void store(Item item) {
         changed = true;
         items.add(item);
         MapleInventoryType type = GameConstants.getInventoryType(item.getItemId());
@@ -231,7 +234,7 @@ public class MapleStorage implements Serializable {
         return null;
     }
 
-    public void setMeso(int meso) {
+    public synchronized void setMeso(int meso) {
         if (meso < 0) {
             return;
         }

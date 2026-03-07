@@ -200,7 +200,7 @@ public enum RecvPacketOpcode implements WritableIntValueHolder {
     USE_OWL_MINERVA,
     RPS_GAME,
     UPDATE_QUEST,
-    //QUEST_ITEM, // header -> questid(int) -> 1/0(byte, open or close)
+    QUEST_ITEM, // header -> questid(int) -> 1/0(byte, open or close)
     USE_ITEM_QUEST,
     FOLLOW_REQUEST,
     FOLLOW_REPLY,

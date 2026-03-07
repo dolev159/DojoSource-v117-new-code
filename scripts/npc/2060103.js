@@ -46,41 +46,21 @@ function action(mode, type, selection) {
         }
     } else if (status == 1) {
 	if (selection >= 0 && selection < 5) {
-            if (cm.getEventManager("Ghost").getInstance("Ghost"+selection) == null) {
-                if ((cm.getParty() != null && cm.getParty().getMembers().size() == 3) || cm.getPlayer().isGM()) {
-                    if (checkLevelsAndMap(60, 200) == 1) {
-                        cm.sendOk("A player in your party is not the appropriate level.");
-                        cm.dispose();
-                    } else if (checkLevelsAndMap(60, 200) == 2) {
-                        cm.sendOk("Everyone in your party isnt in this map.");
-                        cm.dispose();
-                    } else {
-                        cm.getEventManager("Ghost").startInstance(""+selection, cm.getPlayer());
-                        cm.dispose();
-                    }
-                } else {
-                    cm.sendOk("Your party is not the appropriate size.");
-                }
-            } else if (cm.getParty() != null && cm.getEventManager("Ghost").getInstance("Ghost"+selection).getPlayerCount() == cm.getParty().getMembers().size()) {
-                if (checkLevelsAndMap(60, 200) == 1) {
-                    cm.sendOk("A player in your party is not the appropriate level.");
+            if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), Packages.server.MaplePQManager.PQType.GHOST_SHIP)) {
+                if (cm.getEventManager("Ghost").getInstance("Ghost"+selection) == null) {
+                    cm.getEventManager("Ghost").startInstance(""+selection, cm.getPlayer());
                     cm.dispose();
-                } else if (checkLevelsAndMap(60, 200) == 2) {
-                    cm.sendOk("Everyone in your party isnt in this map.");
-                    cm.dispose();
-                } else {
+                } else if (cm.getEventManager("Ghost").getInstance("Ghost"+selection).getPlayerCount() == cm.getParty().getMembers().size()) {
                     //Send challenge packet here
                     var owner = cm.getChannelServer().getPlayerStorage().getCharacterByName(cm.getEventManager("Ghost").getInstance("Ghost"+selection).getPlayers().get(0).getParty().getLeader().getName());
                     owner.addCarnivalRequest(cm.getCarnivalChallenge(cm.getChar()));
-                    //if (owner.getConversation() != 1) {
-                        cm.openNpc(owner.getClient(), 2060103);
-                    //}
+                    cm.openNpc(owner.getClient(), 2060103);
                     cm.sendOk("Your challenge has been sent.");
                     cm.dispose();
+                } else {
+                    cm.sendOk("The two parties participating in Dual Raid must have an equal number of party member");
+                    cm.dispose();
                 }
-            } else {
-                cm.sendOk("The two parties participating in Dual Raid must have an equal number of party member");
-                cm.dispose();
             }
 	} else {
 	    cm.dispose();

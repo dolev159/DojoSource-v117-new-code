@@ -35,6 +35,7 @@ import server.life.PlayerNPC;
 import server.maps.MapleMapFactory;
 import server.quest.MapleQuest;
 import tools.MapleAESOFB;
+import tools.FileoutputUtil;
 
 public class Start {
 
@@ -44,6 +45,17 @@ public class Start {
 
     public void run() throws InterruptedException {
 
+        // Set up global uncaught exception handler - catches ALL unhandled errors
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            System.err.println("\n!!! UNCAUGHT EXCEPTION in thread [" + thread.getName() + "] !!!");
+            throwable.printStackTrace(System.err);
+            FileoutputUtil.logCrash("Thread: " + thread.getName(), throwable);
+        });
+
+        FileoutputUtil.logStartup("============================================");
+        FileoutputUtil.logStartup("  DojoSource v117 Server Starting...");
+        FileoutputUtil.logStartup("============================================");
+
         if (Boolean.parseBoolean(ServerProperties.getProperty("net.sf.odinms.world.admin")) || ServerConstants.Use_Localhost) {
             System.out.println("Maintenance is currently active.");
         }
@@ -52,11 +64,14 @@ public class Start {
             final PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("UPDATE accounts SET loggedin = 0");
             ps.executeUpdate();
             ps.close();
+            FileoutputUtil.logStartup("Database connection successful.");
         } catch (SQLException ex) {
+            FileoutputUtil.logCrash("Database connection failed", ex);
             throw new RuntimeException("Runtime Exception - Check if the SQL Database is connected.");
         }
 
-        System.out.println("CloudMs is Active.");
+        FileoutputUtil.logStartup("Zipangu is Active.");
+        System.out.println("Zipangu is Active.");
         World.init();
         if (Boolean.parseBoolean(ServerProperties.getProperty("logpackets"))) {
             System.out.println("Logging Packets.");
@@ -102,7 +117,7 @@ public class Start {
         MTSStorage.load();
         MapleInventoryIdentifier.getInstance();
         MapleMapFactory.loadCustomLife();
-        System.out.println("Finished Loading Instances");
+        FileoutputUtil.logStartup("Finished Loading Instances");
         Connection con = DatabaseConnection.getConnection();
         PreparedStatement ps;
         try {
@@ -110,20 +125,21 @@ public class Start {
             ps.executeUpdate();
             ps.close();
         } catch (SQLException ex) {
+            FileoutputUtil.logDatabaseError("DELETE moonlightachievements", ex);
         }
         CashItemFactory.getInstance().initialize();
         MapleServerHandler.initiate();
-        System.out.println("Loading CloudMs Login Server...");
+        FileoutputUtil.logStartup("Loading Zipangu Login Server...");
         LoginServer.run_startup_configurations();
-        System.out.println("CloudMs Login Server is Online!");
+        FileoutputUtil.logStartup("Zipangu Login Server is Online!");
 
-        System.out.println("Loading CloudMs Channel Server...");
+        FileoutputUtil.logStartup("Loading Zipangu Channel Server...");
         ChannelServer.startChannel_Main();
-        System.out.println("CloudMs Channel Server is Online!");
+        FileoutputUtil.logStartup("Zipangu Channel Server is Online!");
 
-        System.out.println("Loading CloudMs Cash Shop Server...");
+        FileoutputUtil.logStartup("Loading Zipangu Cash Shop Server...");
         CashShopServer.run_startup_configurations();
-        System.out.println("CloudMs Cash Shop Server is Online!");
+        FileoutputUtil.logStartup("Zipangu Cash Shop Server is Online!");
         Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown()));
         World.registerRespawn();
         System.out.println("Channel Respawn Worker has been registered.");
@@ -132,7 +148,11 @@ public class Start {
         MapleMonsterInformationProvider.getInstance().addExtra();
         LoginServer.setOn();
         RankingWorker.run();
-        System.out.println("CloudMs Server has launched successfully in " + ((System.currentTimeMillis() - startTime) / 1000) + " Seconds.");
+        long launchTime = (System.currentTimeMillis() - startTime) / 1000;
+        FileoutputUtil.logStartup("============================================");
+        FileoutputUtil.logStartup("  Server launched successfully in " + launchTime + " seconds!");
+        FileoutputUtil.logStartup("============================================");
+        System.out.println("Zipangu Server has launched successfully in " + launchTime + " Seconds.");
     }
 
     public static class Shutdown implements Runnable {
@@ -144,7 +164,15 @@ public class Start {
         }
     }
 
-    public static void main(final String args[]) throws InterruptedException {
-        instance.run();
+    public static void main(final String args[]) {
+        try {
+            instance.run();
+        } catch (Exception e) {
+            System.err.println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.err.println("!! FATAL ERROR - SERVER FAILED TO START !!");
+            System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            e.printStackTrace(System.err);
+            FileoutputUtil.logCrash("FATAL - Server startup failed", e);
+        }
     }
 }

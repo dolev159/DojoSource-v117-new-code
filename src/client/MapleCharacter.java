@@ -1150,6 +1150,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             ps.close();
             pse.close();
         } catch (SQLException e) {
+            FileoutputUtil.logDatabaseError("getQuestKillCount mob=" + mobid + " char=" + chr.getId(), e);
         }
         return -1;
     }

@@ -30,17 +30,20 @@ function action(mode, type, selection) {
 			}
 			size += (ccPlayer.isGM() ? 4 : 1);
 		}	
-		if (next && size >= 2) {
-			var em = cm.getEventManager("Prison");
-			if (em == null) {
-				cm.sendOk("The prison is fine at the moment. Please try again later.");
-			} else {
-		    var prop = em.getProperty("state");
-		    if (prop.equals("0") || prop == null) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-		    } else {
-			cm.sendOk("Another party quest has already entered this channel.");
-		    }
+		if (next) {
+			var pqType = Packages.server.MaplePQManager.PQType.ESCAPE;
+			if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), pqType)) {
+				var em = cm.getEventManager("Prison");
+				if (em == null) {
+					cm.sendOk("The prison is fine at the moment. Please try again later.");
+				} else {
+					var prop = em.getProperty("state");
+					if (prop.equals("0") || prop == null) {
+						em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
+					} else {
+						cm.sendOk("Another party quest has already entered this channel.");
+					}
+				}
 			}
 		} else {
 			cm.sendOk("All 2+ members of your party must be here and level 120 or greater.");

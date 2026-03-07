@@ -6,6 +6,10 @@
 var status = -1;
 
 function start() {
+    if (cm.getMapId() == 240080000) { // Crimson Sky Dock (Dragon Rider PQ)
+        cm.sendSimple("#e<Party Quest: Dragon Rider>#n\r\n\r\nThe Dragon Rider is terrorizing the skies! We need brave warriors to take him down.\r\n#b#L0#Enter the Party Quest.#l\r\n#L1#What is the Dragon Rider PQ?#l#k");
+        return;
+    }
     if (cm.getPlayer().getLevel() < 80) {
         cm.sendOk("There is a level requirement of 80 to attempt Horntail.");
         cm.dispose();
@@ -119,6 +123,30 @@ function start() {
 }
 
 function action(mode, type, selection) {
+    if (cm.getMapId() == 240080000) { // Dragon Rider logic
+        if (mode == 1) {
+            if (selection == 0) {
+                var pqType = Packages.server.MaplePQManager.PQType.DRAGON_RIDER;
+                if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), pqType)) {
+                    var em = cm.getEventManager("Dragon_Nest");
+                    if (em == null) {
+                        cm.sendOk("The event is currently unavailable.");
+                    } else {
+                        var prop = em.getProperty("state");
+                        if (prop == null || prop.equals("0")) {
+                            em.startInstance(cm.getParty(), cm.getMap());
+                        } else {
+                            cm.sendOk("Another party is already inside.");
+                        }
+                    }
+                }
+            } else if (selection == 1) {
+                cm.sendOk("The Dragon Rider PQ is for 3-6 players, level 100 or higher. You must be able to fly!");
+            }
+        }
+        cm.dispose();
+        return;
+    }
     switch (status) {
         case 0:
             if (mode == 1) {

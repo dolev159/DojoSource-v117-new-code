@@ -39,29 +39,8 @@ function action(mode, type, selection) {
 			} else if (!cm.getPlayer().isGM() && (cm.getParty().getMembers().size() < 3 || !cm.isLeader())) {
 				cm.sendYesNo("You cannot participate in the quest, because you do not have at least 3 party members. If you're having trouble finding party members, try Party Search.");
 			} else {
-				// Check if all party members are within PQ levels
-				var party = cm.getParty().getMembers();
-				var mapId = cm.getMapId();
-				var next = true;
-				var levelValid = 0;
-				var inMap = 0;
-				var it = party.iterator();
-
-				while (it.hasNext()) {
-					var cPlayer = it.next();
-					if ((cPlayer.getLevel() >= minLevel) && (cPlayer.getLevel() <= maxLevel)) {
-						levelValid += 1;
-					} else {
-						next = false;
-					}
-					if (cPlayer.getMapid() == mapId) {
-						inMap += (cPlayer.getJobId() == 800 ? 6 : 1);
-					}
-				}
-				if (party.size() > maxPartySize || inMap < minPartySize) {
-					next = false;
-				}
-				if (next) {
+				var pqType = Packages.server.MaplePQManager.PQType.LUDI;
+				if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), pqType)) {
 					var em = cm.getEventManager("LudiPQ");
 					if (em == null) {
 						cm.sendOk("The Ludibrium PQ has encountered an error. Please report this on the forums, and with a screenshot.");
@@ -77,8 +56,6 @@ function action(mode, type, selection) {
 							cm.sendOk("Another party has already entered the #rParty Quest#k in this channel. Please try another channel, or wait for the current party to finish.");
 						}
 					}
-				} else {
-					cm.sendYesNo("You cannot participate in the quest, because you do not have at least 3 party members. If you're having trouble finding party members, try Party Search.");
 				}
 			}
 		} else if (selection == 1) {

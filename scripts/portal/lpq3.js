@@ -1,9 +1,7 @@
 function enter(pi) {
-    var eim = pi.getPlayer().getEventInstance();
-    var target = eim.getMapInstance(922010300);
-
-    if (eim.getProperty("1stageclear") != null) {
-        pi.getPlayer().changeMap(target, target.getPortal("st00"));
-        return true;
+    if (server.MaplePQManager.isStageCleared(pi.getMap(), 3)) {
+        pi.warp(pi.getMapId() + 100, "st00");
+    } else {
+        pi.playerMessage(5, "The portal is blocked.");
     }
 }

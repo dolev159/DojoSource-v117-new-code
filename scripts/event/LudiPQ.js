@@ -19,14 +19,14 @@ function setup(level, leaderid) {
     eim.setProperty("stage2", "0");
     var map = eim.setInstanceMap(922010100);
     map.resetPQ(level);
-    //map = eim.setInstanceMap(922010200); //stage 2 - Unused
-    //map.resetPQ(level);
-    //map.getPortal("next00").setScriptName("lpq2");
-    //map.setReactorDelay(-1);
-    //eim.setInstanceMap(922010201).resetPQ(level); //Towers Trap - unused
-    //map = eim.setInstanceMap(922010300);
-    //map.resetPQ(level);
-    //map.getPortal("next00").setScriptName("lpq3"); //Stage 3 - skipped entirely
+    map = eim.setInstanceMap(922010200); //stage 2
+    map.resetPQ(level);
+    map.getPortal("next00").setScriptName("lpq2");
+    map.setReactorDelay(-1);
+    eim.setInstanceMap(922010201).resetPQ(level); //Towers Trap
+    map = eim.setInstanceMap(922010300);
+    map.resetPQ(level);
+    map.getPortal("next00").setScriptName("lpq3"); //Stage 3
     map = eim.setInstanceMap(922010400);
     map.resetPQ(level);
     eim.setInstanceMap(922010401).resetPQ(level);
@@ -34,21 +34,26 @@ function setup(level, leaderid) {
     eim.setInstanceMap(922010403).resetPQ(level);
     eim.setInstanceMap(922010404).resetPQ(level);
     eim.setInstanceMap(922010405).resetPQ(level);
-    //map = eim.setInstanceMap(922010500);
-    //map.resetPQ(level);
-    //map.getPortal("next00").setScriptName("lpq5");
-    //eim.setInstanceMap(922010501).resetPQ(level);
-    //eim.setInstanceMap(922010502).resetPQ(level);
-    //eim.setInstanceMap(922010503).resetPQ(level);
-    //eim.setInstanceMap(922010504).resetPQ(level);
-    //eim.setInstanceMap(922010505).resetPQ(level);
-    //eim.setInstanceMap(922010506).resetPQ(level); //Stage 5 - skipped entirely
+    map = eim.setInstanceMap(922010500);
+    map.resetPQ(level);
+    map.getPortal("next00").setScriptName("lpq5");
+    eim.setInstanceMap(922010501).resetPQ(level);
+    eim.setInstanceMap(922010502).resetPQ(level);
+    eim.setInstanceMap(922010503).resetPQ(level);
+    eim.setInstanceMap(922010504).resetPQ(level);
+    eim.setInstanceMap(922010505).resetPQ(level);
+    eim.setInstanceMap(922010506).resetPQ(level); //Stage 5
+    map = eim.setInstanceMap(922010600); // Stage 6
+    map.resetPQ(level);
+    map.getPortal("next00").setScriptName("lpq6");
     map = eim.setInstanceMap(922010700);
 	map.resetPQ(level);
 	map.getPortal("next00").setScriptName("lpq7");
-	eim.setInstanceMap(922010800).getPortal("next00").setScriptName("lpq8");
+	map = eim.setInstanceMap(922010800);
+    map.resetPQ(level);
+    map.getPortal("next00").setScriptName("lpq8");
     eim.setInstanceMap(922010900).resetPQ(level);
-    //eim.setInstanceMap(922011000).resetPQ(level); //Bonus - skipped entirely
+    eim.setInstanceMap(922011000).resetPQ(level); //Bonus
 	
 	for (var b = 0; b < stg6_combo.length; b++) { //stage6_001
 		for (var y = 0; y < 3; y++) { //stage number

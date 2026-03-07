@@ -1,4 +1,4 @@
-var name = "#b#eCloudMs#k#n"; 
+var name = "#b#eZipangu#k#n"; 
 var talk = "What would you like to browse?\r\n\r\n"; 
 var menu = ["Warrior","Magician","Archer","Thief","Pirate","Phantom","Cannoneer","Mercedes","Demon Slayer"]; 
 var options = [ 

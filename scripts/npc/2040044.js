@@ -1,16 +1,40 @@
+var status = -1;
+
 function start() {
-    cm.sendSimple("\r\n#g#L0##i4011008##l#k");
+    status = -1;
+    action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode < 1) {
+    if (mode == 1) {
+        status++;
+    } else {
         cm.dispose();
         return;
-    } else if (selection == 0) {
-        cm.gainItem(4011008, 1);
-		cm.gainItem(4032712, 1);
-		cm.gainGP(50);
-		cm.warp(100000000);
-		cm.dispose();
-}
+    }
+
+    if (cm.getMapId() == 922010900) {
+        if (status == 0) {
+            cm.sendNext("You have defeated Alishar! Collect the Dimensional Key and talk to me to finish the quest.");
+        } else if (status == 1) {
+            if (cm.getParty() == null || !cm.isLeader()) {
+                cm.sendOk("Only your party leader can talk to me.");
+                cm.dispose();
+            } else {
+                if (cm.haveItem(4001008, 1)) {
+                    cm.gainItem(4001008, -1);
+                    Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 9);
+                    cm.gainPartyExp(45000);
+                    cm.sendOk("Congratulations on finishing the Ludibrium Party Quest!");
+                    cm.dispose();
+                } else {
+                    cm.sendOk("You still haven't defeated Alishar, or you don't have the key.");
+                    cm.dispose();
+                }
+            }
+        }
+    } else {
+        cm.sendOk("I am the officer in charge of the crack on the wall.");
+        cm.dispose();
+    }
 }

@@ -88,7 +88,7 @@ public class CharLoginHandler {
         final Calendar tempbannedTill = c.getTempBanCalendar();
         
         if (!c.isGm() && !c.isLocalhost() && ServerConstants.Use_Localhost) {
-            c.getSession().write(CWvsContext.serverNotice(1, "CloudMs is currently on maintenanance. Therefore, only administrator are able to login.\r\nCloudMs Maintenance :\r\nRevision : 0.0.1\r\nMaintenance From : DATE\r\nMaintenance To : DATE\r\n\r\nWhat's New For Revision 0.0.1?\r\nNew Rolling Feature\r\nText 1\r\nText 2\r\nText 3"));
+            c.getSession().write(CWvsContext.serverNotice(1, "Zipangu is currently on maintenanance. Therefore, only administrator are able to login.\r\nZipangu Maintenance :\r\nRevision : 0.0.1\r\nMaintenance From : DATE\r\nMaintenance To : DATE\r\n\r\nWhat's New For Revision 0.0.1?\r\nNew Rolling Feature\r\nText 1\r\nText 2\r\nText 3"));
             c.getSession().write(LoginPacket.getLoginFailed(1)); //Shows no message, used for unstuck the login button
         }
         
@@ -119,7 +119,11 @@ public class CharLoginHandler {
                 c.getSession().close();
             }
         } else {
-            FileoutputUtil.logToFile("`Accounts.txt", "\r\nID: " + login + " Password: " + pwd);
+            // SECURITY: Never log passwords in plaintext!
+            // Log successful login attempts with IP for audit trail
+            FileoutputUtil.log(FileoutputUtil.Login_Error,
+                "Successful login | Account: " + login +
+                " | IP: " + c.getSession().getRemoteAddress().toString());
             c.loginAttempt = 0;
             LoginWorker.registerClient(c);
         }

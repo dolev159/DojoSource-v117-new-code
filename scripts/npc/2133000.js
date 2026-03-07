@@ -39,34 +39,14 @@ function action(mode, type, selection) {
 		cm.sendOk("You either don't have Glittering Altair Earrings already or you do not have 10 Altair Fragments");
 	    }
 	} else if (selection == 2) {
-	    if (cm.getPlayer().getParty() == null || !cm.isLeader()) {
-		cm.sendOk("The leader of the party must be here.");
-	    } else {
-		var party = cm.getPlayer().getParty().getMembers();
-		var mapId = cm.getPlayer().getMapId();
-		var next = true;
-		var size = 0;
-		var it = party.iterator();
-		while (it.hasNext()) {
-			var cPlayer = it.next();
-			var ccPlayer = cm.getPlayer().getMap().getCharacterById(cPlayer.getId());
-			if (ccPlayer == null || ccPlayer.getLevel() < 70 || ccPlayer.getLevel() > 255) {
-				next = false;
-				break;
-			}
-			size += (ccPlayer.isGM() ? 4 : 1);
-		}	
-		if (next && size >= 2) {
+	    if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), Packages.server.MaplePQManager.PQType.ELLIN_PQ)) {
 			var em = cm.getEventManager("Ellin");
 			if (em == null) {
 				cm.sendOk("Please try again later.");
 			} else {
 				em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 120);
 			}
-		} else {
-			cm.sendOk("All 2+ members of your party must be here and above level 70.");
 		}
-	    }
 	}
 	cm.dispose();
     }

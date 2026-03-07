@@ -6,8 +6,7 @@ function start() {
 	cm.removeAll(4001258);
 	cm.removeAll(4001259);
 	cm.removeAll(4001260);
-		if (cm.getPlayer().getLevel() < 90) {
-			cm.sendOk("There is a level requirement of 90 to attempt Crimsonwood Keep.");
+		if (!Packages.server.MaplePQManager.canEnter(cm.getPlayer(), Packages.server.MaplePQManager.PQType.CWKPQ)) {
 			cm.dispose();
 			return;
 		}

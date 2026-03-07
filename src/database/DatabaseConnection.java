@@ -20,98 +20,156 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package database;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import constants.ServerConstants;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.LinkedList;
+import tools.FileoutputUtil;
 
-/**
- * All OdinMS servers maintain a Database Connection. This class therefore "singletonices" the connection per process.
- * 
- * 
- * @author Frz
- */
 public class DatabaseConnection {
 
-    private static final ThreadLocal<Connection> con = new DatabaseConnection.ThreadLocalConnection();
-    public static final int CLOSE_CURRENT_RESULT = 1;
-    /**
-     * The constant indicating that the current <code>ResultSet</code> object
-     * should not be closed when calling <code>getMoreResults</code>.
-     *
-     * @since 1.4
-     */
-    public static final int KEEP_CURRENT_RESULT = 2;
-    /**
-     * The constant indicating that all <code>ResultSet</code> objects that
-     * have previously been kept open should be closed when calling
-     * <code>getMoreResults</code>.
-     *
-     * @since 1.4
-     */
-    public static final int CLOSE_ALL_RESULTS = 3;
-    /**
-     * The constant indicating that a batch statement executed successfully
-     * but that no count of the number of rows it affected is available.
-     *
-     * @since 1.4
-     */
-    public static final int SUCCESS_NO_INFO = -2;
-    /**
-     * The constant indicating that an error occured while executing a
-     * batch statement.
-     *
-     * @since 1.4
-     */
-    public static final int EXECUTE_FAILED = -3;
-    /**
-     * The constant indicating that generated keys should be made
-     * available for retrieval.
-     *
-     * @since 1.4
-     */
-    public static final int RETURN_GENERATED_KEYS = 1;
-    /**
-     * The constant indicating that generated keys should not be made
-     * available for retrieval.
-     *
-     * @since 1.4
-     */
-    public static final int NO_GENERATED_KEYS = 2;
+    private static volatile HikariDataSource dataSource;
 
+    static {
+        initDataSource();
+    }
+
+    /**
+     * Initialize the HikariCP connection pool with optimized settings.
+     * Called on startup and may be called again if the pool dies (auto-reconnect).
+     */
+    private static synchronized void initDataSource() {
+        try {
+            HikariConfig config = new HikariConfig();
+
+            // Connection URL with essential MySQL flags
+            config.setJdbcUrl("jdbc:mysql://localhost:" + ServerConstants.SQL_PORT
+                    + "/" + ServerConstants.SQL_DATABASE
+                    + "?autoReconnect=true"
+                    + "&useSSL=false"
+                    + "&characterEncoding=UTF-8"
+                    + "&useUnicode=true"
+                    + "&serverTimezone=UTC"
+                    + "&allowPublicKeyRetrieval=true");
+
+            config.setDriverClassName("com.mysql.jdbc.Driver");
+            config.setUsername(ServerConstants.SQL_USER);
+            config.setPassword(ServerConstants.SQL_PASSWORD);
+            config.setPoolName("DojoSource-DB-Pool");
+
+            // =============================================
+            // Pool size - tuned for MapleStory workload
+            // =============================================
+            // Each channel + login + cashshop needs connections.
+            // For a small/medium server: 30 is safe.
+            config.setMaximumPoolSize(30);
+            config.setMinimumIdle(10);
+
+            // =============================================
+            // Timeouts
+            // =============================================
+            // Wait up to 10 seconds for a free connection before throwing
+            config.setConnectionTimeout(10000);
+            // Kill idle connections after 5 minutes
+            config.setIdleTimeout(300000);
+            // Recycle connections after 10 minutes (prevents stale connections)
+            config.setMaxLifetime(600000);
+            // Validate connections every 30 seconds to detect DB disconnects early
+            config.setKeepaliveTime(30000);
+            // Test connection before giving it out (catches DB restarts)
+            config.setConnectionTestQuery("SELECT 1");
+
+            // =============================================
+            // Performance: PreparedStatement caching
+            // =============================================
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "500");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            config.addDataSourceProperty("useServerPrepStmts", "true");
+            config.addDataSourceProperty("useLocalSessionState", "true");
+            config.addDataSourceProperty("rewriteBatchedStatements", "true");
+            config.addDataSourceProperty("cacheResultSetMetadata", "true");
+            config.addDataSourceProperty("cacheServerConfiguration", "true");
+            config.addDataSourceProperty("maintainTimeStats", "false");
+
+            dataSource = new HikariDataSource(config);
+
+            System.out.println("[DB] HikariCP pool initialized successfully. Pool: "
+                    + config.getPoolName() + " | MaxSize: " + config.getMaximumPoolSize());
+
+        } catch (Exception e) {
+            System.err.println("[DB] FATAL: Failed to initialize database connection pool!");
+            e.printStackTrace();
+            FileoutputUtil.logCrash("DatabaseConnection.initDataSource", e);
+            throw new RuntimeException("Cannot start server without database connection.", e);
+        }
+    }
+
+    /**
+     * Get a connection from the pool.
+     * If the pool is dead, attempts to reinitialize it once (handles DB restarts).
+     */
     public static final Connection getConnection() {
-        return con.get();
-    }
-
-    public static final void closeAll() throws SQLException {
-        for (final Connection con : DatabaseConnection.ThreadLocalConnection.allConnections) {
-	    if (con != null) {
-            	con.close();
-	    }
-        }
-    }
-
-    private static final class ThreadLocalConnection extends ThreadLocal<Connection> {
-
-        public static final Collection<Connection> allConnections = new LinkedList<Connection>();
-
-        @Override
-        protected final Connection initialValue() {
+        // Fast path: pool is healthy
+        if (dataSource != null && !dataSource.isClosed()) {
             try {
-                Class.forName("com.mysql.jdbc.Driver"); // Touch the mysql driver
-            } catch (final ClassNotFoundException e) {
-                System.err.println("ERROR" + e);
-            }
-            try {
-                final Connection con = DriverManager.getConnection("jdbc:mysql://localhost:" + ServerConstants.SQL_PORT + "/" + ServerConstants.SQL_DATABASE + "?autoReconnect=true", ServerConstants.SQL_USER,ServerConstants.SQL_PASSWORD);
-                allConnections.add(con);
-                return con;
+                return dataSource.getConnection();
             } catch (SQLException e) {
-                System.err.println("ERROR" + e);
-                return null;
+                System.err.println("[DB] Error getting connection from pool: " + e.getMessage());
+                FileoutputUtil.logDatabaseError("getConnection() - pool may be degraded", e);
             }
         }
+
+        // Slow path: pool is dead or closed, try to reconnect
+        System.err.println("[DB] Connection pool appears to be dead. Attempting to reinitialize...");
+        try {
+            if (dataSource != null && !dataSource.isClosed()) {
+                dataSource.close();
+            }
+        } catch (Exception ignore) {
+        }
+
+        try {
+            initDataSource();
+            Connection conn = dataSource.getConnection();
+            System.out.println("[DB] Reconnection to database successful!");
+            return conn;
+        } catch (Exception e) {
+            System.err.println("[DB] FATAL: Could not reconnect to database! Server may be unstable.");
+            FileoutputUtil.logCrash("DatabaseConnection.getConnection - reconnect failed", e);
+            return null;
+        }
     }
+
+    /**
+     * Gracefully close the connection pool on server shutdown.
+     */
+    public static final void closeAll() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            System.out.println("[DB] Closing database connection pool...");
+            dataSource.close();
+            System.out.println("[DB] Database connection pool closed.");
+        }
+    }
+
+    /**
+     * Get current pool stats for monitoring/debugging.
+     */
+    public static final String getPoolStats() {
+        if (dataSource == null || dataSource.isClosed()) {
+            return "[DB] Pool is closed or not initialized.";
+        }
+        return "[DB Pool Stats] Pool: " + dataSource.getPoolName()
+                + " | MaxSize: " + dataSource.getMaximumPoolSize();
+    }
+
+    // JDBC constant declarations
+    public static final int CLOSE_CURRENT_RESULT = 1;
+    public static final int KEEP_CURRENT_RESULT = 2;
+    public static final int CLOSE_ALL_RESULTS = 3;
+    public static final int SUCCESS_NO_INFO = -2;
+    public static final int EXECUTE_FAILED = -3;
+    public static final int RETURN_GENERATED_KEYS = 1;
+    public static final int NO_GENERATED_KEYS = 2;
 }

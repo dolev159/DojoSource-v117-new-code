@@ -19,8 +19,8 @@ public class WorldConstants {
      // EXAMPLE:
      // Format: WorldName(world id, exp rate, meso rate, drop rate, flag, show, available to enter)
      // GMS:
-        Scania(0, 6, 4, 3, (byte) 1, true, true),
-        Bera(1, 9, 6, 3, (byte) 0, false, false),
+        Scania(0, 1, 1, 1, (byte) 1, true, true),
+        Bera(1, 1, 1, 1, (byte) 0, false, false),
         Broa(2, 1, 1, 1, (byte) 0, false, false),
         Windia(3, 1, 1, 1, (byte) 0, false, false),
         Khaini(4, 1, 1, 1, (byte) 0, false, false),
@@ -56,7 +56,7 @@ public class WorldConstants {
         private byte flag;
         private boolean show, available;
         public static final byte recommended = (byte) Scania.getWorld(); // -1 = no recommended
-        public static final String recommendedmsg = getById(recommended).toString() + " is our current recommended world.\r\nOur Website: Maplestory.co.il";
+        public static final String recommendedmsg = getById(recommended).toString() + " is our current recommended world.";
 
         Servers(int world, int exp, int meso, int drop, byte flag, boolean show, boolean available) {
             this.world = world;

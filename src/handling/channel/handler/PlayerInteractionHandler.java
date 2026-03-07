@@ -339,7 +339,7 @@ public class PlayerInteractionHandler {
                 if (shop != null && shop.isOwner(chr) && shop.getShopType() < 3 && !shop.isAvailable()) {
                     if (chr.getMap().allowPersonalShop()) {
                         if (c.getChannelServer().isShutdown()) {
-                            chr.dropMessage(1, "CloudMs is about to shut down.");
+                            chr.dropMessage(1, "Zipangu is about to shut down.");
                             c.getSession().write(CWvsContext.enableActions());
                             shop.closeShop(shop.getShopType() == 1, false);
                             return;

@@ -34,7 +34,7 @@ public class LoginWorker {
 
     public static void registerClient(final MapleClient c) {
         if (LoginServer.isAdminOnly() && !c.isGm() && !c.isLocalhost()) {
-            c.getSession().write(CWvsContext.serverNotice(1, "CloudMs is currently on maintenanance. Therefore, only administrator are able to login.\r\nCloudMs Maintenance :\r\nRevision : 0.0.1\r\nMaintenance From : DATE\r\nMaintenance To : DATE\r\n\r\nWhat's New For Revision 0.0.1?\r\nNew Rolling Feature\r\nText 1\r\nText 2\r\nText 3"));
+            c.getSession().write(CWvsContext.serverNotice(1, "Zipangu is currently on maintenanance. Therefore, only administrator are able to login.\r\nZipangu Maintenance :\r\nRevision : 0.0.1\r\nMaintenance From : DATE\r\nMaintenance To : DATE\r\n\r\nWhat's New For Revision 0.0.1?\r\nNew Rolling Feature\r\nText 1\r\nText 2\r\nText 3"));
             c.getSession().write(LoginPacket.getLoginFailed(7));
             return;
         }

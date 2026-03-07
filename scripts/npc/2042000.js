@@ -38,41 +38,25 @@ function action(mode, type, selection) {
 	    cm.sendSimple("#b#L0#50 Maple Coin = Spiegelmann Necklace#l\r\n#L1#30 Maple Coin = Spiegelmann Marble#l\r\n#L2#50 Sparkling Maple Coin = Spiegelmann Necklace of Chaos#l#k");
 	} else if (selection >= 0 && selection < 9) {
 	    var mapid = 980000000+((selection+1)*100);
-            if (cm.getEventManager("cpq").getInstance("cpq"+mapid) == null) {
-                if ((cm.getParty() != null && 1 < cm.getParty().getMembers().size() && cm.getParty().getMembers().size() < (selection == 4 || selection == 5 || selection == 8 ? 4 : 3)) || cm.getPlayer().isGM()) {
-                    if (checkLevelsAndMap(30, 255) == 1) {
-                        cm.sendOk("A player in your party is not the appropriate level.");
-                        cm.dispose();
-                    } else if (checkLevelsAndMap(30, 255) == 2) {
-                        cm.sendOk("Everyone in your party isnt in this map.");
-                        cm.dispose();
-                    } else {
+            if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), Packages.server.MaplePQManager.PQType.MONSTER_CARNIVAL)) {
+                if (cm.getEventManager("cpq").getInstance("cpq"+mapid) == null) {
+                    if ((cm.getParty() != null && 1 < cm.getParty().getMembers().size() && cm.getParty().getMembers().size() < (selection == 4 || selection == 5 || selection == 8 ? 4 : 3)) || cm.getPlayer().isGM()) {
                         cm.getEventManager("cpq").startInstance(""+mapid, cm.getPlayer());
                         cm.dispose();
+                    } else {
+                        cm.sendOk("Your party is not the appropriate size.");
                     }
-                } else {
-                    cm.sendOk("Your party is not the appropriate size.");
-                }
-            } else if (cm.getParty() != null && cm.getEventManager("cpq").getInstance("cpq"+mapid).getPlayerCount() == cm.getParty().getMembers().size()) {
-                if (checkLevelsAndMap(30, 255) == 1) {
-                    cm.sendOk("A player in your party is not the appropriate level.");
-                    cm.dispose();
-                } else if (checkLevelsAndMap(30, 255) == 2) {
-                    cm.sendOk("Everyone in your party isnt in this map.");
-                    cm.dispose();
-                } else {
+                } else if (cm.getParty() != null && cm.getEventManager("cpq").getInstance("cpq"+mapid).getPlayerCount() == cm.getParty().getMembers().size()) {
                     //Send challenge packet here
                     var owner = cm.getChannelServer().getPlayerStorage().getCharacterByName(cm.getEventManager("cpq").getInstance("cpq"+mapid).getPlayers().get(0).getParty().getLeader().getName());
                     owner.addCarnivalRequest(cm.getCarnivalChallenge(cm.getChar()));
-                    //if (owner.getConversation() != 1) {
-                        cm.openNpc(owner.getClient(), 2042001);
-                    //}
+                    cm.openNpc(owner.getClient(), 2042001);
                     cm.sendOk("Your challenge has been sent.");
                     cm.dispose();
+                } else {
+                    cm.sendOk("The two parties participating in Monster Carnival must have an equal number of party member");
+                    cm.dispose();
                 }
-            } else {
-                cm.sendOk("The two parties participating in Monster Carnival must have an equal number of party member");
-                cm.dispose();
             }
 	} else {
 	    cm.dispose();

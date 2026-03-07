@@ -218,8 +218,7 @@ public enum ItemLoader {
             ps.setInt(5, item.getQuantity());
             ps.setString(6, item.getOwner());
             ps.setString(7, item.getGMLog());
-            if (item.getPet() != null) { // Expensif?
-                //item.getPet().saveToDb();
+            if (item.getPet() != null) {
                 ps.setInt(8, Math.max(item.getUniqueId(), item.getPet().getUniqueId()));
             } else {
                 ps.setInt(8, item.getUniqueId());
@@ -275,10 +274,13 @@ public enum ItemLoader {
                 pse.setInt(31, equip.getIncSkill());
                 pse.setShort(32, equip.getCharmEXP());
                 pse.setShort(33, equip.getPVPDamage());
-                pse.executeUpdate();
+                // Use batch for equip inserts - much faster than individual executes
+                pse.addBatch();
             }
         }
+        // Execute all equip insertions in one batch call - reduces DB round-trips
+        pse.executeBatch();
         pse.close();
         ps.close();
     }
-}
+}

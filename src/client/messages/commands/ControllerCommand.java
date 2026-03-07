@@ -95,7 +95,7 @@ public class ControllerCommand {
                             ts.cancel(false);
                             return;
                         }
-                        World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "CloudMs will shutdown in " + minutesLeft + " minutes. Please log off safely."));
+                        World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "Zipangu will shutdown in " + minutesLeft + " minutes. Please log off safely."));
                         minutesLeft--;
                     }
                 }, 60000);

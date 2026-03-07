@@ -301,23 +301,6 @@ public class EventInstanceManager {
         return false;
     }
 
-    public final void saveBossQuest(final int points) {
-        if (disposed) {
-            return;
-        }
-        for (MapleCharacter chr : getPlayers()) {
-            final MapleQuestStatus record = chr.getQuestNAdd(MapleQuest.getInstance(150001));
-
-            if (record.getCustomData() != null) {
-                record.setCustomData(String.valueOf(points + Integer.parseInt(record.getCustomData())));
-            } else {
-                record.setCustomData(String.valueOf(points)); // First time
-            }
-            chr.modifyCSPoints(1, points / 5, true);
-            chr.getTrait(MapleTraitType.will).addExp(points / 100, chr);
-        }
-    }
-
     public final void saveNX(final int points) {
         if (disposed) {
             return;

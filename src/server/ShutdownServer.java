@@ -47,10 +47,10 @@ public class ShutdownServer implements ShutdownServerMBean {
     public void run() {
 	if (mode == 0) {
 	    int ret = 0;
-	    World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "CloudMs World is going to Shutdown soon. Please kindly log off now for the meantime."));
+	    World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "Zipangu World is going to Shutdown soon. Please kindly log off now for the meantime."));
             for (ChannelServer cs : ChannelServer.getAllInstances()) {
                 cs.setShutdown();
-				cs.setServerMessage("CloudMs World is going to Shutdown soon. Please kindly log off now for the meantime.");
+				cs.setServerMessage("Zipangu World is going to Shutdown soon. Please kindly log off now for the meantime.");
                 ret += cs.closeAllMerchant();
             }
             /*AtomicInteger FinishedThreads = new AtomicInteger(0);
@@ -80,7 +80,7 @@ public class ShutdownServer implements ShutdownServerMBean {
 	    mode++;
 			System.out.println("Second Shutdown commencing...");
             try {
-	        World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "CloudMs World is going to Shutdown now. Please kindly log off now for the meantime."));
+	        World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "Zipangu World is going to Shutdown now. Please kindly log off now for the meantime."));
                 Integer[] chs =  ChannelServer.getAllInstance().toArray(new Integer[0]);
         
                 for (int i : chs) {
@@ -96,16 +96,15 @@ public class ShutdownServer implements ShutdownServerMBean {
 	        LoginServer.shutdown();
                 CashShopServer.shutdown();
                 DatabaseConnection.closeAll();
-            } catch (SQLException e) {
-                System.err.println("THROW" + e);
+            } finally {
+                WorldTimer.getInstance().stop();
+                MapTimer.getInstance().stop();
+                BuffTimer.getInstance().stop();
+                CloneTimer.getInstance().stop();
+                EventTimer.getInstance().stop();
+                EtcTimer.getInstance().stop();
+                PingTimer.getInstance().stop();
             }
-            WorldTimer.getInstance().stop();
-            MapTimer.getInstance().stop();
-            BuffTimer.getInstance().stop();
-            CloneTimer.getInstance().stop();
-            EventTimer.getInstance().stop();
-	    EtcTimer.getInstance().stop();
-	    PingTimer.getInstance().stop();
             long startTime = 0;
 		System.out.println("Second Shutdown has been successfully Shutdown");
 		try{

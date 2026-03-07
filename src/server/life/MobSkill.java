@@ -225,9 +225,6 @@ public class MobSkill {
 
             case 129: // Banish
                 if (monster != null && monster.getMap().getSquadByMap() == null) { // Not pink bean / von leon map
-                    if (monster.getEventInstance() != null && monster.getEventInstance().getName().indexOf("BossQuest") != -1) {
-                        break;
-                    }
                     final BanishInfo info = monster.getStats().getBanishInfo();
                     if (info != null) {
                         if (lt != null && rb != null && skill && player != null) {

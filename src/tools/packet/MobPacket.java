@@ -80,7 +80,7 @@ public class MobPacket {
             mplew.writeInt(-1);
         }
 
-        System.out.println("killAswanMonster: " + mplew.getPacket());
+//        System.out.println("killAswanMonster: " + mplew.getPacket());
         return mplew.getPacket();
     }
 
@@ -294,7 +294,7 @@ public class MobPacket {
         mplew.writeInt(0);
         mplew.writeInt(0);
         mplew.write(-1);
-        System.out.println("spawnAswanMonster: " + mplew.getPacket());
+//        System.out.println("spawnAswanMonster: " + mplew.getPacket());
         return mplew.getPacket();
     }
 
@@ -394,7 +394,7 @@ public class MobPacket {
         mplew.writeInt(0);
         mplew.write(-1);
 
-        System.out.println("controlAswanMonster: " + mplew.getPacket());
+//        System.out.println("controlAswanMonster: " + mplew.getPacket());
         return mplew.getPacket();
     }
 
@@ -415,12 +415,12 @@ public class MobPacket {
         mplew.write(0);
         mplew.writeInt(oid);
 
-        System.out.println("stopControllingAswanMonster: " + mplew.getPacket());
+//        System.out.println("stopControllingAswanMonster: " + mplew.getPacket());
         return mplew.getPacket();
     }
 
     public static byte[] makeAswanMonsterInvisible(MapleMonster life) {
-        System.out.println("accessing makeAswanMonsterInvisible");
+//        System.out.println("accessing makeAswanMonsterInvisible");
         return spawnAswanMonster(life, -4, 0);
     }
 
@@ -429,7 +429,7 @@ public class MobPacket {
     }
 
     public static byte[] makeAswanMonsterReal(MapleMonster life) {
-        System.out.println("accessing makeAswanMonsterReal");
+//        System.out.println("accessing makeAswanMonsterReal");
         return spawnAswanMonster(life, -1, 0);
     }
 

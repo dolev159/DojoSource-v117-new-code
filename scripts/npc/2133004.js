@@ -1,19 +1,17 @@
-var status = -1;
+function start() {
+    action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
+    if (cm.getMapId() == 930000500) {
+        if (!cm.haveItem(4001163)) {
+            cm.sendNext("Please find the Purple Stone of Magic in this room and bring it to me.");
+        } else {
+            cm.warpParty(930000600);
+            cm.gainPartyExp(7000);
+        }
     } else {
-	status--;
-    }
-    switch(cm.getPlayer().getMapId()) {
-	case 930000500:
-	    if (!cm.haveItem(4001163)) {
-	    	cm.sendNext("Get me the Purple Stone of Magic from here.");
-	    } else {
-		cm.warpParty(930000600);
-	    }
-	    break;
+        cm.sendNext("Please hurry, we must stop the golem!");
     }
     cm.dispose();
 }

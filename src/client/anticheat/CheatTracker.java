@@ -13,9 +13,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import server.Timer.CheatTimer;
+import tools.FileoutputUtil;
 import tools.StringUtil;
 
 public class CheatTracker {
@@ -50,6 +52,28 @@ public class CheatTracker {
     private long lastSmegaTime = 0, lastBBSTime = 0, lastASmegaTime = 0;
     private long[] lastTime = new long[6];
 	
+    // ===================================================
+    // Packet Rate Limiter
+    // ===================================================
+    // Tracks how many packets arrived within the sliding window
+    private final AtomicInteger packetCount = new AtomicInteger(0);
+    private volatile long packetWindowStart = System.currentTimeMillis();
+    // v117 allows faster skill animations - tuned limit to avoid false positives
+    private static final int PACKET_LIMIT_PER_SECOND = 60;
+    private static final long PACKET_WINDOW_MS = 1000;
+
+    // ===================================================
+    // Mob Vacuum Detection
+    // ===================================================
+    // Tracks how many mobs the player hit that were far away
+    private int mobVacuumCount = 0;
+    private long lastMobVacuumReset = System.currentTimeMillis();
+    // Max distance a player can legitimately hit a mob (pixels)
+    // v117 has some skills with long range, so we set a generous limit
+    private static final int MAX_ATTACK_RANGE = 600;
+    private static final int VACUUM_RESET_MS = 5000;
+    private static final int VACUUM_THRESHOLD = 8;
+
     //private int lastFamiliarTickCount = 0;
     //private byte Familiar_tickResetCount = 0;
     //private long Server_ClientFamiliarTickDiff = 0;

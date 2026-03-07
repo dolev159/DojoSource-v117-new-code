@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.IoAcceptor;
@@ -59,29 +61,33 @@ public class ChannelServer {
     private static final short DEFAULT_PORT = 7574;
     private int channel, running_MerchantID = 0, flags = 0;
     private String serverMessage, ip, serverName;
-    private boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false, adminOnly = false;
+    // volatile: read by many threads that check shutdown state
+    private volatile boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false, adminOnly = false;
     private PlayerStorage players;
     private IoAcceptor acceptor;
     private final MapleMapFactory mapFactory;
     private EventScriptManager eventSM;
     private AramiaFireWorks works = new AramiaFireWorks();
-    private static final Map<Integer, ChannelServer> instances = new HashMap<Integer, ChannelServer>();
-    private final Map<MapleSquadType, MapleSquad> mapleSquads = new ConcurrentEnumMap<MapleSquadType, MapleSquad>(MapleSquadType.class);
-    private final Map<Integer, HiredMerchant> merchants = new HashMap<Integer, HiredMerchant>();
-    private final List<PlayerNPC> playerNPCs = new LinkedList<PlayerNPC>();
+    // ConcurrentHashMap: accessed from multiple threads (channel startup, shutdown, login)
+    private static final Map<Integer, ChannelServer> instances = new ConcurrentHashMap<>();
+    private final Map<MapleSquadType, MapleSquad> mapleSquads = new ConcurrentEnumMap<>(MapleSquadType.class);
+    private final Map<Integer, HiredMerchant> merchants = new HashMap<>();
+    // CopyOnWriteArrayList: playerNPCs is read frequently, written rarely
+    private final List<PlayerNPC> playerNPCs = new CopyOnWriteArrayList<>();
     private final ReentrantReadWriteLock merchLock = new ReentrantReadWriteLock(); //merchant
     private int eventmap = -1;
     private final Map<MapleEventType, MapleEvent> events = new EnumMap<MapleEventType, MapleEvent>(MapleEventType.class);
-    public boolean eventOn = false;
-    public int eventMap = 0;
-    private boolean eventWarp;
-    private String eventHost;
-    private String eventName;
-    //Custom Race:
-    private boolean hasWaitingStarted = false;
-    private boolean race = false;
-    private int competitors = 0;
-    private int waitingTime;
+    // volatile: event state read from multiple player threads
+    public volatile boolean eventOn = false;
+    public volatile int eventMap = 0;
+    private volatile boolean eventWarp;
+    private volatile String eventHost;
+    private volatile String eventName;
+    // Custom Race: volatile since timer thread writes, player threads read
+    private volatile boolean hasWaitingStarted = false;
+    private volatile boolean race = false;
+    private volatile int competitors = 0;
+    private volatile int waitingTime;
     //End of Custom Race
     private int mesoRate;
     private int dropRate;

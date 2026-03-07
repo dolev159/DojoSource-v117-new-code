@@ -67,6 +67,7 @@ import server.ServerProperties;
 import tools.FileoutputUtil;
 import tools.HexTool;
 import tools.packet.CField;
+import tools.packet.CWvsContext;
 import tools.packet.MTSCSPacket;
 
 public class MapleServerHandler extends IoHandlerAdapter implements MapleServerHandlerMBean {
@@ -423,12 +424,16 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
         if (message == null || session == null) {
             return;
         }
-        final LittleEndianAccessor slea = new LittleEndianAccessor(new ByteArrayByteStream((byte[]) message));
-        if (slea.available() < 2) {
-            return;
-        }
         final MapleClient c = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
         if (c == null || !c.isReceiving()) {
+            return;
+        }
+        handlePacket((byte[]) message, c);
+    }
+
+    public static void handlePacket(final byte[] message, final MapleClient c) {
+        final LittleEndianAccessor slea = new LittleEndianAccessor(new ByteArrayByteStream(message));
+        if (slea.available() < 2) {
             return;
         }
         final short header_num = slea.readShort();
@@ -444,52 +449,10 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                         return;
                     }
                 }
-                try {
-                    if (c.getPlayer() != null && c.isMonitored() && !blocked.contains(recv)) {
-                        FileWriter fw = new FileWriter(new File("MonitorLogs/" + c.getPlayer().getName() + "_log.txt"), true);
-                        fw.write(String.valueOf(recv) + " (" + Integer.toHexString(header_num) + ") Handled: \r\n" + slea.toString() + "\r\n");
-                        fw.flush();
-                        fw.close();
-                    }
-                    // No login packets
-                    if (Log_Packets && !blocked.contains(recv) && !sBlocked.contains(recv) && c.getPlayer() != null) {
-                        log(slea.toString(), recv.toString(), c, session);
-                    }
-                    handlePacket(recv, slea, c);
-                    // Log after the packet is handle. You'll see why =]
-                    FileWriter fw = isLoggedIP(session);
-                    if (fw != null && !blocked.contains(recv)) {
-                        if (recv == RecvPacketOpcode.PLAYER_LOGGEDIN && c != null) { // << This is why. Win.
-                            fw.write(">> [AccountName: "
-                                    + (c.getAccountName() == null ? "null" : c.getAccountName()) + "] | [IGN: "
-                                    + (c.getPlayer() == null || c.getPlayer().getName() == null ? "null" : c.getPlayer().getName()) + "] | [Time: "
-                                    + FileoutputUtil.CurrentReadable_Time() + "]");
-                            fw.write(nl);
-                        }
-                        fw.write("[" + recv.toString() + "]" + slea.toString(true));
-                        fw.write(nl);
-                        fw.flush();
-                    }
-                } catch (NegativeArraySizeException e) {
-                    // Swallow, no one cares
-                    if (ServerConstants.Use_Localhost) {
-                        FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
-                        FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Packet: " + header_num + "\n" + slea.toString(true));
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    // Swallow, no one cares
-                    if (ServerConstants.Use_Localhost) {
-                        FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
-                        FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Packet: " + header_num + "\n" + slea.toString(true));
-                    }
-                } catch (Exception e) {
-                    FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
-                    FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Packet: " + header_num + "\n" + slea.toString(true));
-                }
-
                 return;
             }
         }
+    }
         //final StringBuilder sb = new StringBuilder("Received data : (Unhandled)\n");
         //sb.append(HexTool.toString((byte[]) message)).append("\n").append(HexTool.toStringFromAscii((byte[]) message));
         //System.out.println(sb.toString());
@@ -1276,6 +1239,13 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
             case CHOOSE_SKILL:
                 PlayersHandler.ChooseSkill(slea, c);
                 break;
+            case QUEST_ITEM:
+            case SIDEKICK_OPERATION:
+            case DENY_SIDEKICK_REQUEST:
+            case PVP_INFO:
+            case MANAGE_STOLEN_SKILLS:
+                c.getSession().write(CWvsContext.enableActions());
+                break;
             case MAGIC_WHEEL:
                 System.out.println("[MAGIC_WHEEL] [" + slea.toString() + "]");
                 final byte mode = slea.readByte(); // 0 = open, 2 = start.
@@ -1310,7 +1280,8 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
             case QUEST_ACTION:
             case HEAL_OVER_TIME:
                 return true;
+            default:
+                return false;
         }
-        return false;
     }
 }

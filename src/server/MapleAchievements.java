@@ -38,7 +38,7 @@ public class MapleAchievements {
         achievements.put(7, new MapleAchievement("received 1 Fame [Eminence] (Brown)", 20, false));
         /*achievements.put(9, new MapleAchievement("equipped a Reverse Item", 100, false));
         achievements.put(10, new MapleAchievement("equipped a Timeless Item", 100, false));*/
-        achievements.put(11, new MapleAchievement("said 'I like CloudMs' [Overrun] (Purple)", 90, false));
+        achievements.put(11, new MapleAchievement("said 'I like Zipangu' [Overrun] (Purple)", 90, false));
         achievements.put(12, new MapleAchievement("killed a Female Boss [Legend] (Magenta)", 1800, false));
         achievements.put(13, new MapleAchievement("killed a Papulatus [Legend] (Grey)", 1400, false));
         achievements.put(14, new MapleAchievement("killed a Pianus [Legend] (Brown)", 1000, false));

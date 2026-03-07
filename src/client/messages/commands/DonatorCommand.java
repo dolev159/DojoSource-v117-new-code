@@ -267,14 +267,14 @@ public class DonatorCommand {
     public static class help extends CommandExecute {
         @Override
         public int execute(MapleClient c, String[] splitted) {
-            c.getPlayer().dropMessage(6, ".::::::::::::::::::::::::::::::: CloudMs Donor Commands ::::::::::::::::::::::::::::::::.");
+            c.getPlayer().dropMessage(6, ".::::::::::::::::::::::::::::::: Zipangu Donor Commands ::::::::::::::::::::::::::::::::.");
             c.getPlayer().dropMessage(6, "#heal - Heals yourself.");
             c.getPlayer().dropMessage(6, "#clear [equipped / equip / use / setup / etc / cash / all] - Cleans the trash in your inventory that you requested.");
             c.getPlayer().dropMessage(6, "#weather - Toggle on / off the snow effect in your current map.");
             c.getPlayer().dropMessage(6, "#go [map] - Go to the map that you requested.");
             c.getPlayer().dropMessage(6, "#locations - Shows the list of locations that are available.");
             c.getPlayer().dropMessage(6, "#clock [second] - Make the time effect in your current map.");
-            c.getPlayer().dropMessage(6, "#say [message] - Say message to the world of CloudMs with a [Donor] tag.");
+            c.getPlayer().dropMessage(6, "#say [message] - Say message to the world of Zipangu with a [Donor] tag.");
             c.getPlayer().dropMessage(6, "#letter [red / green] [word] - Drops the letters that you have requested.");
             c.getPlayer().dropMessage(6, "#loot - Loot all the items in your current map.");
 

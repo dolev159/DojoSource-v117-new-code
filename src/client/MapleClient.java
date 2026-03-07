@@ -36,6 +36,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.script.ScriptEngine;
 import org.apache.mina.common.IoSession;
+import io.netty.channel.Channel;
+
 import server.CharacterCardFactory;
 import server.Timer.PingTimer;
 import server.maps.MapleMap;
@@ -58,13 +60,16 @@ public class MapleClient implements Serializable {
     public static final String CLIENT_KEY = "CLIENT";
     private transient MapleAESOFB send, receive;
     private transient IoSession session;
+    private transient Channel nettyChannel;
+
     private MapleCharacter player;
     private int channel = 1, accId = -1, world, birthday;
     private int charslots = DEFAULT_CHARSLOT;
     private boolean loggedIn = false, serverTransition = false;
     private transient Calendar tempban = null;
     private String accountName;
-    private transient long lastPong = 0, lastPing = 0;
+    private transient long lastPong = 0, lastPing = 0, lastPacketTime = 0;
+    private transient int packetCount = 0;
     private boolean monitored = false, receiving = true;
     private boolean gm;
     private byte greason = 1, gender = -1;
@@ -86,6 +91,17 @@ public class MapleClient implements Serializable {
         this.session = session;
     }
 
+    public final boolean checkPacket() {
+        final long now = System.currentTimeMillis();
+        if (now - lastPacketTime < 1000) {
+            packetCount++;
+        } else {
+            lastPacketTime = now;
+            packetCount = 1;
+        }
+        return packetCount <= 300;
+    }
+
     public final MapleAESOFB getReceiveCrypto() {
         return receive;
     }
@@ -96,6 +112,22 @@ public class MapleClient implements Serializable {
 
     public final IoSession getSession() {
         return session;
+    }
+
+    public final void setNettyChannel(Channel channel) {
+        this.nettyChannel = channel;
+    }
+
+    public final Channel getNettyChannel() {
+        return nettyChannel;
+    }
+
+    public final void sendPacket(byte[] packet) {
+        if (nettyChannel != null) {
+            nettyChannel.writeAndFlush(packet);
+        } else if (session != null) {
+            session.write(packet);
+        }
     }
 
     public final Lock getLock() {
@@ -299,7 +331,7 @@ public class MapleClient implements Serializable {
         //    case 21:
         //        return "게임 내 버그를 사용하거나 악용하는 등 운영원칙에 위배되는 행위로 접속 중지된 아이디입니다.";
         //}
-        return "CloudMs has blocked your account " + AccountID + " for the following reason: " + getTrueBanReason(AccountID) + (permban ? "\r\n\r\nThis ban will never be lifted." : ""); //Default reason
+        return "Zipangu has blocked your account " + AccountID + " for the following reason: " + getTrueBanReason(AccountID) + (permban ? "\r\n\r\nThis ban will never be lifted." : ""); //Default reason
     }
 
     private boolean message; 

@@ -13,27 +13,17 @@ function start() {
 function action(mode, type, selection) {
     if (mode == 1 && selection >= 0 && selection < maps.length) {
         if (cm.getParty() == null || !cm.isLeader()) {
-	    cm.sendOk("Please get your leader to walk through.");
-	} else {
-	    var party = cm.getParty().getMembers().iterator();
-	    var next = true;
-	    while (party.hasNext()) {
-		var cPlayer = party.next();
-		if (cPlayer.getLevel() < minLevel[selection] || cPlayer.getLevel() > maxLevel[selection] || cPlayer.getMapid() != cm.getMapId()) {
-		    next = false;
-		} 
-	    }
-	    if (!next) {
-		cm.sendOk("Please make sure all party members are in the map and have correct level requirements.");
-	    } else {
-		var em = cm.getEventManager("MonsterPark");
-		if (em == null || em.getInstance("MonsterPark" + maps[selection]) != null) {
-		    cm.sendOk("Someone is already attempting Monster Park.");
-		} else {
-		    em.startInstance_Party("" + maps[selection], cm.getPlayer());
-		}
-	    }
-	}
+            cm.sendOk("Please get your leader to walk through.");
+        } else {
+            if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), Packages.server.MaplePQManager.PQType.MONSTER_PARK)) {
+                var em = cm.getEventManager("MonsterPark");
+                if (em == null || em.getInstance("MonsterPark" + maps[selection]) != null) {
+                    cm.sendOk("Someone is already attempting Monster Park.");
+                } else {
+                    em.startInstance_Party("" + maps[selection], cm.getPlayer());
+                }
+            }
+        }
     }
     cm.dispose();
 }

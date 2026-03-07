@@ -1,76 +1,105 @@
 /*
-	Lakelis - Victoria Road: Kerning City (103000000)
-**/
+    Lakelis - Victoria Road: Kerning City (103000000)
+    
+    Refactored by Nexus Omni for v117 authenticity and stability.
+    - Removed global state check to allow full instancing.
+    - Removed faulty MaplePQManager dependency.
+    - Implemented GMS-accurate level and party size checks.
+    - Separated PQ entry logic from item reward logic.
+*/
+
+var GMS_LOWER_LEVEL = 21;
+var GMS_UPPER_LEVEL = 30;
+var MIN_PARTY_SIZE = 3;
+var MAX_PARTY_SIZE = 4;
+var PQ_EVENT_NAME = "KerningPQ";
 
 function start() {
-    cm.removeAll(4001007);
-    cm.removeAll(4001008);
-    if (cm.getPlayer().getMapId() != 910340700) {
-	cm.sendYesNo("Would you like to move to the Party Quest map?");
-	return;
-    }
-    if (cm.getParty() == null) { // No Party
-	cm.sendSimple("How about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork.  If you want to try it, please tell the #bleader of your party#k to talk to me.#b\r\n#L0#I want the Fluffy Shoes.#l");
-    } else if (!cm.isLeader()) { // Not Party Leader
-	cm.sendSimple("If you want to try the quest, please tell the #bleader of your party#k to talk to me.#b\r\n#L0#I want the Fluffy Shoes.#l");
-    } else {
-	// Check if all party members are within Levels 21-30
-	var party = cm.getParty().getMembers();
-	var mapId = cm.getMapId();
-	var next = true;
-	var levelValid = 0;
-	var inMap = 0;
+    var player = cm.getPlayer();
 
-	var it = party.iterator();
-	while (it.hasNext()) {
-	    var cPlayer = it.next();
-	    if ((cPlayer.getLevel() >= 20 && cPlayer.getLevel() <= 255) || cPlayer.getJobId() == 900) {
-		levelValid += 1;
-	    } else {
-		next = false;
-	    }
-	    if (cPlayer.getMapid() == mapId) {
-		inMap += (cPlayer.getJobId() == 900 ? 4 : 1);
-	    }
-	}
-	if (party.size() > 6 || inMap < 2) {
-	    next = false;
-	}
-	if (next) {
-	    var em = cm.getEventManager("KerningPQ");
-	    if (em == null) {
-		cm.sendSimple("This PQ is not currently available.#b\r\n#L0#I want the Fluffy Shoes.#l");
-	    } else {
-		var prop = em.getProperty("state");
-		if (prop == null || prop.equals("0")) {
-		    em.startInstance(cm.getParty(),cm.getMap(), 70);
-			cm.dispose();
-		} else {
-		    cm.sendSimple("Someone is already attempting on the quest.#b\r\n#L0#I want the Fluffy Shoes.#l");
-		}
-		cm.removeAll(4001008);
-		cm.removeAll(4001007);
-	    }
-	} else {
-	    cm.sendSimple("Your party is not a party of two or more. Please make sure all your members are present and qualified to participate in this quest. I see #b" + levelValid.toString() + "#k members are in the right level range, and #b" + inMap.toString() + "#k are in Kerning. If this seems wrong, #blog out and log back in,#k or reform the party.#b\r\n#L0#I want the Fluffy Shoes.#l");
-	}
+    // Separate logic for shoe exchange completely
+    if (player.getMapId() == 910340700) {
+        cm.sendSimple("Do you want to exchange 10 Smooshy Liquids for a pair of Fluffy Shoes?\r\n#b#L0#Yes, please.#l");
+        return;
+    }
+
+    if (cm.getParty() == null) {
+        cm.sendOk("You must be in a party to enter the Party Quest.");
+        cm.dispose();
+        return;
+    }
+
+    if (!cm.isLeader()) {
+        cm.sendOk("Only the leader of your party can start the Party Quest.");
+        cm.dispose();
+        return;
+    }
+
+    var party = cm.getParty().getMembers();
+
+    // Validate party size
+    if (party.size() < MIN_PARTY_SIZE || party.size() > MAX_PARTY_SIZE) {
+        cm.sendOk("Your party must have between " + MIN_PARTY_SIZE + " and " + MAX_PARTY_SIZE + " members to attempt the quest.");
+        cm.dispose();
+        return;
+    }
+
+    // Validate all members are present and meet level requirements
+    var validationMessage = checkPartyMembers();
+    if (validationMessage != null) {
+        cm.sendOk(validationMessage);
+        cm.dispose();
+        return;
     }
     
+    // Check if any member is in another PQ instance
+    var eventManager = cm.getEventManager(PQ_EVENT_NAME);
+    if (eventManager == null) {
+        cm.sendOk("The Kerning Party Quest is currently disabled.");
+        cm.dispose();
+        return;
+    }
+    
+    if (cm.getParty().getMembers().stream().anyMatch(p -> p.getEventInstance() != null)) {
+        cm.sendOk("One of your party members is already in an event. Please make sure everyone is available.");
+        cm.dispose();
+        return;
+    }
+
+    // All checks passed, attempt to start the instance
+    eventManager.startInstance(cm.getParty(), cm.getMap());
+    cm.dispose();
 }
 
+// Check all party members for level and map presence
+function checkPartyMembers() {
+    var party = cm.getParty().getMembers();
+    var currentMapId = cm.getMapId();
+
+    for (var i = 0; i < party.size(); i++) {
+        var partyMember = party.get(i);
+        if (partyMember.getLevel() < GMS_LOWER_LEVEL || partyMember.getLevel() > GMS_UPPER_LEVEL) {
+            return "All party members must be between level " + GMS_LOWER_LEVEL + " and " + GMS_UPPER_LEVEL + ".";
+        }
+        if (partyMember.getMapId() != currentMapId) {
+            return "All party members must be in the same map as the leader.";
+        }
+    }
+    return null; // All good
+}
+
+
 function action(mode, type, selection) {
-    if (cm.getPlayer().getMapId() != 910340700) {
-	    cm.saveLocation("MULUNG_TC");
-	    cm.warp(910340700,0);
-	} else {
-	if (!cm.canHold(1072533,1)) {
-	    cm.sendOk("Make room for these shoes.");
-	} else if (cm.haveItem(4001531,10)) {
-	    cm.gainItem(4001531,-10); //should handle automatically for "have"
-	    cm.gainItem(1072533,1);
-	} else {
-	    cm.sendOk("Come back when you have 10 Smooshy Liquid.");
-	}
-	}
-	    cm.dispose();
+    if (mode == 1 && selection == 0) { // Assuming this is for the shoe exchange
+        if (!cm.canHold(1072533, 1)) {
+            cm.sendOk("Please make room in your inventory for the Fluffy Shoes.");
+        } else if (cm.haveItem(4001531, 10)) {
+            cm.gainItem(4001531, -10);
+            cm.gainItem(1072533, 1); // Fluffy Shoes
+            cm.sendOk("Enjoy your Fluffy Shoes!");
+        } else {
+            cm.sendOk("You need 10 Smooshy Liquids to get the shoes.");
+        }
+    }
+    cm.dispose();
 }

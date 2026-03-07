@@ -27,9 +27,10 @@ import handling.MapleServerHandler;
 import handling.mina.MapleCodecFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.IoAcceptor;
 import org.apache.mina.common.SimpleByteBufferAllocator;
@@ -44,18 +45,23 @@ public class LoginServer {
     public static final int PORT = 8484;
     private static InetSocketAddress InetSocketadd;
     private static IoAcceptor acceptor;
-    private static Map<Integer, Integer> load = new HashMap<Integer, Integer>();
-    private static String serverName, eventMessage;
-    private static byte flag;
-    private static int maxCharacters, userLimit, usersOn = 0;
-    private static boolean finishedShutdown = true, adminOnly = false;
-    
-    private static HashMap<Integer, Triple<String, String, Integer>> loginAuth = new HashMap<Integer, Triple<String, String, Integer>>();
-    private static HashSet<String> loginIPAuth = new HashSet<String>();
+    // Thread-safe: multiple channels write/read concurrently
+    private static final Map<Integer, Integer> load = new ConcurrentHashMap<>();
+    private static volatile String serverName, eventMessage;
+    private static volatile byte flag;
+    private static volatile int maxCharacters, userLimit;
+    private static volatile boolean finishedShutdown = true, adminOnly = false;
 
-     public static void putLoginAuth(int chrid, String ip, String tempIP, int channel) {
-        loginAuth.put(chrid, new Triple<String, String, Integer>(ip, tempIP, channel));
-        loginIPAuth.add(ip);
+    // AtomicInteger: usersOn is incremented/decremented from multiple threads
+    private static final AtomicInteger usersOn = new AtomicInteger(0);
+
+    // ConcurrentHashMap: loginAuth and loginIPAuth are accessed from multiple login threads
+    private static final Map<Integer, Triple<String, String, Integer>> loginAuth = new ConcurrentHashMap<>();
+    private static final Map<String, Boolean> loginIPAuth = new ConcurrentHashMap<>();
+
+    public static void putLoginAuth(int chrid, String ip, String tempIP, int channel) {
+        loginAuth.put(chrid, new Triple<>(ip, tempIP, channel));
+        loginIPAuth.put(ip, Boolean.TRUE);
     }
 
     public static Triple<String, String, Integer> getLoginAuth(int chrid) {
@@ -63,7 +69,7 @@ public class LoginServer {
     }
 
     public static boolean containsIPAuth(String ip) {
-        return loginIPAuth.contains(ip);
+        return loginIPAuth.containsKey(ip);
     }
 
     public static void removeIPAuth(String ip) {
@@ -71,7 +77,7 @@ public class LoginServer {
     }
 
     public static void addIPAuth(String ip) {
-        loginIPAuth.add(ip);
+        loginIPAuth.put(ip, Boolean.TRUE);
     }
 
     public static final void addChannel(final int channel) {
@@ -146,8 +152,10 @@ public class LoginServer {
     }
 
     public static void setLoad(final Map<Integer, Integer> load_, final int usersOn_) {
-        load = load_;
-        usersOn = usersOn_;
+        // Update load atomically: copy new values into the concurrent map
+        load.clear();
+        load.putAll(load_);
+        usersOn.set(usersOn_);
     }
 
     public static final String getEventMessage(int world) { // TODO: Finish this
@@ -167,7 +175,7 @@ public class LoginServer {
     }
 
     public static final int getUsersOn() {
-        return usersOn;
+        return usersOn.get();
     }
 
     public static final void setUserLimit(final int newLimit) {

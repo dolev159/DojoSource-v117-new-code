@@ -528,6 +528,7 @@ exp = exp+exp;
         //attackers.clear();
         cancelDropItem();
         int v1 = highestDamageChar;
+        server.MaplePQManager.onMonsterDeath(killer, this);
         this.highestDamageChar = 0; // Reset so we dont kill twice
         return v1;
     }

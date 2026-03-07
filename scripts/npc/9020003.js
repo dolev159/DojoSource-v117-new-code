@@ -12,38 +12,20 @@ function action(mode, type, selection) {
     if (status == 0) {
 	cm.sendSimple("#b#L2#Begin Protect Kenta PQ#l\r\n#L3#Kenta Goggles (20 Pianus Scales - #i 4001535#)\r\n\r\n#lOR\r\n#L4#Exhange 20 Pianus Scales for 20 #i 4310025#  (!!!)#l#k");
     } else if (status == 1) {
-	if (selection == 2) {
-	    if (cm.getPlayer().getParty() == null || !cm.isLeader()) {
-		cm.sendOk("The leader of the party must be here.");
 	    } else {
-		var party = cm.getPlayer().getParty().getMembers();
-		var mapId = cm.getPlayer().getMapId();
-		var next = true;
-		var size = 0;
-		var it = party.iterator();
-		while (it.hasNext()) {
-			var cPlayer = it.next();
-			var ccPlayer = cm.getPlayer().getMap().getCharacterById(cPlayer.getId());
-			if (ccPlayer == null || ccPlayer.getLevel() < 120) {
-				next = false;
-				break;
-			}
-			size += (ccPlayer.isGM() ? 4 : 1);
-		}	
-		if (next && size >= 2) {
+		var pqType = Packages.server.MaplePQManager.PQType.KENTA;
+		if (Packages.server.MaplePQManager.canEnter(cm.getPlayer(), pqType)) {
 			var em = cm.getEventManager("Kenta");
 			if (em == null) {
 				cm.sendOk("Kenta is fine at the moment. Please try again later.");
 			} else {
-		    var prop = em.getProperty("state");
-		    if (prop.equals("0") || prop == null) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-		    } else {
-			cm.sendOk("Another party quest has already entered this channel.");
-		    }
+				var prop = em.getProperty("state");
+				if (prop.equals("0") || prop == null) {
+					em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
+				} else {
+					cm.sendOk("Another party quest has already entered this channel.");
+				}
 			}
-		} else {
-			cm.sendOk("All 2+ members of your party must be here and level 120 or greater.");
 		}
 	    }
 	} else if (selection == 3) {

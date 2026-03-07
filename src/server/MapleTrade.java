@@ -12,6 +12,8 @@ import client.messages.CommandProcessor;
 import constants.ServerConstants.CommandType;
 import handling.world.World;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicBoolean;
+import tools.FileoutputUtil;
 import tools.packet.CField;
 import tools.packet.CField.InteractionPacket;
 import tools.packet.CWvsContext;
@@ -20,12 +22,16 @@ import tools.packet.PlayerShopPacket;
 public class MapleTrade {
 
     private MapleTrade partner = null;
-    private final List<Item> items = new LinkedList<Item>();
+    private final List<Item> items = new LinkedList<>();
     private List<Item> exchangeItems;
     private int meso = 0, exchangeMeso = 0;
-    private boolean locked = false, inTrade = false;
+    // AtomicBoolean: prevents dupe via concurrent lock() calls
+    private final AtomicBoolean locked = new AtomicBoolean(false);
+    private boolean inTrade = false;
     private final WeakReference<MapleCharacter> chr;
     private final byte tradingslot;
+    // Flag: prevents inventory moves while trade is completing
+    private volatile boolean completing = false;
 
     public MapleTrade(final byte tradingslot, final MapleCharacter chr) {
         this.tradingslot = tradingslot;
@@ -33,11 +39,10 @@ public class MapleTrade {
     }
 
     public final void CompleteTrade() {
-        if (exchangeItems != null) { // Just to be on the safe side...
-	    List<Item> itemz = new LinkedList<Item>(exchangeItems);
+        if (exchangeItems != null) {
+            List<Item> itemz = new LinkedList<>(exchangeItems);
             for (final Item item : itemz) {
                 short flag = item.getFlag();
-
                 if (ItemFlag.KARMA_EQ.check(flag)) {
                     item.setFlag((short) (flag - ItemFlag.KARMA_EQ.getValue()));
                 } else if (ItemFlag.KARMA_USE.check(flag)) {
@@ -51,8 +56,7 @@ public class MapleTrade {
             chr.get().gainMeso(exchangeMeso - GameConstants.getTaxAmount(exchangeMeso), false, false);
         }
         exchangeMeso = 0;
-
-
+        completing = false; // Release completing lock after successful trade
         chr.get().getClient().getSession().write(InteractionPacket.TradeMessage(tradingslot, (byte) 0x07));
     }
 
@@ -78,7 +82,7 @@ public class MapleTrade {
     }
 
     public final boolean isLocked() {
-        return locked;
+        return locked.get();
     }
 
     public final void setMeso(final int meso) {
@@ -96,7 +100,7 @@ public class MapleTrade {
     }
 
     public final void addItem(final Item item) {
-        if (locked || partner == null) {
+        if (isLocked() || partner == null) {
             return;
         }
         items.add(item);
@@ -168,6 +172,14 @@ public class MapleTrade {
     public final boolean setItems(final MapleClient c, final Item item, byte targetSlot, final int quantity) {
         int target = getNextTargetSlot();
         final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+        // ANTI-DUPE: Block item movement if trade is completing or locked
+        if (completing || isLocked()) {
+            FileoutputUtil.log(FileoutputUtil.Hacker_Log,
+                "[Trade-AntidDupe] " + (chr.get() != null ? chr.get().getName() : "Unknown") +
+                " tried to move items during a locked/completing trade!");
+            c.getSession().write(CWvsContext.enableActions());
+            return false;
+        }
         if (partner == null || target == -1 || GameConstants.isPet(item.getItemId()) || isLocked() || (GameConstants.getInventoryType(item.getItemId()) == MapleInventoryType.EQUIP && quantity != 1)) {
             return false;
         }
@@ -247,34 +259,61 @@ public class MapleTrade {
         final MapleTrade local = c.getTrade();
         final MapleTrade partner = local.getPartner();
 
-        if (partner == null || local.locked) {
+        if (partner == null || local.isLocked()) {
             return;
         }
-        local.locked = true; // Locking the trade
+
+        // ANTI-DUPE: Use AtomicBoolean.compareAndSet to guarantee only ONE thread can lock the trade
+        if (!local.locked.compareAndSet(false, true)) {
+            // Another thread already locked this - ignore duplicate packet
+            return;
+        }
         partner.getChr().getClient().getSession().write(InteractionPacket.getTradeConfirmation());
 
-        partner.exchangeItems = new LinkedList<Item>(local.items); // Copy this to partner's trade since it's alreadt accepted
-        partner.exchangeMeso = local.meso; // Copy this to partner's trade since it's alreadt accepted
+        partner.exchangeItems = new LinkedList<>(local.items);
+        partner.exchangeMeso = local.meso;
 
-        if (partner.isLocked()) { // Both locked
-            int lz = local.check(), lz2 = partner.check();
-            if (lz == 0 && lz2 == 0) {
-                local.CompleteTrade();
-                partner.CompleteTrade();
-            } else {
-                // NOTE : IF accepted = other party but inventory is full, the item is lost.
-                partner.cancel(partner.getChr().getClient(), partner.getChr(),lz == 0 ? lz2 : lz);
-                local.cancel(c.getClient(), c, lz == 0 ? lz2 : lz);
+        if (partner.isLocked()) {
+            // Use the higher ID as first lock to avoid deadlock
+            Object lock1 = c.getId() < partner.getChr().getId() ? c : partner.getChr();
+            Object lock2 = c.getId() < partner.getChr().getId() ? partner.getChr() : c;
+
+            synchronized (lock1) {
+                synchronized (lock2) {
+                    // Set completing flag BEFORE checking inventory space
+                    // This blocks any new item movements while we are verifying
+                    local.completing = true;
+                    partner.completing = true;
+
+                    int lz = local.check(), lz2 = partner.check();
+                    if (lz == 0 && lz2 == 0) {
+                        local.CompleteTrade();
+                        partner.CompleteTrade();
+                        partner.getChr().setTrade(null);
+                        c.setTrade(null);
+                    } else {
+                        // Log potential exploit attempt
+                        FileoutputUtil.log(FileoutputUtil.Hacker_Log,
+                            "[Trade-Exploit] Trade failed inventory check: " +
+                            c.getName() + " (check=" + lz + ") <-> " +
+                            partner.getChr().getName() + " (check=" + lz2 + ")");
+                        // Cancel both sides to return items safely
+                        local.completing = false;
+                        partner.completing = false;
+                        partner.cancel(partner.getChr().getClient(), partner.getChr(), lz == 0 ? lz2 : lz);
+                        local.cancel(c.getClient(), c, lz == 0 ? lz2 : lz);
+                        partner.getChr().setTrade(null);
+                        c.setTrade(null);
+                    }
+                }
             }
-            partner.getChr().setTrade(null);
-            c.setTrade(null);
         }
     }
 
-    public static final void cancelTrade(final MapleTrade Localtrade, final MapleClient c, final MapleCharacter chr) {
-        Localtrade.cancel(c, chr);
+    public static final void cancelTrade(final MapleTrade localTrade, final MapleClient c, final MapleCharacter chr) {
+        localTrade.cancel(c, chr);
 
-        final MapleTrade partner = Localtrade.getPartner();
+        final MapleTrade partner = localTrade.getPartner();
         if (partner != null && partner.getChr() != null) {
             partner.cancel(partner.getChr().getClient(), partner.getChr());
             partner.getChr().setTrade(null);

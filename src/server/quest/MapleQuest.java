@@ -241,7 +241,7 @@ public class MapleQuest implements Serializable {
         complete(c, npc, null);
     }
 
-    public void complete(MapleCharacter c, int npc, Integer selection) {
+    public synchronized void complete(MapleCharacter c, int npc, Integer selection) {
         if (c.getMap() != null && (autoPreComplete || checkNPCOnMap(c, npc)) && canComplete(c, npc)) {
             for (MapleQuestAction a : completeActs) {
                 if (!a.checkEnd(c, selection)) {
