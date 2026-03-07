@@ -174,87 +174,96 @@ public enum ItemLoader {
     }
 
     public void saveItems(List<Pair<Item, MapleInventoryType>> items, final Connection con, int id) throws SQLException {
-        String deleteQuery = "DELETE FROM `" + table + "` WHERE `type` = ? AND `" + arg + "` = ?";
-        try (PreparedStatement ps = con.prepareStatement(deleteQuery)) {
-            ps.setInt(1, value);
-            ps.setInt(2, id);
-            ps.executeUpdate();
-        }
+        boolean autoCommit = con.getAutoCommit();
+        try {
+            con.setAutoCommit(false);
+            
+            String deleteQuery = "DELETE FROM `" + table + "` WHERE `type` = ? AND `" + arg + "` = ?";
+            try (PreparedStatement ps = con.prepareStatement(deleteQuery)) {
+                ps.setInt(1, value);
+                ps.setInt(2, id);
+                ps.executeUpdate();
+            }
 
-        if (items == null || items.isEmpty()) {
-            return;
-        }
+            if (items != null && !items.isEmpty()) {
+                String insertQuery = "INSERT INTO `" + table + "` (" + arg + ", itemid, inventorytype, position, quantity, owner, GM_Log, uniqueid, expiredate, flag, `type`, sender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                String equipQuery = "INSERT INTO " + table_equip + " VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        String insertQuery = "INSERT INTO `" + table + "` (" + arg + ", itemid, inventorytype, position, quantity, owner, GM_Log, uniqueid, expiredate, flag, `type`, sender) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String equipQuery = "INSERT INTO " + table_equip + " VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement ps = con.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+                     PreparedStatement pse = con.prepareStatement(equipQuery)) {
 
-        try (PreparedStatement ps = con.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement pse = con.prepareStatement(equipQuery)) {
+                    for (Pair<Item, MapleInventoryType> pair : items) {
+                        Item item = pair.getLeft();
+                        MapleInventoryType mit = pair.getRight();
+                        if (item.getPosition() == -55) continue;
 
-            for (Pair<Item, MapleInventoryType> pair : items) {
-                Item item = pair.getLeft();
-                MapleInventoryType mit = pair.getRight();
-                if (item.getPosition() == -55) continue;
+                        ps.setInt(1, id);
+                        ps.setInt(2, item.getItemId());
+                        ps.setInt(3, mit.getType());
+                        ps.setInt(4, item.getPosition());
+                        ps.setInt(5, item.getQuantity());
+                        ps.setString(6, item.getOwner());
+                        ps.setString(7, item.getGMLog());
+                        ps.setInt(8, item.getPet() != null ? Math.max(item.getUniqueId(), item.getPet().getUniqueId()) : item.getUniqueId());
+                        ps.setLong(9, item.getExpiration());
+                        ps.setShort(10, item.getFlag());
+                        ps.setByte(11, (byte) value);
+                        ps.setString(12, item.getGiftFrom());
+                        ps.executeUpdate();
 
-                ps.setInt(1, id);
-                ps.setInt(2, item.getItemId());
-                ps.setInt(3, mit.getType());
-                ps.setInt(4, item.getPosition());
-                ps.setInt(5, item.getQuantity());
-                ps.setString(6, item.getOwner());
-                ps.setString(7, item.getGMLog());
-                ps.setInt(8, item.getPet() != null ? Math.max(item.getUniqueId(), item.getPet().getUniqueId()) : item.getUniqueId());
-                ps.setLong(9, item.getExpiration());
-                ps.setShort(10, item.getFlag());
-                ps.setByte(11, (byte) value);
-                ps.setString(12, item.getGiftFrom());
-                ps.executeUpdate(); // Generated keys need per-row execute if not careful, but for Apex we keep it simple or use batch if DB supports it with keys
-
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        long iid = rs.getLong(1);
-                        item.setInventoryId(iid);
-                        if (mit.equals(MapleInventoryType.EQUIP) || mit.equals(MapleInventoryType.EQUIPPED)) {
-                            Equip equip = (Equip) item;
-                            pse.setLong(1, iid);
-                            pse.setInt(2, equip.getUpgradeSlots());
-                            pse.setInt(3, equip.getLevel());
-                            pse.setInt(4, equip.getStr());
-                            pse.setInt(5, equip.getDex());
-                            pse.setInt(6, equip.getInt());
-                            pse.setInt(7, equip.getLuk());
-                            pse.setInt(8, equip.getHp());
-                            pse.setInt(9, equip.getMp());
-                            pse.setInt(10, equip.getWatk());
-                            pse.setInt(11, equip.getMatk());
-                            pse.setInt(12, equip.getWdef());
-                            pse.setInt(13, equip.getMdef());
-                            pse.setInt(14, equip.getAcc());
-                            pse.setInt(15, equip.getAvoid());
-                            pse.setInt(16, equip.getHands());
-                            pse.setInt(17, equip.getSpeed());
-                            pse.setInt(18, equip.getJump());
-                            pse.setInt(19, equip.getViciousHammer());
-                            pse.setInt(20, equip.getItemEXP());
-                            pse.setInt(21, equip.getDurability());
-                            pse.setByte(22, equip.getEnhance());
-                            pse.setInt(23, equip.getPotential1());
-                            pse.setInt(24, equip.getPotential2());
-                            pse.setInt(25, equip.getPotential3());
-                            pse.setInt(26, equip.getPotential4());
-                            pse.setInt(27, equip.getPotential5());
-                            pse.setInt(28, equip.getSocket1());
-                            pse.setInt(29, equip.getSocket2());
-                            pse.setInt(30, equip.getSocket3());
-                            pse.setInt(31, equip.getIncSkill());
-                            pse.setShort(32, equip.getCharmEXP());
-                            pse.setShort(33, equip.getPVPDamage());
-                            pse.addBatch();
+                        try (ResultSet rs = ps.getGeneratedKeys()) {
+                            if (rs.next()) {
+                                long iid = rs.getLong(1);
+                                item.setInventoryId(iid);
+                                if (mit.equals(MapleInventoryType.EQUIP) || mit.equals(MapleInventoryType.EQUIPPED)) {
+                                    Equip equip = (Equip) item;
+                                    pse.setLong(1, iid);
+                                    pse.setInt(2, equip.getUpgradeSlots());
+                                    pse.setInt(3, equip.getLevel());
+                                    pse.setInt(4, equip.getStr());
+                                    pse.setInt(5, equip.getDex());
+                                    pse.setInt(6, equip.getInt());
+                                    pse.setInt(7, equip.getLuk());
+                                    pse.setInt(8, equip.getHp());
+                                    pse.setInt(9, equip.getMp());
+                                    pse.setInt(10, equip.getWatk());
+                                    pse.setInt(11, equip.getMatk());
+                                    pse.setInt(12, equip.getWdef());
+                                    pse.setInt(13, equip.getMdef());
+                                    pse.setInt(14, equip.getAcc());
+                                    pse.setInt(15, equip.getAvoid());
+                                    pse.setInt(16, equip.getHands());
+                                    pse.setInt(17, equip.getSpeed());
+                                    pse.setInt(18, equip.getJump());
+                                    pse.setInt(19, equip.getViciousHammer());
+                                    pse.setInt(20, equip.getItemEXP());
+                                    pse.setInt(21, equip.getDurability());
+                                    pse.setByte(22, equip.getEnhance());
+                                    pse.setInt(23, equip.getPotential1());
+                                    pse.setInt(24, equip.getPotential2());
+                                    pse.setInt(25, equip.getPotential3());
+                                    pse.setInt(26, equip.getPotential4());
+                                    pse.setInt(27, equip.getPotential5());
+                                    pse.setInt(28, equip.getSocket1());
+                                    pse.setInt(29, equip.getSocket2());
+                                    pse.setInt(30, equip.getSocket3());
+                                    pse.setInt(31, equip.getIncSkill());
+                                    pse.setShort(32, equip.getCharmEXP());
+                                    pse.setShort(33, equip.getPVPDamage());
+                                    pse.addBatch();
+                                }
+                            }
                         }
                     }
+                    pse.executeBatch();
                 }
             }
-            pse.executeBatch();
+            con.commit();
+        } catch (SQLException e) {
+            con.rollback();
+            throw e;
+        } finally {
+            con.setAutoCommit(autoCommit);
         }
     }
 }
