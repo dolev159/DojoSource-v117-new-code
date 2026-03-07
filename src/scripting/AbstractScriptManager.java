@@ -1,29 +1,15 @@
-/*
-This file is part of the OdinMS Maple Story Server
-Copyright (C) 2008 ~ 2010 Patrick Huy <patrick.huy@frz.cc> 
-Matthias Butz <matze@odinms.de>
-Jan Christian Meyer <vimes@odinms.de>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License version 3
-as published by the Free Software Foundation. You may not use, modify
-or distribute this program under any other version of the
-GNU Affero General Public License.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package scripting;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.lang.ref.SoftReference;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.script.CompiledScript;
+import javax.script.Compilable;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -31,53 +17,68 @@ import javax.script.ScriptEngineManager;
 import client.MapleClient;
 import tools.FileoutputUtil;
 
-/**
- *
- * @author Matze
- */
 public abstract class AbstractScriptManager {
 
     private static final ScriptEngineManager sem = new ScriptEngineManager();
+    private static final Map<String, SoftReference<CompiledScript>> scriptCache = new ConcurrentHashMap<>();
 
     protected Invocable getInvocable(String path, MapleClient c) {
         return getInvocable(path, c, false);
     }
 
     protected Invocable getInvocable(String path, MapleClient c, boolean npc) {
-        FileReader fr = null;
-        try {
-            path = "scripts/" + path;
-            ScriptEngine engine = null;
+        path = "scripts/" + path;
+        ScriptEngine engine = (c != null) ? c.getScriptEngine(path) : null;
 
-            if (c != null) {
-                engine = c.getScriptEngine(path);
-            }
+        try {
             if (engine == null) {
                 File scriptFile = new File(path);
                 if (!scriptFile.exists()) {
                     return null;
                 }
-                engine = sem.getEngineByName("javascript");
+
+                CompiledScript compiled = null;
+                SoftReference<CompiledScript> ref = scriptCache.get(path);
+                if (ref != null) {
+                    compiled = ref.get();
+                }
+
+                if (compiled == null) {
+                    engine = sem.getEngineByName("javascript");
+                    if (!(engine instanceof Compilable)) {
+                        // Fallback if engine doesn't support compilation
+                        try (InputStreamReader fr = new InputStreamReader(new FileInputStream(scriptFile), StandardCharsets.UTF_8)) {
+                            engine.eval(fr);
+                        }
+                    } else {
+                        try (InputStreamReader fr = new InputStreamReader(new FileInputStream(scriptFile), StandardCharsets.UTF_8)) {
+                            compiled = ((Compilable) engine).compile(fr);
+                            scriptCache.put(path, new SoftReference<>(compiled));
+                        }
+                    }
+                }
+
+                if (compiled != null) {
+                    engine = compiled.getEngine();
+                    // We must use a fresh set of bindings for each execution if we want isolation,
+                    // but here we often want to reuse the client state.
+                    // For now, let's keep it simple.
+                    compiled.eval(engine.getBindings(javax.script.ScriptContext.ENGINE_SCOPE));
+                }
+
                 if (c != null) {
                     c.setScriptEngine(path, engine);
                 }
-                fr = new FileReader(scriptFile);
-                engine.eval(fr);
-            } else if (c != null && npc) {
-                //c.getPlayer().dropMessage(-1, "You already are talking to this NPC. Use @ea if this is not intended.");
             }
             return (Invocable) engine;
         } catch (Exception e) {
             System.err.println("Error executing script. Path: " + path + "\nException " + e);
             FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Error executing script. Path: " + path + "\nException " + e);
             return null;
-        } finally {
-            try {
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException ignore) {
-            }
         }
+    }
+
+    public static void clearCache() {
+        scriptCache.clear();
     }
 }

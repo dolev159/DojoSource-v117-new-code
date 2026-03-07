@@ -89,3 +89,6 @@ node_modules/
 .firebase/
 fix_maplechar.py
 db.properties
+
+# Local configuration
+config/

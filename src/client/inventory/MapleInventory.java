@@ -168,6 +168,13 @@ public class MapleInventory implements Iterable<Item>, Serializable {
         return slot;
     }
 
+    public void setItem(short slot, Item item) {
+        inventory.put(slot, item);
+        if (item != null) {
+            item.setPosition(slot);
+        }
+    }
+
     public void addFromDB(Item item) {
         if (item.getPosition() < 0 && !type.equals(MapleInventoryType.EQUIPPED)) {
             // This causes a lot of stuck problem, until we are done with position checking
