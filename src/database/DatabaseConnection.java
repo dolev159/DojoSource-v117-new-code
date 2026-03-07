@@ -23,7 +23,10 @@ package database;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import constants.ServerConstants;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
+import java.util.Properties;
 import java.sql.SQLException;
 import tools.FileoutputUtil;
 
@@ -41,11 +44,23 @@ public class DatabaseConnection {
      */
     private static synchronized void initDataSource() {
         try {
+            Properties dbProps = new Properties();
+            try (FileInputStream fis = new FileInputStream("db.properties")) {
+                dbProps.load(fis);
+            } catch (IOException e) {
+                // Ignore, will use ServerConstants as fallback
+            }
+
+            String port = dbProps.getProperty("sql.port", ServerConstants.SQL_PORT);
+            String db = dbProps.getProperty("sql.database", ServerConstants.SQL_DATABASE);
+            String user = dbProps.getProperty("sql.user", ServerConstants.SQL_USER);
+            String pass = dbProps.getProperty("sql.password", ServerConstants.SQL_PASSWORD);
+
             HikariConfig config = new HikariConfig();
 
             // Connection URL with essential MySQL flags
-            config.setJdbcUrl("jdbc:mysql://localhost:" + ServerConstants.SQL_PORT
-                    + "/" + ServerConstants.SQL_DATABASE
+            config.setJdbcUrl("jdbc:mysql://localhost:" + port
+                    + "/" + db
                     + "?autoReconnect=true"
                     + "&useSSL=false"
                     + "&characterEncoding=UTF-8"
@@ -54,8 +69,8 @@ public class DatabaseConnection {
                     + "&allowPublicKeyRetrieval=true");
 
             config.setDriverClassName("com.mysql.jdbc.Driver");
-            config.setUsername(ServerConstants.SQL_USER);
-            config.setPassword(ServerConstants.SQL_PASSWORD);
+            config.setUsername(user);
+            config.setPassword(pass);
             config.setPoolName("DojoSource-DB-Pool");
 
             // =============================================

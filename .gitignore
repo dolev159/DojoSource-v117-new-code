@@ -68,3 +68,24 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 /nbproject/private/
+
+# Sensitive account and log files
+`Accounts.txt
+`Secondary Passwords.txt
+LogIPs.txt
+ErrorCodes.txt
+*.log
+*.sql
+!judoms.sql
+!sql_optimization.sql
+
+# Environment variables
+.env
+.env.*
+
+# Build and local folders
+dist/
+node_modules/
+.firebase/
+fix_maplechar.py
+db.properties
