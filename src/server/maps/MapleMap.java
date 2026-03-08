@@ -1087,6 +1087,60 @@ public final class MapleMap {
         return ret;
     }
 
+    public List<MapleMapItem> getAllItemsThreadsafe() {
+        ArrayList<MapleMapItem> ret = new ArrayList<MapleMapItem>();
+        mapobjectlocks.get(MapleMapObjectType.ITEM).readLock().lock();
+        try {
+            for (MapleMapObject mmo : mapobjects.get(MapleMapObjectType.ITEM).values()) {
+                ret.add((MapleMapItem) mmo);
+            }
+        } finally {
+            mapobjectlocks.get(MapleMapObjectType.ITEM).readLock().unlock();
+        }
+        return ret;
+    }
+
+    public List<MapleMonster> getAllMonstersThreadsafe() {
+        ArrayList<MapleMonster> ret = new ArrayList<MapleMonster>();
+        mapobjectlocks.get(MapleMapObjectType.MONSTER).readLock().lock();
+        try {
+            for (MapleMapObject mmo : mapobjects.get(MapleMapObjectType.MONSTER).values()) {
+                ret.add((MapleMonster) mmo);
+            }
+        } finally {
+            mapobjectlocks.get(MapleMapObjectType.MONSTER).readLock().unlock();
+        }
+        return ret;
+    }
+
+    /**
+     * Managed by ServerTickManager.
+     */
+    public void updateMapItems(long now) {
+        final List<MapleMapItem> items = getAllItemsThreadsafe();
+        if (items.isEmpty()) {
+            return;
+        }
+        for (MapleMapItem item : items) {
+            if (item.shouldExpire(now)) {
+                item.expire(this);
+            } else if (item.shouldFFA(now)) {
+                item.setDropType((byte) 2);
+                broadcastMessage(CField.dropItemFromMapObject(item, null, item.getTruePosition(), (byte) 2));
+            }
+        }
+    }
+
+    /**
+     * Managed by ServerTickManager.
+     */
+    public void updateMobs(long now) {
+        final List<MapleMonster> monsters = getAllMonstersThreadsafe();
+        for (MapleMonster monster : monsters) {
+            monster.updateMonster(now);
+        }
+    }
+
     public List<MapleMapObject> getAllMechDoorsThreadsafe() {
         ArrayList<MapleMapObject> ret = new ArrayList<MapleMapObject>();
         mapobjectlocks.get(MapleMapObjectType.DOOR).readLock().lock();
@@ -1121,19 +1175,6 @@ public final class MapleMap {
 
     public List<MapleMonster> getAllMonster() {
         return getAllMonstersThreadsafe();
-    }
-
-    public List<MapleMonster> getAllMonstersThreadsafe() {
-        ArrayList<MapleMonster> ret = new ArrayList<MapleMonster>();
-        mapobjectlocks.get(MapleMapObjectType.MONSTER).readLock().lock();
-        try {
-            for (MapleMapObject mmo : mapobjects.get(MapleMapObjectType.MONSTER).values()) {
-                ret.add((MapleMonster) mmo);
-            }
-        } finally {
-            mapobjectlocks.get(MapleMapObjectType.MONSTER).readLock().unlock();
-        }
-        return ret;
     }
 
     public List<Integer> getAllUniqueMonsters() {
@@ -2126,19 +2167,6 @@ public final class MapleMap {
 
     public List<MapleMapItem> getAllItems() {
         return getAllItemsThreadsafe();
-    }
-
-    public List<MapleMapItem> getAllItemsThreadsafe() {
-        ArrayList<MapleMapItem> ret = new ArrayList<MapleMapItem>();
-        mapobjectlocks.get(MapleMapObjectType.ITEM).readLock().lock();
-        try {
-            for (MapleMapObject mmo : mapobjects.get(MapleMapObjectType.ITEM).values()) {
-                ret.add((MapleMapItem) mmo);
-            }
-        } finally {
-            mapobjectlocks.get(MapleMapObjectType.ITEM).readLock().unlock();
-        }
-        return ret;
     }
 
     public Point getPointOfItem(int itemid) {

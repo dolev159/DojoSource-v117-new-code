@@ -9,6 +9,8 @@ import constants.*;
 import custom.MoonlightAchievements;
 import database.DatabaseConnection;
 import database.DatabaseException;
+import database.ItemDAO;
+import database.QuestDAO;
 import handling.channel.ChannelServer;
 import handling.login.LoginInformationProvider;
 import handling.login.LoginInformationProvider.JobType;
@@ -142,6 +144,44 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
     public boolean keyvalue_changed = false, innerskill_changed = true;
     private boolean changed_wishlist, changed_trocklocations, changed_regrocklocations, changed_hyperrocklocations, changed_skillmacros, changed_achievements, changed_moonlight_achievements,
             changed_savedlocations, changed_questinfo, changed_skills, changed_reports, changed_extendedSlots, update_skillswipe;
+
+    /**
+     * Centralized buff update called by ServerTickManager.
+     * Manages buff durations and triggers cancellation upon expiry.
+     */
+    /**
+     * Manages buff and disease durations and triggers cancellation upon expiry.
+     * High-precision management integrated with ServerTickManager.
+     */
+    public void updateBuffs(long now) {
+        // Handle Buffs
+        if (effects != null && !effects.isEmpty()) {
+            List<MapleBuffStat> toCancelBuffs = new ArrayList<>();
+            for (Entry<MapleBuffStat, MapleBuffStatValueHolder> entry : effects.entrySet()) {
+                MapleBuffStatValueHolder holder = entry.getValue();
+                if (holder != null && holder.localDuration >= 0 && (now - holder.startTime) >= holder.localDuration) {
+                    toCancelBuffs.add(entry.getKey());
+                }
+            }
+            for (MapleBuffStat stat : toCancelBuffs) {
+                cancelEffectFromBuffStat(stat);
+            }
+        }
+
+        // Handle Diseases
+        if (diseases != null && !diseases.isEmpty()) {
+            List<MapleDisease> toCancelDiseases = new ArrayList<>();
+            for (Entry<MapleDisease, MapleDiseaseValueHolder> entry : diseases.entrySet()) {
+                MapleDiseaseValueHolder holder = entry.getValue();
+                if (holder != null && holder.length >= 0 && (now - holder.startTime) >= holder.length) {
+                    toCancelDiseases.add(entry.getKey());
+                }
+            }
+            for (MapleDisease disease : toCancelDiseases) {
+                dispelDebuff(disease);
+            }
+        }
+    }
     /*
      * Start of Custom Feature
      */
@@ -727,40 +767,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                 ret.characterCard.loadCards(client, channelserver);
             }
 
-            ps = con.prepareStatement("SELECT * FROM queststatus WHERE characterid = ?");
-            ps.setInt(1, charid);
-            rs = ps.executeQuery();
-            pse = con.prepareStatement("SELECT * FROM queststatusmobs WHERE queststatusid = ?");
-
-            while (rs.next()) {
-                final int id = rs.getInt("quest");
-                final MapleQuest q = MapleQuest.getInstance(id);
-                final byte stat = rs.getByte("status");
-                if ((stat == 1 || stat == 2) && channelserver && (q == null || q.isBlocked())) { // Bigbang
-                    continue;
-                }
-                if (stat == 1 && channelserver && !q.canStart(ret, null)) { // Bigbang
-                    continue;
-                }
-                final MapleQuestStatus status = new MapleQuestStatus(q, stat);
-                final long cTime = rs.getLong("time");
-                if (cTime > -1) {
-                    status.setCompletionTime(cTime * 1000);
-                }
-                status.setForfeited(rs.getInt("forfeited"));
-                status.setCustomData(rs.getString("customData"));
-                ret.quests.put(q, status);
-                pse.setInt(1, rs.getInt("queststatusid"));
-                final ResultSet rsMobs = pse.executeQuery();
-
-                while (rsMobs.next()) {
-                    status.setMobKills(rsMobs.getInt("mob"), rsMobs.getInt("count"));
-                }
-                rsMobs.close();
-            }
-            rs.close();
-            ps.close();
-            pse.close();
+            ret.quests = QuestDAO.loadQuestStatus(con, ret);
 
             if (channelserver) {
                 ret.monsterbook = MonsterBook.loadCards(ret.accountid, ret);
@@ -823,15 +830,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                 }
                 ps.close();
 
-                ps = con.prepareStatement("SELECT * FROM questinfo WHERE characterid = ?");
-                ps.setInt(1, charid);
-                rs = ps.executeQuery();
-
-                while (rs.next()) {
-                    ret.questinfo.put(rs.getInt("quest"), rs.getString("customData"));
-                }
-                rs.close();
-                ps.close();
+                ret.questinfo = QuestDAO.loadQuestInfo(con, charid);
 
 
                 ps = con.prepareStatement("SELECT skillid, skilllevel, masterlevel, expiration FROM skills WHERE characterid = ?");
@@ -1378,17 +1377,38 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
         if (isClone()) {
             return;
         }
-        Connection con = DatabaseConnection.getConnection();
 
-        PreparedStatement ps = null;
-        PreparedStatement pse = null;
-        ResultSet rs = null;
-
-        try {
+        try (Connection con = DatabaseConnection.getConnection()) {
             con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             con.setAutoCommit(false);
 
-            ps = con.prepareStatement("UPDATE characters SET level = ?, fame = ?, str = ?, dex = ?, luk = ?, `int` = ?, exp = ?, hp = ?, mp = ?, maxhp = ?, maxmp = ?, sp = ?, ap = ?, gm = ?, skincolor = ?, gender = ?, job = ?, hair = ?, face = ?, demonMarking = ?, map = ?, meso = ?, hpApUsed = ?, spawnpoint = ?, party = ?, buddyCapacity = ?, pets = ?, subcategory = ?, marriageId = ?, currentrep = ?, totalrep = ?, gachexp = ?, fatigue = ?, charm = ?, charisma = ?, craft = ?, insight = ?, sense = ?, will = ?, totalwins = ?, totallosses = ?, pvpExp = ?, pvpPoints = ?, reborns = ?, apstorage = ?, elf = ?, honourExp = ?, honourLevel = ?, friendshippoints = ?, jqpoints = ?, mesosInBank = ?, side = ?, apbank = ?, hardcore = ?, name = ? WHERE id = ?", DatabaseConnection.RETURN_GENERATED_KEYS);
+            try {
+                saveStats(con, dc, fromcs);
+                saveItems(con);
+                saveSkills(con, dc);
+                saveQuests(con);
+                saveOthers(con, dc);
+
+                con.commit();
+            } catch (Exception e) {
+                con.rollback();
+                FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "[Character Save Fail] CID: " + id + " | Error: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Character save failed. Transaction rolled back.", e);
+            } finally {
+                con.setAutoCommit(true);
+                con.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ); // Reset isolation level
+            }
+
+        } catch (SQLException e) {
+            FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
+            System.err.println(MapleClient.getLogMessage(this, "[Character Save DB Error] ") + e);
+        }
+    }
+
+    private void saveStats(Connection con, boolean dc, boolean fromcs) throws SQLException {
+        String sql = "UPDATE characters SET level = ?, fame = ?, str = ?, dex = ?, luk = ?, `int` = ?, exp = ?, hp = ?, mp = ?, maxhp = ?, maxmp = ?, sp = ?, ap = ?, gm = ?, skincolor = ?, gender = ?, job = ?, hair = ?, face = ?, demonMarking = ?, map = ?, meso = ?, hpApUsed = ?, spawnpoint = ?, party = ?, buddyCapacity = ?, pets = ?, subcategory = ?, marriageId = ?, currentrep = ?, totalrep = ?, gachexp = ?, fatigue = ?, charm = ?, charisma = ?, craft = ?, insight = ?, sense = ?, will = ?, totalwins = ?, totallosses = ?, pvpExp = ?, pvpPoints = ?, reborns = ?, apstorage = ?, elf = ?, honourExp = ?, honourLevel = ?, friendshippoints = ?, jqpoints = ?, mesosInBank = ?, side = ?, apbank = ?, hardcore = ?, name = ? WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, level);
             ps.setInt(2, fame);
             ps.setInt(3, stats.getStr());
@@ -1400,10 +1420,10 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             ps.setInt(9, stats.getMp());
             ps.setInt(10, stats.getMaxHp());
             ps.setInt(11, stats.getMaxMp());
+            
             final StringBuilder sps = new StringBuilder();
             for (int i = 0; i < remainingSp.length; i++) {
-                sps.append(remainingSp[i]);
-                sps.append(",");
+                sps.append(remainingSp[i]).append(",");
             }
             final String sp = sps.toString();
             ps.setString(12, sp.substring(0, sp.length() - 1));
@@ -1415,6 +1435,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             ps.setInt(18, hair);
             ps.setInt(19, face);
             ps.setInt(20, demonMarking);
+
             if (!fromcs && map != null) {
                 if (map.getForcedReturnId() != 999999999 && map.getForcedReturnMap() != null) {
                     ps.setInt(21, map.getForcedReturnId());
@@ -1426,6 +1447,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             }
             ps.setInt(22, meso);
             ps.setShort(23, hpApUsed);
+
             if (map == null) {
                 ps.setByte(24, (byte) 0);
             } else {
@@ -1434,13 +1456,13 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             }
             ps.setInt(25, party == null ? -1 : party.getId());
             ps.setShort(26, buddylist.getCapacity());
+
             final StringBuilder petz = new StringBuilder();
             int petLength = 0;
             for (final MaplePet pet : pets) {
                 if (pet.getSummoned()) {
                     pet.saveToDb();
-                    petz.append(pet.getInventoryPosition());
-                    petz.append(",");
+                    petz.append(pet.getInventoryPosition()).append(",");
                     petLength++;
                 }
             }
@@ -1466,14 +1488,8 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             ps.setInt(41, totalLosses);
             ps.setInt(42, pvpExp);
             ps.setInt(43, pvpPoints);
-            /*
-             * Start of Custom Features
-             */
             ps.setInt(44, reborns);
             ps.setInt(45, apstorage);
-            /*
-             * End of Custom Features
-             */
             ps.setInt(46, elf);
             ps.setInt(47, getHonourExp());
             ps.setInt(48, getHonourLevel());
@@ -1485,27 +1501,44 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             ps.setInt(54, hardcore);
             ps.setString(55, name);
             ps.setInt(56, id);
+
             if (ps.executeUpdate() < 1) {
-                ps.close();
-                throw new DatabaseException("Character not in database (" + id + ")");
+                throw new SQLException("Character row update failed for id: " + id);
             }
-            ps.close();
-            deleteWhereCharacterId(con, "DELETE FROM stolen WHERE characterid = ?");
+        }
+    }
+
+    private void saveItems(Connection con) throws SQLException {
+        deleteWhereCharacterId(con, "DELETE FROM inventoryslot WHERE characterid = ?");
+        try (PreparedStatement ps = con.prepareStatement("INSERT INTO inventoryslot (characterid, `equip`, `use`, `setup`, `etc`, `cash`) VALUES (?, ?, ?, ?, ?, ?)")) {
+            ps.setInt(1, id);
+            ps.setByte(2, getInventory(MapleInventoryType.EQUIP).getSlotLimit());
+            ps.setByte(3, getInventory(MapleInventoryType.USE).getSlotLimit());
+            ps.setByte(4, getInventory(MapleInventoryType.SETUP).getSlotLimit());
+            ps.setByte(5, getInventory(MapleInventoryType.ETC).getSlotLimit());
+            ps.setByte(6, getInventory(MapleInventoryType.CASH).getSlotLimit());
+            ps.execute();
+        }
+        saveInventory(con);
+    }
+
+    private void saveSkills(Connection con, boolean dc) throws SQLException {
+        deleteWhereCharacterId(con, "DELETE FROM stolen WHERE characterid = ?");
+        try (PreparedStatement ps = con.prepareStatement("INSERT INTO stolen (characterid, skillid, chosen) VALUES (?, ?, ?)")) {
             for (Pair<Integer, Boolean> st : stolenSkills) {
-                ps = con.prepareStatement("INSERT INTO stolen (characterid, skillid, chosen) VALUES (?, ?, ?)");
                 ps.setInt(1, id);
                 ps.setInt(2, st.left);
                 ps.setInt(3, st.right ? 1 : 0);
                 ps.execute();
-                ps.close();
             }
+        }
 
-            if (changed_skillmacros) {
-                deleteWhereCharacterId(con, "DELETE FROM skillmacros WHERE characterid = ?");
+        if (changed_skillmacros) {
+            deleteWhereCharacterId(con, "DELETE FROM skillmacros WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO skillmacros (characterid, skill1, skill2, skill3, name, shout, position) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
                 for (int i = 0; i < 5; i++) {
                     final SkillMacro macro = skillMacros[i];
                     if (macro != null) {
-                        ps = con.prepareStatement("INSERT INTO skillmacros (characterid, skill1, skill2, skill3, name, shout, position) VALUES (?, ?, ?, ?, ?, ?, ?)");
                         ps.setInt(1, id);
                         ps.setInt(2, macro.getSkill1());
                         ps.setInt(3, macro.getSkill2());
@@ -1514,68 +1547,17 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                         ps.setInt(6, macro.getShout());
                         ps.setInt(7, i);
                         ps.execute();
-                        ps.close();
                     }
                 }
             }
-            deleteWhereCharacterId(con, "DELETE FROM inventoryslot WHERE characterid = ?");
-            ps = con.prepareStatement("INSERT INTO inventoryslot (characterid, `equip`, `use`, `setup`, `etc`, `cash`) VALUES (?, ?, ?, ?, ?, ?)");
-            ps.setInt(1, id);
-            ps.setByte(2, getInventory(MapleInventoryType.EQUIP).getSlotLimit());
-            ps.setByte(3, getInventory(MapleInventoryType.USE).getSlotLimit());
-            ps.setByte(4, getInventory(MapleInventoryType.SETUP).getSlotLimit());
-            ps.setByte(5, getInventory(MapleInventoryType.ETC).getSlotLimit());
-            ps.setByte(6, getInventory(MapleInventoryType.CASH).getSlotLimit());
-            ps.execute();
-            ps.close();
+        }
 
-            saveInventory(con);
-
-            if (changed_questinfo) {
-                deleteWhereCharacterId(con, "DELETE FROM questinfo WHERE characterid = ?");
-                ps = con.prepareStatement("INSERT INTO questinfo (`characterid`, `quest`, `customData`) VALUES (?, ?, ?)");
+        if (changed_skills) {
+            deleteWhereCharacterId(con, "DELETE FROM skills WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO skills (characterid, skillid, skilllevel, masterlevel, expiration) VALUES (?, ?, ?, ?, ?)")) {
                 ps.setInt(1, id);
-                for (final Entry<Integer, String> q : questinfo.entrySet()) {
-                    ps.setInt(2, q.getKey());
-                    ps.setString(3, q.getValue());
-                    ps.execute();
-                }
-                ps.close();
-            }
-
-            deleteWhereCharacterId(con, "DELETE FROM queststatus WHERE characterid = ?");
-            ps = con.prepareStatement("INSERT INTO queststatus (`queststatusid`, `characterid`, `quest`, `status`, `time`, `forfeited`, `customData`) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)", DatabaseConnection.RETURN_GENERATED_KEYS);
-            pse = con.prepareStatement("INSERT INTO queststatusmobs VALUES (DEFAULT, ?, ?, ?)");
-            ps.setInt(1, id);
-            for (final MapleQuestStatus q : quests.values()) {
-                ps.setInt(2, q.getQuest().getId());
-                ps.setInt(3, q.getStatus());
-                ps.setInt(4, (int) (q.getCompletionTime() / 1000));
-                ps.setInt(5, q.getForfeited());
-                ps.setString(6, q.getCustomData());
-                ps.execute();
-                rs = ps.getGeneratedKeys();
-                if (q.hasMobKills()) {
-                    rs.next();
-                    for (int mob : q.getMobKills().keySet()) {
-                        pse.setInt(1, rs.getInt(1));
-                        pse.setInt(2, mob);
-                        pse.setInt(3, q.getMobKills(mob));
-                        pse.execute();
-                    }
-                }
-                rs.close();
-            }
-            ps.close();
-            pse.close();
-
-            if (changed_skills) {
-                deleteWhereCharacterId(con, "DELETE FROM skills WHERE characterid = ?");
-                ps = con.prepareStatement("INSERT INTO skills (characterid, skillid, skilllevel, masterlevel, expiration) VALUES (?, ?, ?, ?, ?)");
-                ps.setInt(1, id);
-
                 for (final Entry<Skill, SkillEntry> skill : skills.entrySet()) {
-                    if (GameConstants.isApplicableSkill(skill.getKey().getId())) { // Do not save additional skills
+                    if (GameConstants.isApplicableSkill(skill.getKey().getId())) {
                         ps.setInt(2, skill.getKey().getId());
                         ps.setInt(3, skill.getValue().skillevel);
                         ps.setByte(4, skill.getValue().masterlevel);
@@ -1583,29 +1565,26 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                         ps.execute();
                     }
                 }
-                ps.close();
             }
+        }
 
-            if (innerskill_changed) {
-                if (innerSkills != null) {
-                    deleteWhereCharacterId(con, "DELETE FROM inner_ability_skills WHERE player_id = ?");
-                    ps = con.prepareStatement("INSERT INTO inner_ability_skills (player_id, skill_id, skill_level, max_level, rank) VALUES (?, ?, ?, ?, ?)");
-                    ps.setInt(1, id);
-
-                    for (int i = 0; i < innerSkills.size(); ++i) {
-                        ps.setInt(2, innerSkills.get(i).getSkillId());
-                        ps.setInt(3, innerSkills.get(i).getSkillLevel());
-                        ps.setInt(4, innerSkills.get(i).getMaxLevel());
-                        ps.setInt(5, innerSkills.get(i).getRank());
-                        ps.executeUpdate();
-                    }
-                    ps.close();
+        if (innerskill_changed && innerSkills != null) {
+            deleteWhereCharacterId(con, "DELETE FROM inner_ability_skills WHERE player_id = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO inner_ability_skills (player_id, skill_id, skill_level, max_level, rank) VALUES (?, ?, ?, ?, ?)")) {
+                ps.setInt(1, id);
+                for (InnerSkillValueHolder skill : innerSkills) {
+                    ps.setInt(2, skill.getSkillId());
+                    ps.setInt(3, skill.getSkillLevel());
+                    ps.setInt(4, skill.getMaxLevel());
+                    ps.setInt(5, skill.getRank());
+                    ps.executeUpdate();
                 }
             }
+        }
 
-            List<MapleCoolDownValueHolder> cd = getCooldowns();
-            if (dc && cd.size() > 0) {
-                ps = con.prepareStatement("INSERT INTO skills_cooldowns (charid, SkillID, StartTime, length) VALUES (?, ?, ?, ?)");
+        List<MapleCoolDownValueHolder> cd = getCooldowns();
+        if (dc && !cd.isEmpty()) {
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO skills_cooldowns (charid, SkillID, StartTime, length) VALUES (?, ?, ?, ?)")) {
                 ps.setInt(1, getId());
                 for (final MapleCoolDownValueHolder cooling : cd) {
                     ps.setInt(2, cooling.skillId);
@@ -1613,80 +1592,87 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                     ps.setLong(4, cooling.length);
                     ps.execute();
                 }
-                ps.close();
             }
+        }
+    }
 
+    private void saveQuests(Connection con) throws SQLException {
+        if (changed_questinfo) {
+            QuestDAO.saveQuestInfo(con, id, questinfo);
+            changed_questinfo = false;
+        }
+        QuestDAO.saveQuestStatus(con, id, quests);
+    }
 
-            if (changed_savedlocations) {
-                deleteWhereCharacterId(con, "DELETE FROM savedlocations WHERE characterid = ?");
-                ps = con.prepareStatement("INSERT INTO savedlocations (characterid, `locationtype`, `map`) VALUES (?, ?, ?)");
+    private void saveOthers(Connection con, boolean dc) throws SQLException {
+        if (changed_savedlocations) {
+            deleteWhereCharacterId(con, "DELETE FROM savedlocations WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO savedlocations (characterid, `locationtype`, `map`) VALUES (?, ?, ?)")) {
                 ps.setInt(1, id);
-                for (final SavedLocationType savedLocationType : SavedLocationType.values()) {
-                    if (savedLocations[savedLocationType.getValue()] != -1) {
-                        ps.setInt(2, savedLocationType.getValue());
-                        ps.setInt(3, savedLocations[savedLocationType.getValue()]);
+                for (final SavedLocationType type : SavedLocationType.values()) {
+                    if (savedLocations[type.getValue()] != -1) {
+                        ps.setInt(2, type.getValue());
+                        ps.setInt(3, savedLocations[type.getValue()]);
                         ps.execute();
                     }
                 }
-                ps.close();
             }
+        }
 
-            if (changed_achievements) {
-                ps = con.prepareStatement("DELETE FROM achievements WHERE accountid = ?");
-                ps.setInt(1, accountid);
-                ps.executeUpdate();
-                ps.close();
-                ps = con.prepareStatement("INSERT INTO achievements(charid, achievementid, accountid) VALUES(?, ?, ?)");
+        if (changed_achievements) {
+            try (PreparedStatement psDel = con.prepareStatement("DELETE FROM achievements WHERE accountid = ?");
+                 PreparedStatement psIns = con.prepareStatement("INSERT INTO achievements(charid, achievementid, accountid) VALUES(?, ?, ?)")) {
+                psDel.setInt(1, accountid);
+                psDel.executeUpdate();
                 for (Integer achid : finishedAchievements) {
-                    ps.setInt(1, id);
-                    ps.setInt(2, achid);
-                    ps.setInt(3, accountid);
-                    ps.execute();
+                    psIns.setInt(1, id);
+                    psIns.setInt(2, achid);
+                    psIns.setInt(3, accountid);
+                    psIns.execute();
                 }
-                ps.close();
             }
+        }
 
-            if (changed_moonlight_achievements) {
-                ps = con.prepareStatement("DELETE FROM achievements WHERE accountid = ?");
-                ps.setInt(1, accountid);
-                ps.executeUpdate();
-                ps.close();
-                ps = con.prepareStatement("INSERT INTO moonlightachievements(charid, achievementid, accountid) VALUES(?, ?, ?)");
+        if (changed_moonlight_achievements) {
+            try (PreparedStatement psDel = con.prepareStatement("DELETE FROM moonlightachievements WHERE accountid = ?");
+                 PreparedStatement psIns = con.prepareStatement("INSERT INTO moonlightachievements(charid, achievementid, accountid) VALUES(?, ?, ?)")) {
+                psDel.setInt(1, accountid);
+                psDel.executeUpdate();
                 for (Integer achid : finishedMoonlightAchievements) {
+                    psIns.setInt(1, id);
+                    psIns.setInt(2, achid);
+                    psIns.setInt(3, accountid);
+                    psIns.execute();
+                }
+            }
+        }
+
+        if (changed_reports) {
+            deleteWhereCharacterId(con, "DELETE FROM reports WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO reports VALUES(DEFAULT, ?, ?, ?)")) {
+                for (Entry<ReportType, Integer> entry : reports.entrySet()) {
                     ps.setInt(1, id);
-                    ps.setInt(2, achid);
-                    ps.setInt(3, accountid);
+                    ps.setByte(2, entry.getKey().i);
+                    ps.setInt(3, entry.getValue());
                     ps.execute();
                 }
-                ps.close();
             }
+        }
 
-            if (changed_reports) {
-                deleteWhereCharacterId(con, "DELETE FROM reports WHERE characterid = ?");
-                ps = con.prepareStatement("INSERT INTO reports VALUES(DEFAULT, ?, ?, ?)");
-                for (Entry<ReportType, Integer> achid : reports.entrySet()) {
-                    ps.setInt(1, id);
-                    ps.setByte(2, achid.getKey().i);
-                    ps.setInt(3, achid.getValue());
-                    ps.execute();
-                }
-                ps.close();
-            }
-
-            if (buddylist.changed()) {
-                deleteWhereCharacterId(con, "DELETE FROM buddies WHERE characterid = ?");
-                ps = con.prepareStatement("INSERT INTO buddies (characterid, `buddyid`, `pending`) VALUES (?, ?, ?)");
+        if (buddylist.changed()) {
+            deleteWhereCharacterId(con, "DELETE FROM buddies WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO buddies (characterid, `buddyid`, `pending`) VALUES (?, ?, ?)")) {
                 ps.setInt(1, id);
                 for (BuddylistEntry entry : buddylist.getBuddies()) {
                     ps.setInt(2, entry.getCharacterId());
                     ps.setInt(3, entry.isVisible() ? 0 : 1);
                     ps.execute();
                 }
-                ps.close();
-                buddylist.setChanged(false);
             }
+            buddylist.setChanged(false);
+        }
 
-            ps = con.prepareStatement("UPDATE accounts SET `nxCredit` = ?, `ACash` = ?, `mPoints` = ?, `points` = ?, `vpoints` = ?, `rarenx` = ? WHERE id = ?");
+        try (PreparedStatement ps = con.prepareStatement("UPDATE accounts SET `nxCredit` = ?, `ACash` = ?, `mPoints` = ?, `points` = ?, `vpoints` = ?, `rarenx` = ? WHERE id = ?")) {
             ps.setInt(1, nxcredit);
             ps.setInt(2, acash);
             ps.setInt(3, maplepoints);
@@ -1695,23 +1681,17 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             ps.setInt(6, rarenx);
             ps.setInt(7, client.getAccID());
             ps.executeUpdate();
-            ps.close();
+        }
 
-            if (storage != null) {
-                storage.saveToDB();
-            }
-            if (cs != null) {
-                cs.save();
-            }
-            if (PlayerNPC.Auto_Update) {
-                PlayerNPC.updateByCharId(this);
-            }
-            keylayout.saveKeys(id);
-            mount.saveMount(id);
-            monsterbook.saveCards(accountid);
+        if (storage != null) storage.saveToDB();
+        if (cs != null) cs.save();
+        if (PlayerNPC.Auto_Update) PlayerNPC.updateByCharId(this);
+        keylayout.saveKeys(id);
+        mount.saveMount(id);
+        monsterbook.saveCards(accountid);
 
-            deleteWhereCharacterId(con, "DELETE FROM familiars WHERE characterid = ?");
-            ps = con.prepareStatement("INSERT INTO familiars (characterid, expiry, name, fatigue, vitality, familiar) VALUES (?, ?, ?, ?, ?, ?)");
+        deleteWhereCharacterId(con, "DELETE FROM familiars WHERE characterid = ?");
+        try (PreparedStatement ps = con.prepareStatement("INSERT INTO familiars (characterid, expiry, name, fatigue, vitality, familiar) VALUES (?, ?, ?, ?, ?, ?)")) {
             ps.setInt(1, id);
             for (MonsterFamiliar f : familiars.values()) {
                 ps.setLong(2, f.getExpiry());
@@ -1721,10 +1701,10 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                 ps.setInt(6, f.getFamiliar());
                 ps.executeUpdate();
             }
-            ps.close();
+        }
 
-            deleteWhereCharacterId(con, "DELETE FROM imps WHERE characterid = ?");
-            ps = con.prepareStatement("INSERT INTO imps (characterid, itemid, closeness, fullness, state, level) VALUES (?, ?, ?, ?, ?, ?)");
+        deleteWhereCharacterId(con, "DELETE FROM imps WHERE characterid = ?");
+        try (PreparedStatement ps = con.prepareStatement("INSERT INTO imps (characterid, itemid, closeness, fullness, state, level) VALUES (?, ?, ?, ?, ?, ?)")) {
             ps.setInt(1, id);
             for (int i = 0; i < imps.length; i++) {
                 if (imps[i] != null) {
@@ -1736,105 +1716,98 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                     ps.executeUpdate();
                 }
             }
-            ps.close();
-            if (changed_wishlist) {
-                deleteWhereCharacterId(con, "DELETE FROM wishlist WHERE characterid = ?");
+        }
+
+        if (changed_wishlist) {
+            deleteWhereCharacterId(con, "DELETE FROM wishlist WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO wishlist(characterid, sn) VALUES(?, ?) ")) {
                 for (int i = 0; i < getWishlistSize(); i++) {
-                    ps = con.prepareStatement("INSERT INTO wishlist(characterid, sn) VALUES(?, ?) ");
                     ps.setInt(1, getId());
                     ps.setInt(2, wishlist[i]);
                     ps.execute();
-                    ps.close();
                 }
             }
-            if (changed_trocklocations) {
-                deleteWhereCharacterId(con, "DELETE FROM trocklocations WHERE characterid = ?");
-                for (int i = 0; i < rocks.length; i++) {
-                    if (rocks[i] != 999999999) {
-                        ps = con.prepareStatement("INSERT INTO trocklocations(characterid, mapid) VALUES(?, ?) ");
-                        ps.setInt(1, getId());
-                        ps.setInt(2, rocks[i]);
-                        ps.execute();
-                        ps.close();
-                    }
-                }
-            }
+        }
 
-            if (changed_regrocklocations) {
-                deleteWhereCharacterId(con, "DELETE FROM regrocklocations WHERE characterid = ?");
-                for (int i = 0; i < regrocks.length; i++) {
-                    if (regrocks[i] != 999999999) {
-                        ps = con.prepareStatement("INSERT INTO regrocklocations(characterid, mapid) VALUES(?, ?) ");
-                        ps.setInt(1, getId());
-                        ps.setInt(2, regrocks[i]);
-                        ps.execute();
-                        ps.close();
-                    }
-                }
-            }
-            if (changed_hyperrocklocations) {
-                deleteWhereCharacterId(con, "DELETE FROM hyperrocklocations WHERE characterid = ?");
-                for (int i = 0; i < hyperrocks.length; i++) {
-                    if (hyperrocks[i] != 999999999) {
-                        ps = con.prepareStatement("INSERT INTO hyperrocklocations(characterid, mapid) VALUES(?, ?) ");
-                        ps.setInt(1, getId());
-                        ps.setInt(2, hyperrocks[i]);
-                        ps.execute();
-                        ps.close();
-                    }
-                }
-            }
-            if (changed_extendedSlots) {
-                deleteWhereCharacterId(con, "DELETE FROM extendedSlots WHERE characterid = ?");
+        saveRocks(con);
+
+        if (changed_extendedSlots) {
+            deleteWhereCharacterId(con, "DELETE FROM extendedSlots WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO extendedSlots(characterid, itemId) VALUES(?, ?) ")) {
                 for (int i : extendedSlots) {
                     if (getInventory(MapleInventoryType.ETC).findById(i) != null) { // Just in case
-                        ps = con.prepareStatement("INSERT INTO extendedSlots(characterid, itemId) VALUES(?, ?) ");
                         ps.setInt(1, getId());
                         ps.setInt(2, i);
                         ps.execute();
-                        ps.close();
+
                     }
                 }
             }
-            changed_wishlist = false;
-            changed_trocklocations = false;
-            changed_regrocklocations = false;
-            changed_hyperrocklocations = false;
-            changed_skillmacros = false;
-            changed_savedlocations = false;
-            changed_questinfo = false;
-            changed_achievements = false;
-            changed_moonlight_achievements = false;
-            changed_extendedSlots = false;
-            changed_skills = false;
-            changed_reports = false;
-            con.commit();
-        } catch (Exception e) {
-            FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
-            e.printStackTrace();
-            System.err.println(MapleClient.getLogMessage(this, "[Character Save] Error saving character data") + e);
-            try {
-                con.rollback();
-            } catch (SQLException ex) {
-                FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, ex);
-                System.err.println(MapleClient.getLogMessage(this, "[Character Save] Error rolling back") + e);
+        }
+
+        saveRocks(con);
+
+        if (changed_extendedSlots) {
+            deleteWhereCharacterId(con, "DELETE FROM extendedSlots WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO extendedSlots(characterid, itemId) VALUES(?, ?) ")) {
+                for (int i : extendedSlots) {
+                    if (getInventory(MapleInventoryType.ETC).findById(i) != null) { // Just in case
+                        ps.setInt(1, getId());
+                        ps.setInt(2, i);
+                        ps.execute();
+                    }
+                }
             }
-        } finally {
-            try {
-                if (ps != null) {
-                    ps.close();
+        }
+        
+        changed_wishlist = false;
+        changed_trocklocations = false;
+        changed_regrocklocations = false;
+        changed_hyperrocklocations = false;
+        changed_skillmacros = false;
+        changed_savedlocations = false;
+        changed_questinfo = false;
+        changed_achievements = false;
+        changed_extendedSlots = false;
+        changed_skills = false;
+        changed_reports = false;
+    }
+
+    private void saveRocks(Connection con) throws SQLException {
+        if (changed_trocklocations) {
+            deleteWhereCharacterId(con, "DELETE FROM trocklocations WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO trocklocations(characterid, mapid) VALUES(?, ?) ")) {
+                for (int rock : rocks) {
+                    if (rock != 999999999) {
+                        ps.setInt(1, getId());
+                        ps.setInt(2, rock);
+                        ps.execute();
+                    }
                 }
-                if (pse != null) {
-                    pse.close();
+            }
+        }
+        if (changed_regrocklocations) {
+            deleteWhereCharacterId(con, "DELETE FROM regrocklocations WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO regrocklocations(characterid, mapid) VALUES(?, ?) ")) {
+                for (int rock : regrocks) {
+                    if (rock != 999999999) {
+                        ps.setInt(1, getId());
+                        ps.setInt(2, rock);
+                        ps.execute();
+                    }
                 }
-                if (rs != null) {
-                    rs.close();
+            }
+        }
+        if (changed_hyperrocklocations) {
+            deleteWhereCharacterId(con, "DELETE FROM hyperrocklocations WHERE characterid = ?");
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO hyperrocklocations(characterid, mapid) VALUES(?, ?) ")) {
+                for (int rock : hyperrocks) {
+                    if (rock != 999999999) {
+                        ps.setInt(1, getId());
+                        ps.setInt(2, rock);
+                        ps.execute();
+                    }
                 }
-                con.setAutoCommit(true);
-                con.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            } catch (SQLException e) {
-                FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
-                System.err.println(MapleClient.getLogMessage(this, "[Character Save] Error going back to autocommit mode") + e);
             }
         }
     }
@@ -1844,17 +1817,17 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
     }
 
     public static void deleteWhereCharacterId(Connection con, String sql, int id) throws SQLException {
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.setInt(1, id);
-        ps.executeUpdate();
-        ps.close();
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
     }
 
     public static void deleteWhereCharacterId_NoLock(Connection con, String sql, int id) throws SQLException {
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.setInt(1, id);
-        ps.execute();
-        ps.close();
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.execute();
+        }
     }
 
     public void saveInventory(final Connection con) throws SQLException {

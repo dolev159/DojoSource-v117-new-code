@@ -33,17 +33,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.IoAcceptor;
-import org.apache.mina.common.SimpleByteBufferAllocator;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.nio.SocketAcceptor;
-import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
 import scripting.EventScriptManager;
 import server.MapleSquad;
 import server.MapleSquad.MapleSquadType;
 import server.ServerProperties;
 import server.Timer.WorldTimer;
+import server.ServerTickManager;
 import server.events.*;
 import server.life.PlayerNPC;
 import server.maps.AramiaFireWorks;
@@ -65,6 +60,7 @@ public class ChannelServer {
     private volatile boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false, adminOnly = false;
     private PlayerStorage players;
     private NettyServerAcceptor acceptor;
+    private ServerTickManager tickManager;
     private final MapleMapFactory mapFactory;
     private EventScriptManager eventSM;
     private AramiaFireWorks works = new AramiaFireWorks();
@@ -114,6 +110,29 @@ public class ChannelServer {
         events.put(MapleEventType.Survival, new MapleSurvival(channel, MapleEventType.Survival));
     }
 
+    public void updateExpiredEvents(long now) {
+        // 1. Update MapleSquads
+        List<MapleSquadType> toRemoveSquads = new ArrayList<MapleSquadType>();
+        for (Entry<MapleSquadType, MapleSquad> entry : mapleSquads.entrySet()) {
+            if (entry.getValue().getTimeLeft() <= 0 && entry.getValue().getStatus() == 1) {
+                toRemoveSquads.add(entry.getKey());
+            }
+        }
+        for (MapleSquadType type : toRemoveSquads) {
+            MapleSquad squad = mapleSquads.get(type);
+            if (squad != null) {
+                squad.clear();
+                squad.copy();
+            }
+        }
+
+        // 2. Update Map-based event clocks?
+        // Usually handled by MapTimer, but could be integrated here.
+        
+        // 3. Update specific event managers
+        // if (eventOn) { ... }
+    }
+
     public final void run_startup_configurations() {
         setChannel(channel); // instances.put
         try {
@@ -131,6 +150,9 @@ public class ChannelServer {
         players = new PlayerStorage(channel);
         loadEvents();
 
+        tickManager = new ServerTickManager(this);
+        tickManager.start();
+
         acceptor = new NettyServerAcceptor(port);
         acceptor.run();
         eventSM.init();
@@ -145,6 +167,10 @@ public class ChannelServer {
 
         System.out.println("Channel " + channel + ", Saving characters...");
         getPlayerStorage().disconnectAll();
+
+        if (tickManager != null) {
+            tickManager.stop();
+        }
 
         System.out.println("Channel " + channel + ", Unbinding...");
         if (acceptor != null) {
