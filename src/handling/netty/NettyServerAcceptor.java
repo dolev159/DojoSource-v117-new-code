@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import java.net.InetSocketAddress;
@@ -22,12 +23,13 @@ public class NettyServerAcceptor {
 
     public NettyServerAcceptor(int port) {
         this.port = port;
-        // Epoll is significantly faster on Linux
+        // Use Netty's built-in Epoll check + OS check
         boolean linux = System.getProperty("os.name").toLowerCase().contains("linux");
-        this.useEpoll = linux;
+        this.useEpoll = linux && Epoll.isAvailable();
     }
 
     public void run() {
+        // Boss thread for accepting connections, Worker pool for I/O operations
         bossGroup = useEpoll ? new EpollEventLoopGroup(1) : new NioEventLoopGroup(1);
         workerGroup = useEpoll ? new EpollEventLoopGroup() : new NioEventLoopGroup();
 
@@ -38,19 +40,21 @@ public class NettyServerAcceptor {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
+                            // The Netty Pipeline Pipeline: Decoder -> Encoder -> Handler
                             ch.pipeline().addLast("decoder", new NettyPacketDecoder());
                             ch.pipeline().addLast("encoder", new NettyPacketEncoder());
-                            ch.pipeline().addLast("handler", new NettyServerHandler());
+                            ch.pipeline().addLast("handler", new MaplePacketHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childOption(ChannelOption.TCP_NODELAY, true);
+                    .childOption(ChannelOption.SO_KEEPALIVE, true) // Maintain persistent connection
+                    .childOption(ChannelOption.TCP_NODELAY, true); // Send packets immediately (disable Nagle)
 
             channelFuture = b.bind(port).sync();
-            System.out.println("[Netty] Server listening on port " + port + (useEpoll ? " (using Epoll)" : ""));
+            System.out.println("[Netty] Server listening on port " + port + (useEpoll ? " (using Native Epoll)" : " (using NIO)"));
         } catch (InterruptedException e) {
-            System.err.println("[Netty] Server interrupted: " + e.getMessage());
+            System.err.println("[Netty] Server interrupted during bootstrap: " + e.getMessage());
+            Thread.currentThread().interrupt(); // Restore interrupted status
         }
     }
 

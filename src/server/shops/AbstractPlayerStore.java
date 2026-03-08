@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 import client.inventory.Item;
 import client.inventory.ItemLoader;
@@ -56,6 +57,11 @@ public abstract class AbstractPlayerStore extends MapleMapObject implements IMap
     protected List<String> visitors = new LinkedList<String>();
     protected List<BoughtItem> bought = new LinkedList<BoughtItem>();
     protected List<MaplePlayerShopItem> items = new LinkedList<MaplePlayerShopItem>();
+    protected final ReentrantLock lock = new ReentrantLock();
+
+    public final ReentrantLock getLock() {
+        return lock;
+    }
 
     public AbstractPlayerStore(MapleCharacter owner, int itemId, String desc, String pass, int slots) {
         this.setPosition(owner.getTruePosition());

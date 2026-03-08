@@ -12,13 +12,14 @@ public class NettyPacketDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
+        final MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
 
         if (client == null) {
-            // Handshake/Hello has not been sent yet or client not initialized
+            // Unidentified client. Hello packet should have been sent first.
+            // If they try to send something before it, we just wait or skip.
             if (in.readableBytes() >= 4) {
-                // This shouldn't happen normally as the server sends Hello first
-                // But if it does, we just pass it through or handle as needed
+                 // Clear buffer to prevent memory leakage from malformed initial packets
+                 in.skipBytes(in.readableBytes());
             }
             return;
         }
@@ -27,22 +28,21 @@ public class NettyPacketDecoder extends ByteToMessageDecoder {
             return;
         }
 
-        // Mark the reader index to reset if we don't have enough bytes for the full packet
         in.markReaderIndex();
 
-        int packetHeader = in.readInt();
+        final int packetHeader = in.readInt();
         if (!client.getReceiveCrypto().checkPacket(packetHeader)) {
             ctx.close();
             return;
         }
 
-        int packetLength = MapleAESOFB.getPacketLength(packetHeader);
+        final int packetLength = MapleAESOFB.getPacketLength(packetHeader);
         if (in.readableBytes() < packetLength) {
             in.resetReaderIndex();
             return;
         }
 
-        byte[] decryptedPacket = new byte[packetLength];
+        final byte[] decryptedPacket = new byte[packetLength];
         in.readBytes(decryptedPacket);
 
         client.getReceiveCrypto().crypt(decryptedPacket);

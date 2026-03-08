@@ -1,6 +1,7 @@
 package client;
 
 import constants.GameConstants;
+import database.CharacterDAO;
 import database.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -61,26 +62,12 @@ public class MapleCharacterUtil {
     }
 
     public static final int getIdByName(final String name) {
-        Connection con = DatabaseConnection.getConnection();
         try {
-            PreparedStatement ps = con.prepareStatement("SELECT id FROM characters WHERE name = ?");
-            ps.setString(1, name);
-            final ResultSet rs = ps.executeQuery();
-
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                return -1;
-            }
-            final int id = rs.getInt("id");
-            rs.close();
-            ps.close();
-
-            return id;
+            return CharacterDAO.getIdByName(DatabaseConnection.getConnection(), name);
         } catch (SQLException e) {
             System.err.println("error 'getIdByName' " + e);
+            return -1;
         }
-        return -1;
     }
 
     // -2 = An unknown error occured
@@ -156,63 +143,48 @@ public class MapleCharacterUtil {
     //id accountid gender
     public static Triple<Integer, Integer, Integer> getInfoByName(String name, int world) {
         try {
-
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM characters WHERE name = ? AND world = ?");
-            ps.setString(1, name);
-            ps.setInt(2, world);
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                return null;
-            }
-            Triple<Integer, Integer, Integer> id = new Triple<Integer, Integer, Integer>(rs.getInt("id"), rs.getInt("accountid"), rs.getInt("gender"));
-            rs.close();
-            ps.close();
-            return id;
-        } catch (Exception e) {
-            e.printStackTrace();
+            return CharacterDAO.getInfoByName(DatabaseConnection.getConnection(), name, world);
+        } catch (SQLException e) {
+            System.err.println("error 'getInfoByName' " + e);
+            return null;
         }
-        return null;
     }
 
     public static void setNXCodeUsed(String name, String code) throws SQLException {
-        Connection con = DatabaseConnection.getConnection();
-        PreparedStatement ps = con.prepareStatement("UPDATE nxcode SET `user` = ?, `valid` = 0 WHERE code = ?");
-        ps.setString(1, name);
-        ps.setString(2, code);
-        ps.execute();
-        ps.close();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE nxcode SET `user` = ?, `valid` = 0 WHERE code = ?")) {
+            ps.setString(1, name);
+            ps.setString(2, code);
+            ps.execute();
+        }
     }
 
     public static void sendNote(String to, String name, String msg, int fame) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("INSERT INTO notes (`to`, `from`, `message`, `timestamp`, `gift`) VALUES (?, ?, ?, ?, ?)");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("INSERT INTO notes (`to`, `from`, `message`, `timestamp`, `gift`) VALUES (?, ?, ?, ?, ?)")) {
             ps.setString(1, to);
             ps.setString(2, name);
             ps.setString(3, msg);
             ps.setLong(4, System.currentTimeMillis());
             ps.setInt(5, fame);
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException e) {
-            System.err.println("Unable to send note" + e);
+            System.err.println("Unable to send note " + e);
         }
     }
 
-    public static Triple<Boolean, Integer, Integer> getNXCodeInfo(String code) throws SQLException {
-	Triple<Boolean, Integer, Integer> ret = null;
-        Connection con = DatabaseConnection.getConnection();
-        PreparedStatement ps = con.prepareStatement("SELECT `valid`, `type`, `item` FROM nxcode WHERE code LIKE ?");
-        ps.setString(1, code);
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()) {
-            ret = new Triple<Boolean, Integer, Integer>(rs.getInt("valid") > 0, rs.getInt("type"), rs.getInt("item"));
+    public static Triple<Boolean, Integer, Integer> getNXCodeInfo(String code) {
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT `valid`, `type`, `item` FROM nxcode WHERE code LIKE ?")) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Triple<>(rs.getInt("valid") > 0, rs.getInt("type"), rs.getInt("item"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("getNXCodeInfo error " + e);
         }
-        rs.close();
-        ps.close();
-        return ret;
+        return null;
     }
 }

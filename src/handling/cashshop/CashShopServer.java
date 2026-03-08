@@ -24,44 +24,28 @@ import java.net.InetSocketAddress;
 
 import handling.MapleServerHandler;
 import handling.channel.PlayerStorage;
-import handling.mina.MapleCodecFactory;
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.SimpleByteBufferAllocator;
-import org.apache.mina.common.IoAcceptor;
-
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
-import org.apache.mina.transport.socket.nio.SocketAcceptor;
+import handling.netty.NettyServerAcceptor;
 import server.MTSStorage;
 import server.ServerProperties;
 
 public class CashShopServer {
 
     private static String ip;
-    private static InetSocketAddress InetSocketadd;
-    private final static int PORT = 8600;
-    private static IoAcceptor acceptor;
+    private static final int PORT = 8600;
+    private static NettyServerAcceptor acceptor;
     private static PlayerStorage players, playersMTS;
     private static boolean finishedShutdown = false;
 
     public static final void run_startup_configurations() {
         ip = ServerProperties.getProperty("net.sf.odinms.world.host") + ":" + PORT;
 
-        ByteBuffer.setUseDirectBuffers(false);
-        ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
-
-        acceptor = new SocketAcceptor();
-        final SocketAcceptorConfig cfg = new SocketAcceptorConfig();
-        cfg.getSessionConfig().setTcpNoDelay(true);
-        cfg.setDisconnectOnUnbind(true);
-        cfg.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MapleCodecFactory()));
         players = new PlayerStorage(-10);
         playersMTS = new PlayerStorage(-20);
 
+        acceptor = new NettyServerAcceptor(PORT);
         try {
-            InetSocketadd = new InetSocketAddress(PORT);
-            acceptor.bind(InetSocketadd, new MapleServerHandler(), cfg);
-            System.out.println("Cash Shop Server is listening on port " + PORT + ".");
+            acceptor.run();
+            System.out.println("Cash Shop Server is listening on port " + PORT + " using Netty.");
         } catch (final Exception e) {
             System.err.println("Binding to port " + PORT + " failed");
             e.printStackTrace();

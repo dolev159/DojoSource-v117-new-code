@@ -1613,6 +1613,18 @@ exp = exp+exp;
         lastDropTime = now;
     }
 
+    public void updateMonster(long now) {
+        if (!isAlive()) {
+            return;
+        }
+        if (shouldDrop(now)) {
+            doDropItem(now);
+        }
+        if (shouldKill(now)) {
+            map.killMonster(this, null, false, false, (byte) 1);
+        }
+    }
+
     public byte[] getNodePacket() {
         return nodepack;
     }

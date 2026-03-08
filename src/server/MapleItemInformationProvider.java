@@ -60,6 +60,51 @@ public class MapleItemInformationProvider {
     protected final Map<Integer, Triple<Integer, List<Integer>, List<Integer>>> monsterBookSets = new ConcurrentHashMap<>();
     protected final Map<Byte, StructSetItem> setItems = new ConcurrentHashMap<>();
 
+    public void reload() {
+        dataCache.clear();
+        afterImage.clear();
+        potentialCache.clear();
+        socketCache.clear();
+        itemEffects.clear();
+        itemEffectsEx.clear();
+        mobIds.clear();
+        potLife.clear();
+        familiars.clear();
+        familiars_Item.clear();
+        familiars_Mob.clear();
+        androids.clear();
+        monsterBookSets.clear();
+        setItems.clear();
+        
+        runEtc();
+        runItems();
+        System.out.println("ItemInformationProvider reloaded.");
+    }
+
+    public String getCacheReport() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ItemInformationProvider Cache Report:\n");
+        sb.append("- Items: ").append(dataCache.size()).append("\n");
+        sb.append("- Item Effects: ").append(itemEffects.size()).append("\n");
+        sb.append("- Item Effects EX: ").append(itemEffectsEx.size()).append("\n");
+        sb.append("- Potential Options: ").append(potentialCache.size()).append("\n");
+        sb.append("- Socket Options: ").append(socketCache.size()).append("\n");
+        sb.append("- Set Items: ").append(setItems.size()).append("\n");
+        sb.append("- Mob IDs: ").append(mobIds.size()).append("\n");
+        sb.append("- Familiars: ").append(familiars.size()).append("\n");
+        return sb.toString();
+    }
+
+    public void loadAllItemEffects() {
+        int count = 0;
+        for (Integer itemId : dataCache.keySet()) {
+            getItemEffect(itemId);
+            getItemEffectEX(itemId);
+            count++;
+        }
+        System.out.println("Eagerly loaded " + count + " item effects.");
+    }
+
     public void runEtc() {
         if (!setItems.isEmpty() || !potentialCache.isEmpty() || !socketCache.isEmpty()) {
             return;
@@ -379,6 +424,7 @@ public class MapleItemInformationProvider {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+        loadAllItemEffects();
         //System.out.println(dataCache.size() + " items loaded.");
     }
 

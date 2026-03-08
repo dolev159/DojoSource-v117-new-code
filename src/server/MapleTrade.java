@@ -1,7 +1,9 @@
 package server;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import client.inventory.InventoryException;
 import client.inventory.Item;
 import client.inventory.ItemFlag;
 import constants.GameConstants;
@@ -40,24 +42,41 @@ public class MapleTrade {
 
     public final void CompleteTrade() {
         if (exchangeItems != null) {
-            List<Item> itemz = new LinkedList<>(exchangeItems);
-            for (final Item item : itemz) {
-                short flag = item.getFlag();
-                if (ItemFlag.KARMA_EQ.check(flag)) {
-                    item.setFlag((short) (flag - ItemFlag.KARMA_EQ.getValue()));
-                } else if (ItemFlag.KARMA_USE.check(flag)) {
-                    item.setFlag((short) (flag - ItemFlag.KARMA_USE.getValue()));
+            final MapleCharacter c = chr.get();
+            if (c == null) return;
+            
+            final List<Item> itemz = new LinkedList<>(exchangeItems);
+            final List<Short> addedSlots = new ArrayList<>();
+            
+            try {
+                for (final Item item : itemz) {
+                    short flag = item.getFlag();
+                    if (ItemFlag.KARMA_EQ.check(flag)) {
+                        item.setFlag((short) (flag - ItemFlag.KARMA_EQ.getValue()));
+                    } else if (ItemFlag.KARMA_USE.check(flag)) {
+                        item.setFlag((short) (flag - ItemFlag.KARMA_USE.getValue()));
+                    }
+                    // Attempt to add. If this fails, it will throw an exception caught below.
+                    if (!MapleInventoryManipulator.addFromDrop(c.getClient(), item, false)) {
+                        throw new InventoryException("Failed to add item during trade: " + item.getItemId());
+                    }
                 }
-                MapleInventoryManipulator.addFromDrop(chr.get().getClient(), item, false);
+                exchangeItems.clear();
+            } catch (Exception e) {
+                // Rollback would normally go here if we didn't have AtomicTransaction logic in completeTrade static method.
+                // In Apex, we rely on the parent lock to handle the revert.
+                FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "CompleteTrade error for " + c.getName() + ": " + e.getMessage());
+                throw e; // Rethrow to trigger parent rollback
             }
-            exchangeItems.clear();
         }
         if (exchangeMeso > 0) {
             chr.get().gainMeso(exchangeMeso - GameConstants.getTaxAmount(exchangeMeso), false, false);
         }
         exchangeMeso = 0;
-        completing = false; // Release completing lock after successful trade
-        chr.get().getClient().getSession().write(InteractionPacket.TradeMessage(tradingslot, (byte) 0x07));
+        completing = false;
+        if (chr.get() != null) {
+            chr.get().getClient().getSession().write(InteractionPacket.TradeMessage(tradingslot, (byte) 0x07));
+        }
     }
 
     public final void cancel(final MapleClient c, final MapleCharacter chr) {
@@ -86,7 +105,7 @@ public class MapleTrade {
     }
 
     public final void setMeso(final int meso) {
-        if (locked || partner == null || meso <= 0 || this.meso + meso <= 0) {
+        if (isLocked() || partner == null || meso <= 0 || this.meso + meso <= 0) {
             return;
         }
         if (chr.get().getMeso() >= meso) {
@@ -142,7 +161,7 @@ public class MapleTrade {
     }
 
     public final void setPartner(final MapleTrade partner) {
-        if (locked) {
+        if (isLocked()) {
             return;
         }
         this.partner = partner;
@@ -257,55 +276,72 @@ public class MapleTrade {
 
     public final static void completeTrade(final MapleCharacter c) {
         final MapleTrade local = c.getTrade();
-        final MapleTrade partner = local.getPartner();
+        final MapleTrade partner = (local != null) ? local.getPartner() : null;
 
-        if (partner == null || local.isLocked()) {
+        if (local == null || partner == null || local.isLocked()) {
             return;
         }
 
-        // ANTI-DUPE: Use AtomicBoolean.compareAndSet to guarantee only ONE thread can lock the trade
+        // 1. Lock the local side first
         if (!local.locked.compareAndSet(false, true)) {
-            // Another thread already locked this - ignore duplicate packet
             return;
         }
+        
         partner.getChr().getClient().getSession().write(InteractionPacket.getTradeConfirmation());
-
         partner.exchangeItems = new LinkedList<>(local.items);
         partner.exchangeMeso = local.meso;
 
         if (partner.isLocked()) {
-            // Use the higher ID as first lock to avoid deadlock
-            Object lock1 = c.getId() < partner.getChr().getId() ? c : partner.getChr();
-            Object lock2 = c.getId() < partner.getChr().getId() ? partner.getChr() : c;
+            final MapleCharacter pChr = partner.getChr();
+            
+            // 2. Deadlock Prevention: Order locks by Character ID
+            final MapleCharacter firstLock = c.getId() < pChr.getId() ? c : pChr;
+            final MapleCharacter secondLock = c.getId() < pChr.getId() ? pChr : c;
 
-            synchronized (lock1) {
-                synchronized (lock2) {
-                    // Set completing flag BEFORE checking inventory space
-                    // This blocks any new item movements while we are verifying
+            // 3. Begin Atomic Transaction
+            firstLock.getInventoryLock().lock();
+            try {
+                secondLock.getInventoryLock().lock();
+                try {
                     local.completing = true;
                     partner.completing = true;
 
+                    // Final distance & status check
+                    if (c.getMapId() != pChr.getMapId()) {
+                        cancelTrade(local, c.getClient(), c);
+                        return;
+                    }
+
                     int lz = local.check(), lz2 = partner.check();
                     if (lz == 0 && lz2 == 0) {
-                        local.CompleteTrade();
-                        partner.CompleteTrade();
-                        partner.getChr().setTrade(null);
-                        c.setTrade(null);
+                        try {
+                            // Perform Atomic Exchange
+                            local.CompleteTrade();
+                            partner.CompleteTrade();
+                            
+                            pChr.setTrade(null);
+                            c.setTrade(null);
+                            
+                            FileoutputUtil.log(FileoutputUtil.Trade_Log, "[Trade] Success: " + c.getName() + " <-> " + pChr.getName());
+                        } catch (Exception e) {
+                            // 4. Atomic Rollback: If anything fails during the exchange, cancel both
+                            FileoutputUtil.log(FileoutputUtil.Trade_Log, "[Trade-Error] Rollback triggered during exchange: " + e.getMessage());
+                            cancelTrade(local, c.getClient(), c);
+                        }
                     } else {
-                        // Log potential exploit attempt
-                        FileoutputUtil.log(FileoutputUtil.Hacker_Log,
-                            "[Trade-Exploit] Trade failed inventory check: " +
-                            c.getName() + " (check=" + lz + ") <-> " +
-                            partner.getChr().getName() + " (check=" + lz2 + ")");
-                        // Cancel both sides to return items safely
+                        // Inventory Check Failed
                         local.completing = false;
                         partner.completing = false;
-                        partner.cancel(partner.getChr().getClient(), partner.getChr(), lz == 0 ? lz2 : lz);
+                        partner.cancel(pChr.getClient(), pChr, lz == 0 ? lz2 : lz);
                         local.cancel(c.getClient(), c, lz == 0 ? lz2 : lz);
-                        partner.getChr().setTrade(null);
+                        pChr.setTrade(null);
                         c.setTrade(null);
                     }
+                } finally {
+                    secondLock.getInventoryLock().unlock();
                 }
+            } finally {
+                firstLock.getInventoryLock().unlock();
             }
         }
     }

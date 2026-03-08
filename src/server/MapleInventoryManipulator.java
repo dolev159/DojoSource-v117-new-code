@@ -6,26 +6,19 @@ import client.MapleClient;
 import client.MapleQuestStatus;
 import client.MapleTrait.MapleTraitType;
 import client.PlayerStats;
+import client.inventory.*;
+import constants.GameConstants;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
+import java.awt.Point;
 import client.Skill;
 import client.SkillEntry;
 import client.SkillFactory;
-import client.inventory.*;
-import constants.GameConstants;
-import java.awt.Point;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import provider.MapleData;
-import provider.MapleDataProvider;
-import provider.MapleDataProviderFactory;
-import provider.MapleDataTool;
 import server.quest.MapleQuest;
 import tools.FileoutputUtil;
-import tools.Pair;
 import tools.StringUtil;
 import tools.packet.CWvsContext;
 import tools.packet.CWvsContext.InfoPacket;
@@ -369,11 +362,15 @@ public class MapleInventoryManipulator {
         return addFromDrop(c, item, show, false);
     }
 
-    public static boolean addFromDrop(final MapleClient c, Item item, final boolean show, final boolean enhance) {
+    public static boolean addFromDrop(final MapleClient c, final Item item, final boolean show, final boolean enhance) {
         final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
 
-        if (c.getPlayer() == null
-                || (ii.isPickupRestricted(item.getItemId()) && c.getPlayer().haveItem(item.getItemId(), 1, true, false))
+        // 1. Defensive Checks (Null-safety & Existence)
+        if (c == null || c.getPlayer() == null || item == null) {
+            return false;
+        }
+
+        if ((ii.isPickupRestricted(item.getItemId()) && c.getPlayer().haveItem(item.getItemId(), 1, true, false))
                 || (!ii.itemExists(item.getItemId()))) {
             c.sendPacket(InventoryPacket.getInventoryFull());
             c.sendPacket(InventoryPacket.showItemUnavailable());
@@ -383,63 +380,65 @@ public class MapleInventoryManipulator {
         final MapleInventoryType type = GameConstants.getInventoryType(item.getItemId());
         final MapleCharacter chr = c.getPlayer();
 
-        // Apex: Object-level locking for thread safety
+        // 2. Apex Locking: Object-level synchronization
         chr.getInventoryLock().lock();
         try {
-            // Snapshot of previous quantity if we are merging
+            // 3. Robust Snapshotting for Rollback
             final List<Item> existing = chr.getInventory(type).listById(item.getItemId());
-            final Map<Item, Short> snapshots = new HashMap<>();
+            final Map<Item, Short> snapshots = new HashMap<>(); // Store original quantities
+            final List<Short> addedSlots = new ArrayList<>(); // Track newly created slots for removal on fail
+
             for (Item e : existing) {
-                snapshots.put(e, e.getQuantity());
+                if (e != null) {
+                    snapshots.put(e, e.getQuantity());
+                }
             }
 
-            short quantity = item.getQuantity();
+            short remainingQuantity = item.getQuantity();
             final short slotMax = ii.getSlotMax(item.getItemId());
 
             try {
-                // 1. Logic for merging/adding in memory
+                // Perform Memory Modification
                 if (!type.equals(MapleInventoryType.EQUIP) && !GameConstants.isRechargable(item.getItemId())) {
                     if (existing.size() > 0) {
                         for (Item eItem : existing) {
-                            if (quantity <= 0)
-                                break;
+                            if (remainingQuantity <= 0) break;
                             short oldQ = eItem.getQuantity();
                             if (oldQ < slotMax && item.getOwner().equals(eItem.getOwner())
                                     && item.getExpiration() == eItem.getExpiration()) {
-                                short newQ = (short) Math.min(oldQ + quantity, slotMax);
-                                quantity -= (newQ - oldQ);
+                                short newQ = (short) Math.min(oldQ + remainingQuantity, slotMax);
+                                remainingQuantity -= (newQ - oldQ);
                                 eItem.setQuantity(newQ);
                                 c.sendPacket(InventoryPacket.updateInventorySlot(type, eItem, true));
                             }
                         }
                     }
-                    while (quantity > 0) {
-                        short newQ = (short) Math.min(quantity, slotMax);
-                        quantity -= newQ;
+                    while (remainingQuantity > 0) {
+                        short newQ = (short) Math.min(remainingQuantity, slotMax);
+                        remainingQuantity -= newQ;
                         Item nItem = new Item(item.getItemId(), (byte) 0, newQ, item.getFlag());
                         nItem.setExpiration(item.getExpiration());
                         nItem.setOwner(item.getOwner());
                         nItem.setPet(item.getPet());
                         nItem.setGMLog(item.getGMLog());
                         short newSlot = chr.getInventory(type).addItem(nItem);
-                        if (newSlot == -1)
-                            throw new InventoryException("Inventory Full during addition");
+                        if (newSlot == -1) throw new InventoryException("Inventory Full");
+                        addedSlots.add(newSlot);
                         c.sendPacket(InventoryPacket.addInventorySlot(type, nItem, true));
                     }
                 } else {
-                    // Equip or Rechargable
+                    Item finalItem = item;
                     if (enhance && type.equals(MapleInventoryType.EQUIP)) {
-                        item = checkEnhanced(item, chr);
+                        finalItem = checkEnhanced(item, chr);
                     }
-                    short newSlot = chr.getInventory(type).addItem(item);
-                    if (newSlot == -1)
-                        throw new InventoryException("Inventory Full");
-                    c.sendPacket(InventoryPacket.addInventorySlot(type, item, true));
+                    short newSlot = chr.getInventory(type).addItem(finalItem);
+                    if (newSlot == -1) throw new InventoryException("Inventory Full");
+                    addedSlots.add(newSlot);
+                    c.sendPacket(InventoryPacket.addInventorySlot(type, finalItem, true));
                 }
 
-                // 2. Apex: Simulate Database Consistency Check
-                // In a production Apex architecture, we would call a DB transaction here.
-                // If this fails, we catch and rollback.
+                // 4. Persistence Check: In Apex, this is where a transactional DB sync would be triggered.
+                // If the DB call fails (SQL Exception), the exception handler below reverts memory.
 
                 chr.havePartyQuest(item.getItemId());
                 if (show) {
@@ -448,13 +447,19 @@ public class MapleInventoryManipulator {
                 return true;
 
             } catch (Exception e) {
-                // Apex: Rollback Memory State
+                // 5. Atomic Rollback mechanism
+                // Restore quantities for merged items
                 for (Map.Entry<Item, Short> entry : snapshots.entrySet()) {
                     entry.getKey().setQuantity(entry.getValue());
+                    c.sendPacket(InventoryPacket.updateInventorySlot(type, entry.getKey(), true));
                 }
-                // (Detailed rollback for new items omitted for brevity but required in full
-                // Apex)
+                // Cleanup newly added slots
+                for (short slot : addedSlots) {
+                    chr.getInventory(type).removeSlot(slot);
+                    c.sendPacket(InventoryPacket.clearInventoryItem(type, slot, true));
+                }
                 c.sendPacket(CWvsContext.enableActions());
+                FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "AddFromDrop Rollback occurred: " + e.getMessage());
                 return false;
             }
         } finally {
@@ -590,51 +595,54 @@ public class MapleInventoryManipulator {
     }
 
     public static void move(final MapleClient c, final MapleInventoryType type, final short src, final short dst) {
-        if (src < 0 || dst < 0 || src == dst || type == MapleInventoryType.EQUIPPED) {
+        // 1. Defensive Checks
+        if (c == null || c.getPlayer() == null || type == null || src < 0 || dst < 0 || src == dst || type == MapleInventoryType.EQUIPPED) {
             return;
         }
+
         final MapleCharacter chr = c.getPlayer();
+        final MapleInventory inv = chr.getInventory(type);
+        if (inv == null) return;
+
+        final Item source = inv.getItem(src);
+        if (source == null) return;
+
         final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        final Item source = chr.getInventory(type).getItem(src);
-        final Item initialTarget = chr.getInventory(type).getItem(dst);
 
-        if (source == null)
-            return;
-
-        // Apex: Thread-safety via object-level lock
+        // 2. Apex Locking
         chr.getInventoryLock().lock();
         try {
-            // Snapshots for Rollback
+            // 3. Robust Snapshotting for Rollback
             final Item sourceSnapshot = source.copy();
+            final Item initialTarget = inv.getItem(dst);
             final Item targetSnapshot = (initialTarget != null) ? initialTarget.copy() : null;
 
             try {
                 final short slotMax = ii.getSlotMax(source.getItemId());
 
-                // 1. Memory Operation
-                chr.getInventory(type).move(src, dst, slotMax);
+                // Perform Memory Operation
+                inv.move(src, dst, slotMax);
 
-                // 2. Apex: Consistency Validation (Simulating DB check)
-                // In a true atomic setup, we would execute the SQL update here.
-                // If it throws, we catch and revert the memory change.
+                // 4. Persistence / Consistency Check logic here
+                // In a production environment, this is where we'd ensure DB atomicity.
 
                 if (GameConstants.isHarvesting(source.getItemId())) {
                     chr.getStat().handleProfessionTool(chr);
                 }
 
-                // 3. UI Synchronization
+                // UI Synchronization
                 c.sendPacket(InventoryPacket.moveInventoryItem(type, src, dst, false, false));
 
             } catch (Exception e) {
-                // Apex: Rollback Memory state on Failure
-                chr.getInventory(type).setItem(src, sourceSnapshot);
+                // 5. Atomic Rollback mechanism
+                inv.setItem(src, sourceSnapshot);
                 if (targetSnapshot != null) {
-                    chr.getInventory(type).setItem(dst, targetSnapshot);
+                    inv.setItem(dst, targetSnapshot);
                 } else {
-                    chr.getInventory(type).removeItem(dst);
+                    inv.removeItem(dst);
                 }
                 c.sendPacket(CWvsContext.enableActions());
-                FileoutputUtil.logCrash("InventoryMoveRollback", e);
+                FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Inventory Move Rollback occurred for " + chr.getName() + ": " + e.getMessage());
             }
         } finally {
             chr.getInventoryLock().unlock();

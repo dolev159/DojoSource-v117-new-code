@@ -74,29 +74,31 @@ public class DatabaseConnection {
             config.setPoolName("DojoSource-DB-Pool");
 
             // =============================================
-            // Pool size - tuned for MapleStory workload
+            // [Phase B] Pool Sizing & Response Tuning
             // =============================================
-            // Each channel + login + cashshop needs connections.
-            // For a small/medium server: 30 is safe.
+            // maximumPoolSize: 30 is ideal for 100-500 players, preventing MySQL saturation.
             config.setMaximumPoolSize(30);
+            // minimumIdle: Maintains 10 ready-to-use connections for instant response.
             config.setMinimumIdle(10);
 
             // =============================================
-            // Timeouts
+            // [Phase B] Monitoring & Leak Prevention
             // =============================================
-            // Wait up to 10 seconds for a free connection before throwing
+            // leakDetectionThreshold: Logs a warning if a thread holds a connection for > 30s.
+            // This is the #1 tool to find unclosed Statements/ResultSets.
+            config.setLeakDetectionThreshold(30000);
+            
+            // =============================================
+            // Timeouts & Life Cycle
+            // =============================================
             config.setConnectionTimeout(10000);
-            // Kill idle connections after 5 minutes
             config.setIdleTimeout(300000);
-            // Recycle connections after 10 minutes (prevents stale connections)
             config.setMaxLifetime(600000);
-            // Validate connections every 30 seconds to detect DB disconnects early
             config.setKeepaliveTime(30000);
-            // Test connection before giving it out (catches DB restarts)
             config.setConnectionTestQuery("SELECT 1");
 
             // =============================================
-            // Performance: PreparedStatement caching
+            // Phase B Performance Switches: PreparedStatement Caching
             // =============================================
             config.addDataSourceProperty("cachePrepStmts", "true");
             config.addDataSourceProperty("prepStmtCacheSize", "500");
@@ -106,12 +108,11 @@ public class DatabaseConnection {
             config.addDataSourceProperty("rewriteBatchedStatements", "true");
             config.addDataSourceProperty("cacheResultSetMetadata", "true");
             config.addDataSourceProperty("cacheServerConfiguration", "true");
-            config.addDataSourceProperty("maintainTimeStats", "false");
 
             dataSource = new HikariDataSource(config);
 
-            System.out.println("[DB] HikariCP pool initialized successfully. Pool: "
-                    + config.getPoolName() + " | MaxSize: " + config.getMaximumPoolSize());
+            System.out.println("[DB] [Phase B] HikariCP Pool Optimized. Leak Detection: ON (30s). MaxPoolSize: "
+                    + config.getMaximumPoolSize());
 
         } catch (Exception e) {
             System.err.println("[DB] FATAL: Failed to initialize database connection pool!");

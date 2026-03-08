@@ -107,6 +107,8 @@ public class Start {
         MapleMonsterInformationProvider.getInstance().load();
         MapleItemInformationProvider.getInstance().runItems();
         SkillFactory.load();
+        System.out.println(CacheManager.getMemoryUsageReport());
+        FileoutputUtil.logStartup(CacheManager.getMemoryUsageReport());
         LoginInformationProvider.getInstance();
         RandomRewards.load();
         MapleOxQuizFactory.getInstance();

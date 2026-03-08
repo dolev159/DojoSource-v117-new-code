@@ -3,6 +3,7 @@ package client;
 import java.awt.Point;
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import provider.MapleData;
 import provider.MapleDataDirectoryEntry;
 import provider.MapleDataFileEntry;
@@ -15,12 +16,34 @@ import tools.Triple;
 
 public class SkillFactory {
 
-    private static final Map<Integer, Skill> skills = new HashMap<Integer, Skill>();
-    private static final Map<String, Integer> delays = new HashMap<String, Integer>();
-    private static final Map<Integer, CraftingEntry> crafts = new HashMap<Integer, CraftingEntry>();
-    private static final Map<Integer, FamiliarEntry> familiars = new HashMap<Integer, FamiliarEntry>();
-    private static final Map<Integer, List<Integer>> skillsByJob = new HashMap<Integer, List<Integer>>();
-    private static final Map<Integer, SummonSkillEntry> SummonSkillInformation = new HashMap<Integer, SummonSkillEntry>();
+    private static final Map<Integer, Skill> skills = new ConcurrentHashMap<Integer, Skill>();
+    private static final Map<String, Integer> delays = new ConcurrentHashMap<String, Integer>();
+    private static final Map<Integer, CraftingEntry> crafts = new ConcurrentHashMap<Integer, CraftingEntry>();
+    private static final Map<Integer, FamiliarEntry> familiars = new ConcurrentHashMap<Integer, FamiliarEntry>();
+    private static final Map<Integer, List<Integer>> skillsByJob = new ConcurrentHashMap<Integer, List<Integer>>();
+    private static final Map<Integer, SummonSkillEntry> SummonSkillInformation = new ConcurrentHashMap<Integer, SummonSkillEntry>();
+
+    public static void reload() {
+        skills.clear();
+        delays.clear();
+        crafts.clear();
+        familiars.clear();
+        skillsByJob.clear();
+        SummonSkillInformation.clear();
+        load();
+        System.out.println("SkillFactory reloaded.");
+    }
+
+    public static String getCacheReport() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SkillFactory Cache Report:\n");
+        sb.append("- Skills: ").append(skills.size()).append("\n");
+        sb.append("- Delays: ").append(delays.size()).append("\n");
+        sb.append("- Crafts: ").append(crafts.size()).append("\n");
+        sb.append("- Familiars: ").append(familiars.size()).append("\n");
+        sb.append("- Summon Skills: ").append(SummonSkillInformation.size()).append("\n");
+        return sb.toString();
+    }
 
     public static void load() {
         final MapleData delayData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Character.wz")).getData("00002000.img");

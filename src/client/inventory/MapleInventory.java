@@ -188,19 +188,17 @@ public class MapleInventory implements Iterable<Item>, Serializable {
     }
 
     public void move(short sSlot, short dSlot, short slotMax) {
-        Item source = (Item) inventory.get(sSlot);
-        Item target = (Item) inventory.get(dSlot);
+        Item source = inventory.get(sSlot);
+        Item target = inventory.get(dSlot);
         if (source == null) {
             throw new InventoryException("Trying to move empty slot");
         }
         if (target == null) {
             if (dSlot < 0 && !type.equals(MapleInventoryType.EQUIPPED)) {
-                // This causes a lot of stuck problem, until we are done with position checking
-                return;
+                throw new InventoryException("Invalid move to negative slot");
             }
             if (dSlot > 0 && type.equals(MapleInventoryType.EQUIPPED)) {
-                // This causes a lot of stuck problem, until we are done with position checking
-                return;
+                throw new InventoryException("Invalid move to positive slot in equipped inventory");
             }
             source.setPosition(dSlot);
             inventory.put(dSlot, source);

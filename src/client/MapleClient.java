@@ -37,6 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.script.ScriptEngine;
 // import org.apache.mina.common.IoSession;
 import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 
 import server.CharacterCardFactory;
 import server.Timer.PingTimer;
@@ -57,7 +58,7 @@ public class MapleClient implements Serializable {
             LOGIN_LOGGEDIN = 2,
             CHANGE_CHANNEL = 3;
     public static final int DEFAULT_CHARSLOT = 6;
-    public static final String CLIENT_KEY = "CLIENT";
+    public static final AttributeKey<MapleClient> CLIENT_KEY = AttributeKey.valueOf("CLIENT");
     private transient MapleAESOFB send, receive;
     private transient Object session; // Legacy Mina support placeholder if needed
     private transient Channel nettyChannel;

@@ -80,72 +80,117 @@ public class HiredMerchant extends AbstractPlayerStore {
     }
 
     @Override
-    public synchronized void buy(MapleClient c, int item, short quantity) {
-        final MaplePlayerShopItem pItem = items.get(item);
-
-        // ANTI-DUPE: Double-check stock BEFORE processing (inside synchronized block)
-        if (pItem.bundles < quantity || pItem.bundles <= 0) {
-            FileoutputUtil.log(FileoutputUtil.Hacker_Log,
-                "[HiredMerchant-AntidDupe] " + c.getPlayer().getName() +
-                " tried to buy " + quantity + " bundles but only " + pItem.bundles + " remain! Store: " + getOwnerName());
-            c.getPlayer().dropMessage(1, "Not enough stock available.");
-            c.getSession().write(CWvsContext.enableActions());
+    public void buy(MapleClient c, int item, short quantity) {
+        final MapleCharacter player = c.getPlayer();
+        if (player == null) {
             return;
         }
 
-        final Item shopItem = pItem.item;
-        final Item newItem = shopItem.copy();
-        final short perbundle = newItem.getQuantity();
-        final int theQuantity = (pItem.price * quantity);
-        newItem.setQuantity((short) (quantity * perbundle));
-
-        short flag = newItem.getFlag();
-
-        if (ItemFlag.KARMA_EQ.check(flag)) {
-            newItem.setFlag((short) (flag - ItemFlag.KARMA_EQ.getValue()));
-        } else if (ItemFlag.KARMA_USE.check(flag)) {
-            newItem.setFlag((short) (flag - ItemFlag.KARMA_USE.getValue()));
-        }
-
-        if (MapleInventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())) {
-            final int gainmeso = getMeso() + theQuantity - GameConstants.EntrustedStoreTax(theQuantity);
-            if (gainmeso > 0) {
-                setMeso(gainmeso);
-                // ANTI-DUPE: Decrement FIRST before giving item - prevents double-give
-                pItem.bundles -= quantity;
-                MapleInventoryManipulator.addFromDrop(c, newItem, false);
-                bought.add(new BoughtItem(newItem.getItemId(), quantity, theQuantity, c.getPlayer().getName()));
-                c.getPlayer().gainMeso(-theQuantity, false);
-                saveItems();
-                MapleCharacter chr = getMCOwnerWorld();
-                if (chr != null) {
-                    chr.dropMessage(-5, "Item " + MapleItemInformationProvider.getInstance().getName(newItem.getItemId()) + " (" + perbundle + ") x " + quantity + " has sold in the Hired Merchant. Quantity left: " + pItem.bundles);
-                }
-            } else {
-                c.getPlayer().dropMessage(1, "The seller currently have too many mesos.");
+        lock.lock();
+        try {
+            if (item >= items.size()) {
                 c.getSession().write(CWvsContext.enableActions());
+                return;
             }
-        } else {
-            c.getPlayer().dropMessage(1, "Your inventory is currently full.");
-            c.getSession().write(CWvsContext.enableActions());
+            final MaplePlayerShopItem pItem = items.get(item);
+
+            // ANTI-DUPE: Double-check stock inside lock
+            if (pItem.bundles < quantity || pItem.bundles <= 0) {
+                player.dropMessage(1, "Not enough stock available.");
+                c.getSession().write(CWvsContext.enableActions());
+                return;
+            }
+
+            final Item shopItem = pItem.item;
+            final Item newItem = shopItem.copy();
+            final short perbundle = newItem.getQuantity();
+            final int totalCost = (pItem.price * quantity);
+            newItem.setQuantity((short) (quantity * perbundle));
+
+            short flag = newItem.getFlag();
+            if (ItemFlag.KARMA_EQ.check(flag)) {
+                newItem.setFlag((short) (flag - ItemFlag.KARMA_EQ.getValue()));
+            } else if (ItemFlag.KARMA_USE.check(flag)) {
+                newItem.setFlag((short) (flag - ItemFlag.KARMA_USE.getValue()));
+            }
+
+            // Lock Player Inventory for atomic meso/item update
+            player.getInventoryLock().lock();
+            try {
+                if (player.getMeso() < totalCost) {
+                    player.dropMessage(1, "You do not have enough mesos.");
+                    c.getSession().write(CWvsContext.enableActions());
+                    return;
+                }
+
+                if (!MapleInventoryManipulator.checkSpace(c, newItem.getItemId(), newItem.getQuantity(), newItem.getOwner())) {
+                    player.dropMessage(1, "Your inventory is currently full.");
+                    c.getSession().write(CWvsContext.enableActions());
+                    return;
+                }
+
+                final int gainmeso = getMeso() + totalCost - GameConstants.EntrustedStoreTax(totalCost);
+                if (gainmeso < 0) { // Overflow or too much meso
+                    player.dropMessage(1, "The seller currently has too many mesos.");
+                    c.getSession().write(CWvsContext.enableActions());
+                    return;
+                }
+
+                // TRANSACTIONAL UPDATE
+                final short originalBundles = pItem.bundles;
+                final int originalMeso = getMeso();
+
+                pItem.bundles -= quantity;
+                setMeso(gainmeso);
+
+                // PERSISTENCE FIRST: Update the merchant state in DB before giving item to player
+                if (saveItems()) {
+                    // DB Successful: Finalize memory updates for player
+                    player.gainMeso(-totalCost, false);
+                    MapleInventoryManipulator.addFromDrop(c, newItem, false);
+                    bought.add(new BoughtItem(newItem.getItemId(), quantity, totalCost, player.getName()));
+
+                    MapleCharacter owner = getMCOwnerWorld();
+                    if (owner != null) {
+                        owner.dropMessage(-5, "Item " + MapleItemInformationProvider.getInstance().getName(newItem.getItemId()) + " (" + perbundle + ") x " + quantity + " has sold. Remaining: " + pItem.bundles);
+                    }
+                } else {
+                    // DB Failed: Rollback merchant memory state
+                    pItem.bundles = originalBundles;
+                    setMeso(originalMeso);
+                    player.dropMessage(1, "Database error. Purchase failed.");
+                    c.getSession().write(CWvsContext.enableActions());
+                }
+            } finally {
+                player.getInventoryLock().unlock();
+            }
+        } catch (Exception e) {
+            FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Error in HiredMerchant.buy: " + e.getMessage());
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
     public void closeShop(boolean saveItems, boolean remove) {
-        if (schedule != null) {
-            schedule.cancel(false);
+        lock.lock();
+        try {
+            if (schedule != null) {
+                schedule.cancel(false);
+            }
+            if (saveItems) {
+                saveItems();
+                items.clear();
+            }
+            if (remove) {
+                ChannelServer.getInstance(channel).removeMerchant(this);
+                getMap().broadcastMessage(PlayerShopPacket.destroyHiredMerchant(getOwnerId()));
+            }
+            getMap().removeMapObject(this);
+            schedule = null;
+        } finally {
+            lock.unlock();
         }
-        if (saveItems) {
-            saveItems();
-            items.clear();
-        }
-        if (remove) {
-            ChannelServer.getInstance(channel).removeMerchant(this);
-            getMap().broadcastMessage(PlayerShopPacket.destroyHiredMerchant(getOwnerId()));
-        }
-        getMap().removeMapObject(this);
-        schedule = null;
     }
 
     public int getTimeLeft() {

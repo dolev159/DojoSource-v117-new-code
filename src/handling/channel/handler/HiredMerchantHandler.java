@@ -66,6 +66,11 @@ public class HiredMerchantHandler {
                             c.getPlayer().dropMessage(1, "Zipangu is about to shut down.");
                             return false;
                         }
+                        // VALIDATION: Hard lock - cannot open shop while busy
+                        if (c.getPlayer().getTrade() != null || c.getPlayer().getConversation() > 0 || c.getPlayer().getEventInstance() != null) {
+                            c.getPlayer().dropMessage(1, "You cannot open a shop while busy with another activity.");
+                            return false;
+                        }
                         if (packet) {
                             c.getSession().write(PlayerShopPacket.sendTitleBox());
                         }
@@ -154,58 +159,63 @@ public class HiredMerchantHandler {
         }
     }
 
-    private static synchronized void requestItems(final MapleClient c, final boolean request) { // Synchronized
-        if (c.getPlayer().getConversation() != 3) {
+    private static synchronized void requestItems(final MapleClient c, final boolean request) {
+        final MapleCharacter chr = c.getPlayer();
+        if (chr == null || chr.getConversation() != 3) {
             return;
         }
-        boolean merch = World.hasMerchant(c.getPlayer().getAccountID(), c.getPlayer().getId());
-        if (merch) {
-            c.getPlayer().dropMessage(1, "Please close the existing store and try again.");
-            c.getPlayer().setConversation(0);
+        if (World.hasMerchant(chr.getAccountID(), chr.getId())) {
+            chr.dropMessage(1, "Please close the existing store and try again.");
+            chr.setConversation(0);
             return;
         }
-        final MerchItemPackage pack = loadItemFromDatabase(c.getPlayer().getAccountID());
+        final MerchItemPackage pack = loadItemFromDatabase(chr.getAccountID());
         if (pack == null) {
-            c.getPlayer().dropMessage(1, "An unknown error occured.");
+            chr.dropMessage(1, "An unknown error occured.");
             return;
         } else if (c.getChannelServer().isShutdown()) {
-            c.getPlayer().dropMessage(1, "Zipangu is going to shut down.");
-            c.getPlayer().setConversation(0);
+            chr.dropMessage(1, "Zipangu is going to shut down.");
+            chr.setConversation(0);
             return;
         }
         final int days = StringUtil.getDaysAmount(pack.getSavedTime(), System.currentTimeMillis()); 
         final double percentage = days / 100.0;
         final int fee = (int) Math.ceil(percentage * pack.getMesos()); 
+        
         if (request && days > 0 && percentage > 0 && pack.getMesos() > 0 && fee > 0) {
             c.getSession().write(PlayerShopPacket.merchItemStore((byte) 38, days, fee));
             return;
         }
-        if (fee < 0) { 
-            c.getSession().write(PlayerShopPacket.merchItem_Message(33));
+        if (fee < 0 || chr.getMeso() < fee) {
+            c.getSession().write(PlayerShopPacket.merchItem_Message(fee < 0 ? 33 : 35));
             return;
         }
-        if (c.getPlayer().getMeso() < fee) {
-            c.getSession().write(PlayerShopPacket.merchItem_Message(35));
-            return;
-        }
-        if (!check(c.getPlayer(), pack)) {
-            c.getSession().write(PlayerShopPacket.merchItem_Message(36));
-            return;
-        }
-        // Safety: Give items/mesos FIRST, then delete. 
-        // If giving fails halfway, the deletePackage check (or our check()) should have caught it.
-        // Actually, we do it in a synchronized block to prevent races.
-        if (deletePackage(c.getPlayer().getAccountID(), pack.getPackageid(), c.getPlayer().getId())) {
-            if (fee > 0) {
-                c.getPlayer().gainMeso(-fee, true);
+        
+        // 1. Lock Player Inventory
+        chr.getInventoryLock().lock();
+        try {
+            if (!check(chr, pack)) {
+                c.getSession().write(PlayerShopPacket.merchItem_Message(36));
+                return;
             }
-            c.getPlayer().gainMeso(pack.getMesos(), false);
-            for (Item item : pack.getItems()) {
-                MapleInventoryManipulator.addFromDrop(c, item, false);
+
+            // ATOMIC RETRIEVAL: Memory Update followed by DB Consistency check
+            // We use the deletePackage as our transaction commit point.
+            if (deletePackage(chr.getAccountID(), pack.getPackageid(), chr.getId())) {
+                if (fee > 0) {
+                    chr.gainMeso(-fee, true);
+                }
+                chr.gainMeso(pack.getMesos(), false);
+                for (Item item : pack.getItems()) {
+                    MapleInventoryManipulator.addFromDrop(c, item, false);
+                }
+                c.getSession().write(PlayerShopPacket.merchItem_Message(32));
+                chr.setConversation(0);
+            } else {
+                chr.dropMessage(1, "Database error. Retrieval failed.");
             }
-            c.getSession().write(PlayerShopPacket.merchItem_Message(32));
-        } else {
-            c.getPlayer().dropMessage(1, "An unknown error occured.");
+        } finally {
+            chr.getInventoryLock().unlock();
         }
     }
 

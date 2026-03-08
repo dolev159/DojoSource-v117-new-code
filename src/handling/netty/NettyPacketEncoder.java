@@ -12,10 +12,12 @@ public class NettyPacketEncoder extends MessageToByteEncoder<byte[]> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, byte[] message, ByteBuf out) throws Exception {
-        MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
+        final MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
 
         if (client != null) {
             final MapleAESOFB send_crypto = client.getSendCrypto();
+            
+            // We need to copy the message to avoid modifying the original if it's reused
             final byte[] unencrypted = new byte[message.length];
             System.arraycopy(message, 0, unencrypted, 0, message.length);
 
@@ -26,13 +28,15 @@ public class NettyPacketEncoder extends MessageToByteEncoder<byte[]> {
                 MapleCustomEncryption.encryptData(unencrypted);
                 send_crypto.crypt(unencrypted);
 
+                // Write header then encrypted data
                 out.writeBytes(header);
                 out.writeBytes(unencrypted);
             } finally {
                 mutex.unlock();
             }
         } else {
-            // Hello packet or other unencrypted data
+            // No client associated yet (e.g., initial Hello packet)
+            // Just write the raw bytes
             out.writeBytes(message);
         }
     }

@@ -28,6 +28,7 @@ import client.MapleCharacter;
 import client.MapleClient;
 import server.MapleInventoryManipulator;
 import server.maps.MapleMapObjectType;
+import tools.FileoutputUtil;
 import tools.packet.PlayerShopPacket;
 
 public class MaplePlayerShop extends AbstractPlayerStore {
@@ -84,25 +85,39 @@ public class MaplePlayerShop extends AbstractPlayerStore {
 
     @Override
     public void closeShop(boolean saveItems, boolean remove) {
-        MapleCharacter owner = getMCOwner();
-        removeAllVisitors(10, 1);
-        getMap().removeMapObject(this);
-
-        for (MaplePlayerShopItem items : getItems()) {
-            if (items.bundles > 0) {
-                Item newItem = items.item.copy();
-                newItem.setQuantity((short) (items.bundles * newItem.getQuantity()));
-                if (MapleInventoryManipulator.addFromDrop(owner.getClient(), newItem, false)) {
-                    items.bundles = 0;
-                } else {
-                    saveItems(); // O_o
-                    break;
-                }
+        lock.lock();
+        try {
+            MapleCharacter owner = getMCOwner();
+            if (owner == null) {
+                return;
             }
+            
+            owner.getInventoryLock().lock();
+            try {
+                removeAllVisitors(10, 1);
+                getMap().removeMapObject(this);
+
+                for (MaplePlayerShopItem items : getItems()) {
+                    if (items.bundles > 0) {
+                        Item newItem = items.item.copy();
+                        newItem.setQuantity((short) (items.bundles * newItem.getQuantity()));
+                        if (MapleInventoryManipulator.addFromDrop(owner.getClient(), newItem, false)) {
+                            items.bundles = 0;
+                        } else {
+                            // Inventory full: Log this critical error. 
+                            // In a production server, this should probably send to Fredrick instead of losing the item.
+                            FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "[PersonalShop-Error] Owner " + owner.getName() + " inventory full on closeShop. Item lost: " + items.item.getItemId());
+                        }
+                    }
+                }
+                owner.setPlayerShop(null);
+                owner.getClient().getSession().write(PlayerShopPacket.shopErrorMessage(10, 1));
+            } finally {
+                owner.getInventoryLock().unlock();
+            }
+        } finally {
+            lock.unlock();
         }
-        owner.setPlayerShop(null);
-        update();
-        getMCOwner().getClient().getSession().write(PlayerShopPacket.shopErrorMessage(10, 1));
     }
 
     public void banPlayer(String name) {
