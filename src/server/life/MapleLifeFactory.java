@@ -41,6 +41,8 @@ import server.Randomizer;
 import tools.Pair;
 import tools.StringUtil;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class MapleLifeFactory {
 
     private static final MapleDataProvider data = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Mob.wz"));
@@ -50,10 +52,10 @@ public class MapleLifeFactory {
     private static final MapleData mobStringData = stringDataWZ.getData("Mob.img");
     private static final MapleData npcStringData = stringDataWZ.getData("Npc.img");
     private static final MapleData npclocData = etcDataWZ.getData("NpcLocation.img");
-    private static Map<Integer, String> npcNames = new HashMap<Integer, String>();
-    private static Map<Integer, MapleMonsterStats> monsterStats = new HashMap<Integer, MapleMonsterStats>();
-    private static Map<Integer, Integer> NPCLoc = new HashMap<Integer, Integer>();
-    private static Map<Integer, List<Integer>> questCount = new HashMap<Integer, List<Integer>>();
+    private static final Map<Integer, String> npcNames = new ConcurrentHashMap<>();
+    private static final Map<Integer, MapleMonsterStats> monsterStats = new ConcurrentHashMap<>();
+    private static final Map<Integer, Integer> NPCLoc = new ConcurrentHashMap<>();
+    private static final Map<Integer, List<Integer>> questCount = new ConcurrentHashMap<>();
 
     public static AbstractLoadedMapleLife getLife(int id, String type) {
         if (type.equalsIgnoreCase("n")) {
@@ -64,6 +66,36 @@ public class MapleLifeFactory {
             System.err.println("Unknown Life type: " + type + "");
             return null;
         }
+    }
+
+    public static void loadAllMonsterStats() {
+        if (!monsterStats.isEmpty()) {
+            return;
+        }
+        long start = System.currentTimeMillis();
+        for (MapleDataDirectoryEntry mapz : data.getRoot().getSubdirectories()) {
+            for (MapleDataFileEntry entry : mapz.getFiles()) {
+                if (entry.getName().endsWith(".img")) {
+                    int id = Integer.parseInt(entry.getName().substring(0, entry.getName().length() - 4));
+                    getMonsterStats(id);
+                }
+            }
+        }
+        System.out.println("Loaded " + monsterStats.size() + " monster stats in " + (System.currentTimeMillis() - start) + "ms.");
+    }
+
+    public static void reload() {
+        monsterStats.clear();
+        npcNames.clear();
+        NPCLoc.clear();
+        questCount.clear();
+        loadQuestCounts();
+        loadAllMonsterStats();
+    }
+
+    public static String getCacheReport() {
+        return String.format("MapleLifeFactory: %d monster stats, %d NPC names, %d quest counts\n", 
+                monsterStats.size(), npcNames.size(), questCount.size());
     }
 
     public static int getNPCLocation(int npcid) {

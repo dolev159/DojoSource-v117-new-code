@@ -40,6 +40,7 @@ public class MapleMonsterStats {
     private List<Pair<Integer, Integer>> skills = new ArrayList<Pair<Integer, Integer>>();
     private List<MobAttackInfo> mai = new ArrayList<MobAttackInfo>();
     private BanishInfo banish;
+    private List<MonsterDropEntry> drops = Collections.emptyList();
 	
 	public MapleMonsterStats(int id) {
 		this.id = id;
@@ -48,6 +49,14 @@ public class MapleMonsterStats {
 	public int getId() {
 		return id;
 	}
+
+    public void setDrops(List<MonsterDropEntry> drops) {
+        this.drops = drops;
+    }
+
+    public List<MonsterDropEntry> getDrops() {
+        return drops;
+    }
 
     public int getExp() {
         return exp;

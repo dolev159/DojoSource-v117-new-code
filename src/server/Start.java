@@ -104,9 +104,13 @@ public class Start {
         MapleLifeFactory.loadQuestCounts();
         MapleQuest.initQuests();
         MapleItemInformationProvider.getInstance().runEtc();
-        MapleMonsterInformationProvider.getInstance().load();
         MapleItemInformationProvider.getInstance().runItems();
         SkillFactory.load();
+        
+        // Eagerly load monster stats and drop tables
+        MapleLifeFactory.loadAllMonsterStats();
+        MapleMonsterInformationProvider.getInstance().load();
+        
         System.out.println(CacheManager.getMemoryUsageReport());
         FileoutputUtil.logStartup(CacheManager.getMemoryUsageReport());
         LoginInformationProvider.getInstance();

@@ -30,4 +30,25 @@ public class MonsterDropEntry {
         this.Maximum = Maximum;
     }
     public int itemId, chance, Minimum, Maximum, questid;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        MonsterDropEntry other = (MonsterDropEntry) obj;
+        return itemId == other.itemId && chance == other.chance && 
+               Minimum == other.Minimum && Maximum == other.Maximum && 
+               questid == other.questid;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + itemId;
+        hash = 31 * hash + chance;
+        hash = 31 * hash + Minimum;
+        hash = 31 * hash + Maximum;
+        hash = 31 * hash + questid;
+        return hash;
+    }
 }

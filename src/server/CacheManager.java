@@ -1,6 +1,8 @@
 package server;
 
 import client.SkillFactory;
+import server.life.MapleLifeFactory;
+import server.life.MapleMonsterInformationProvider;
 import tools.FileoutputUtil;
 
 public class CacheManager {
@@ -12,6 +14,8 @@ public class CacheManager {
         try {
             MapleItemInformationProvider.getInstance().reload();
             SkillFactory.reload();
+            MapleLifeFactory.reload();
+            MapleMonsterInformationProvider.getInstance().reload();
             
             long end = System.currentTimeMillis();
             String msg = "All caches reloaded successfully in " + (end - start) + "ms.";
@@ -33,6 +37,8 @@ public class CacheManager {
         
         sb.append(MapleItemInformationProvider.getInstance().getCacheReport());
         sb.append(SkillFactory.getCacheReport());
+        sb.append(MapleLifeFactory.getCacheReport());
+        sb.append(MapleMonsterInformationProvider.getInstance().getCacheReport());
         
         Runtime runtime = Runtime.getRuntime();
         long usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
@@ -44,3 +50,4 @@ public class CacheManager {
         return sb.toString();
     }
 }
+

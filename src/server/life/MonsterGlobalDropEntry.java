@@ -45,4 +45,29 @@ public class MonsterGlobalDropEntry {
     public byte dropType;
     public int itemId, chance, Minimum, Maximum, continent, questid;
     public boolean onlySelf = false;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        MonsterGlobalDropEntry other = (MonsterGlobalDropEntry) obj;
+        return itemId == other.itemId && chance == other.chance && 
+               dropType == other.dropType && continent == other.continent && 
+               questid == other.questid && Minimum == other.Minimum && 
+               Maximum == other.Maximum && onlySelf == other.onlySelf;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + dropType;
+        hash = 97 * hash + itemId;
+        hash = 97 * hash + chance;
+        hash = 97 * hash + Minimum;
+        hash = 97 * hash + Maximum;
+        hash = 97 * hash + continent;
+        hash = 97 * hash + questid;
+        hash = 97 * hash + (onlySelf ? 1 : 0);
+        return hash;
+    }
 }
