@@ -16,6 +16,7 @@ import server.Timer.EventTimer;
 import server.Timer.MapTimer;
 import server.Timer.PingTimer;
 import server.Timer.WorldTimer;
+import server.events.EventInstanceManager;
 import tools.packet.CWvsContext;
 
 public class ShutdownServer implements ShutdownServerMBean {
@@ -45,57 +46,48 @@ public class ShutdownServer implements ShutdownServerMBean {
 
     @Override
     public void run() {
-	if (mode == 0) {
-	    int ret = 0;
-	    World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "Zipangu World is going to Shutdown soon. Please kindly log off now for the meantime."));
+        if (mode == 0) {
+            int ret = 0;
+            World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "Zipangu World is going to Shutdown soon. Please kindly log off now."));
             for (ChannelServer cs : ChannelServer.getAllInstances()) {
                 cs.setShutdown();
-				cs.setServerMessage("Zipangu World is going to Shutdown soon. Please kindly log off now for the meantime.");
+                cs.setServerMessage("Zipangu World is going to Shutdown soon. Please kindly log off now.");
                 ret += cs.closeAllMerchant();
             }
-            /*AtomicInteger FinishedThreads = new AtomicInteger(0);
-            HiredMerchantSave.Execute(this);
-            synchronized (this) {
-                try {
-                    wait();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ShutdownServer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            while (FinishedThreads.incrementAndGet() != HiredMerchantSave.NumSavingThreads) {
-                synchronized (this) {
-                    try {
-                        wait();
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(ShutdownServer.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }*/
             World.Guild.save();
             World.Alliance.save();
-	    World.Family.save();
-	    System.out.println("First Shutdown has been completed. Hired Merchants saved: " + ret);
-	    mode++;
-	} else if (mode == 1) {
-	    mode++;
-			System.out.println("Second Shutdown commencing...");
+            World.Family.save();
+            
+            // Gracefully dispose all active event instances
+            EventInstanceManager.getInstance().disposeAll();
+            
+            System.out.println("First Shutdown phase completed. Hired Merchants saved: " + ret);
+            mode++;
+        } else if (mode == 1) {
+            mode++;
+            System.out.println("Final Shutdown phase commencing...");
             try {
-	        World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "Zipangu World is going to Shutdown now. Please kindly log off now for the meantime."));
-                Integer[] chs =  ChannelServer.getAllInstance().toArray(new Integer[0]);
-        
-                for (int i : chs) {
+                World.Broadcast.broadcastMessage(CWvsContext.serverNotice(0, "Zipangu World is shutting down NOW. Saving data..."));
+                
+                // Shutdown Channel Servers
+                for (Integer i : ChannelServer.getAllInstance()) {
                     try {
                         ChannelServer cs = ChannelServer.getInstance(i);
-                        synchronized (this) {
+                        if (cs != null) {
                             cs.shutdown();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-	        LoginServer.shutdown();
+                
+                // Shutdown Login and Cash Shop
+                LoginServer.shutdown();
                 CashShopServer.shutdown();
+                
+                // Close DB connections
                 DatabaseConnection.closeAll();
+                
             } finally {
                 WorldTimer.getInstance().stop();
                 MapTimer.getInstance().stop();
@@ -105,14 +97,13 @@ public class ShutdownServer implements ShutdownServerMBean {
                 EtcTimer.getInstance().stop();
                 PingTimer.getInstance().stop();
             }
-            long startTime = 0;
-		System.out.println("Second Shutdown has been successfully Shutdown");
-		try{
+            System.out.println("Shutdown successful. Server will exit in 5 seconds.");
+            try {
                 Thread.sleep(5000);
-            }catch(Exception e) {
-                //shutdown
+            } catch (Exception e) {
+                // ignore
             }
-            System.exit(0); // Not sure if this is really needed for ChannelServer
-	}
+            System.exit(0);
+        }
     }
-}
+}

@@ -53,15 +53,12 @@ public class MobSkillFactory {
     }
 
     private void initialize() {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_mobskilldata");
-            ResultSet rs = ps.executeQuery();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_mobskilldata");
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 mobSkillCache.put(new Pair<Integer, Integer>(rs.getInt("skillid"), rs.getInt("level")), get(rs));
             }
-            rs.close();
-            ps.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

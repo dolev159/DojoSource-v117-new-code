@@ -14,57 +14,46 @@ public class AutoRegister {
     public static boolean success = false;
 
     public static boolean getAccountExists(String login) {
-        boolean accountExists = false;
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("SELECT name FROM accounts WHERE name = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT name FROM accounts WHERE name = ?")) {
             ps.setString(1, login);
-            ResultSet rs = ps.executeQuery();
-            if (rs.first()) {
-                accountExists = true;
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             System.out.println(ex);
         }
-        return accountExists;
+        return false;
     }
 
     public static void createAccount(String login, String pwd, String eip) {
-        String sockAddr = eip;
-        Connection con;
-
-        try {
-            con = DatabaseConnection.getConnection();
-        } catch (Exception ex) {
-            System.out.println(ex);
-            return;
+        success = false;
+        String address = eip;
+        if (address.contains("/")) {
+            address = address.split("/")[1];
+        }
+        if (address.contains(":")) {
+            address = address.split(":")[0];
         }
 
-        try {
-            ResultSet rs;
+        try (Connection con = DatabaseConnection.getConnection()) {
             try (PreparedStatement ipc = con.prepareStatement("SELECT SessionIP FROM accounts WHERE SessionIP = ?")) {
-                ipc.setString(1, sockAddr.substring(1, sockAddr.lastIndexOf(':')));
-                rs = ipc.executeQuery();
-                if (rs.first() == false || rs.last() == true && rs.getRow() < ACCOUNTS_PER_IP) {
-                    try {
+                ipc.setString(1, address);
+                try (ResultSet rs = ipc.executeQuery()) {
+                    if (rs.first() == false || (rs.last() == true && rs.getRow() < ACCOUNTS_PER_IP)) {
                         try (PreparedStatement ps = con.prepareStatement("INSERT INTO accounts (name, password, email, birthday, macs, SessionIP) VALUES (?, ?, ?, ?, ?, ?)")) {
                             ps.setString(1, login);
                             ps.setString(2, LoginCrypto.hexSha1(pwd));
                             ps.setString(3, "autoregister@mail.com");
                             ps.setString(4, "2008-04-07");
                             ps.setString(5, "00-00-00-00-00-00");
-                            ps.setString(6, sockAddr.substring(1, sockAddr.lastIndexOf(':')));
+                            ps.setString(6, address);
                             ps.executeUpdate();
                         }
-
                         success = true;
-                    } catch (SQLException ex) {
-                        System.out.println(ex);
-                        return;
                     }
                 }
             }
-            rs.close();
         } catch (SQLException ex) {
             System.out.println(ex);
         }

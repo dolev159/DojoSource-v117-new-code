@@ -57,10 +57,13 @@ import server.Timer.EtcTimer;
 import server.maps.MapleMap;
 import server.maps.MapleMapObject;
 import server.maps.MapleMapObjectType;
+import server.life.MonsterAI;
 import tools.ConcurrentEnumMap;
 import tools.Pair;
 import tools.packet.CField;
 import tools.packet.MobPacket;
+import server.events.EventInstance;
+import server.events.RewardManager;
 
 public class MapleMonster extends AbstractLoadedMapleLife {
 
@@ -84,6 +87,7 @@ public class MapleMonster extends AbstractLoadedMapleLife {
     private Map<Integer, Long> usedSkills;
     private int stolen = -1; //monster can only be stolen ONCE
     private boolean shouldDropItem = false, killed = false;
+    private MonsterAI priorityAI = null;
 
     public MapleMonster(final int id, final MapleMonsterStats stats) {
         super(id);
@@ -283,6 +287,10 @@ public class MapleMonster extends AbstractLoadedMapleLife {
                         em.monsterDamaged(from, this, (int) rDamage);
                     }
                 }
+                
+                // Track damage for Instanced Reward System
+                if (map != null && map.getEventInstance() != null) {
+                    RewardManager.getInstance(map.getEventInstance()).addDamage(from.getId(), (int) rDamage);                }
                 if (sponge.get() == null && hp > 0) {
                     switch (stats.getHPDisplayType()) {
                         case 0:
@@ -1274,6 +1282,7 @@ exp = exp+exp;
         }
     }
 
+
     private static final class ExpMap {
 
         public final int exp;
@@ -1649,6 +1658,20 @@ exp = exp+exp;
         this.linkCID = lc;
         if (lc > 0) {
             stati.put(MonsterStatus.HYPNOTIZE, new MonsterStatusEffect(MonsterStatus.HYPNOTIZE, 60000, 30001062, null, false));
+        }
+    }
+
+    public void setPriorityAI(MonsterAI ai) {
+        this.priorityAI = ai;
+    }
+
+    public MonsterAI getPriorityAI() {
+        return priorityAI;
+    }
+
+    public void updateAI(long now) {
+        if (priorityAI != null && !killed && hp > 0) {
+            priorityAI.tick(this, (EventInstance) eventInstance);
         }
     }
 }

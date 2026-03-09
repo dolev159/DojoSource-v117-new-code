@@ -43,34 +43,33 @@ public class SpeedRunner {
     }
 
     public final static void loadSpeedRunData(ExpeditionType type) {
-	try {
-            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("SELECT * FROM speedruns WHERE type = ? ORDER BY time LIMIT 25"); // Or should we do less
+        try (java.sql.Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM speedruns WHERE type = ? ORDER BY time LIMIT 25")) {
             ps.setString(1, type.name());
             StringBuilder ret = new StringBuilder(getPreamble(type));
             Map<Integer, String> rett = new LinkedHashMap<Integer, String>();
-            ResultSet rs = ps.executeQuery();
-            int rank = 1;
-	    Set<String> leaders = new HashSet<String>();
-            boolean cont = rs.first();
-            boolean changed = cont;
-	    long tmp = 0;
-            while (cont) {
-	        if (!leaders.contains(rs.getString("leader"))) {
-                    addSpeedRunData(ret, rett, rs.getString("members"), rs.getString("leader"), rank, rs.getString("timestring"));
-                    rank++;
-		    leaders.add(rs.getString("leader"));
-		    tmp = rs.getLong("time");
-	        }
-                cont = rs.next() && rank < 25;
+            try (ResultSet rs = ps.executeQuery()) {
+                int rank = 1;
+                Set<String> leaders = new HashSet<String>();
+                boolean cont = rs.first();
+                boolean changed = cont;
+                long tmp = 0;
+                while (cont) {
+                    if (!leaders.contains(rs.getString("leader"))) {
+                        addSpeedRunData(ret, rett, rs.getString("members"), rs.getString("leader"), rank, rs.getString("timestring"));
+                        rank++;
+                        leaders.add(rs.getString("leader"));
+                        tmp = rs.getLong("time");
+                    }
+                    cont = rs.next() && rank < 25;
+                }
+                if (changed) {
+                    speedRunData.put(type, new Triple<String, Map<Integer, String>, Long>(ret.toString(), rett, tmp));
+                }
             }
-            rs.close();
-            ps.close();
-            if (changed) {
-                speedRunData.put(type, new Triple<String, Map<Integer, String>, Long>(ret.toString(), rett, tmp));
-            }
-	} catch (SQLException e) {
-	    e.printStackTrace();
-	}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public final static Pair<StringBuilder, Map<Integer, String>> addSpeedRunData(StringBuilder ret, Map<Integer, String> rett, String members, String leader, int rank, String timestring) {

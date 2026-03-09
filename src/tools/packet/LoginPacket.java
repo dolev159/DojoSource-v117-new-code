@@ -297,7 +297,7 @@ public class LoginPacket {
         for (MapleCharacter chr : chars) {
             addCharEntry(mplew, chr, (!chr.isGM()) && (chr.getLevel() >= 30), false);
         }
-        mplew.write(secondpw != null && secondpw.length() > 0 ? 1 : (secondpw != null && secondpw.length() <= 0 ? 2 : 0)); // second pw request
+        mplew.write(2); // PIC/Second Password disabled
         mplew.write(0);
         mplew.writeInt(1);
         mplew.writeInt(0);
@@ -359,7 +359,7 @@ public class LoginPacket {
          for (MapleCharacter chr : chars) {
              addCharEntry(mplew, chr, true, true);
         }
-         mplew.write(pic.equals("") ? 2 : pic == null ? 0 : 1);
+         mplew.write(2); // PIC/Second Password disabled
          return mplew.getPacket();
     }
 

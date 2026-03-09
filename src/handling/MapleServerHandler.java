@@ -342,7 +342,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
 
         session.write(LoginPacket.getHello(ServerConstants.MAPLE_VERSION, ivSend, ivRecv));
         //System.out.println("GETHELLO SENT TO " + address);
-        session.setAttribute(MapleClient.CLIENT_KEY, client);
+        session.setAttribute("CLIENT", client);
         session.setIdleTime(IdleStatus.READER_IDLE, 60);
         session.setIdleTime(IdleStatus.WRITER_IDLE, 60);
 
@@ -365,7 +365,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
 
     @Override
     public void sessionClosed(final IoSession session) throws Exception {
-        final MapleClient client = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
+        final MapleClient client = (MapleClient) session.getAttribute("CLIENT");
 
         if (client != null) {
             byte state = MapleClient.CHANGE_CHANNEL;
@@ -398,7 +398,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                 client.disconnect(true, true);
             } finally {
                 session.close();
-                session.removeAttribute(MapleClient.CLIENT_KEY);
+                session.removeAttribute("CLIENT");
             }
         }
         super.sessionClosed(session);
@@ -406,7 +406,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
 
     @Override
     public void sessionIdle(final IoSession session, final IdleStatus status) throws Exception {
-        final MapleClient client = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
+        final MapleClient client = (MapleClient) session.getAttribute("CLIENT");
 
         /*
          * if (client != null && client.getPlayer() != null) {
@@ -424,7 +424,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
         if (message == null || session == null) {
             return;
         }
-        final MapleClient c = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
+        final MapleClient c = (MapleClient) session.getAttribute("CLIENT");
         if (c == null || !c.isReceiving()) {
             return;
         }
@@ -483,9 +483,9 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                 //}
                 break;
             case CLIENT_START:
-                if (c.isLocalhost()) {
-                    CharLoginHandler.login(slea, c);
-                }
+                // if (c.isLocalhost()) {
+                //     CharLoginHandler.login(slea, c);
+                // }
                 break;
             case CLIENT_FAILED:
 //                c.getSession().write(LoginPacket.getCustomEncryption());

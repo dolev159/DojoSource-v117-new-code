@@ -36,7 +36,7 @@ public class MaplePacketEncoder implements ProtocolEncoder {
 
     @Override
     public void encode(final IoSession session, final Object message, final ProtocolEncoderOutput out) throws Exception {
-	final MapleClient client = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
+	final MapleClient client = (MapleClient) session.getAttribute("CLIENT");
 
 	if (client != null) {
 	    final MapleAESOFB send_crypto = client.getSendCrypto();

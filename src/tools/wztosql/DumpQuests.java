@@ -42,7 +42,7 @@ public class DumpQuests {
 	protected boolean hadError = false;
 	protected boolean update = false;
 	protected int id = 0;
-	private Connection con = DatabaseConnection.getConnection();
+	private Connection con;
 
 	public DumpQuests(boolean update) throws Exception {
 		this.update = update;
@@ -58,52 +58,45 @@ public class DumpQuests {
 
 	public void dumpQuests() throws Exception {
 		if (!hadError) {
-			PreparedStatement psai = con.prepareStatement("INSERT INTO wz_questactitemdata(uniqueid, itemid, count, period, gender, job, jobEx, prop) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-			PreparedStatement psas = con.prepareStatement("INSERT INTO wz_questactskilldata(uniqueid, skillid, skillLevel, masterLevel) VALUES (?, ?, ?, ?)");
-			PreparedStatement psaq = con.prepareStatement("INSERT INTO wz_questactquestdata(uniqueid, quest, state) VALUES (?, ?, ?)");
-			PreparedStatement ps = con.prepareStatement("INSERT INTO wz_questdata(questid, name, autoStart, autoPreComplete, viewMedalItem, selectedSkillID, blocked, autoAccept, autoComplete) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-			PreparedStatement psr = con.prepareStatement("INSERT INTO wz_questreqdata(questid, type, name, stringStore, intStoresFirst, intStoresSecond) VALUES (?, ?, ?, ?, ?, ?)");
-			PreparedStatement psq = con.prepareStatement("INSERT INTO wz_questpartydata(questid, rank, mode, property, value) VALUES(?,?,?,?,?)");
-			PreparedStatement psa = con.prepareStatement("INSERT INTO wz_questactdata(questid, type, name, intStore, applicableJobs, uniqueid) VALUES (?, ?, ?, ?, ?, ?)");
-			try {
-				dumpQuests(psai, psas, psaq, ps, psr, psq, psa);
-			} catch (Exception e) {
-				System.out.println(id + " quest.");
-				e.printStackTrace();
-				hadError = true;
-			} finally {
-				psai.executeBatch();
-				psai.close();
-				psas.executeBatch();
-				psas.close();
-				psaq.executeBatch();
-				psaq.close();
-				psa.executeBatch();
-				psa.close();
-				psr.executeBatch();
-				psr.close();
-				psq.executeBatch();
-				psq.close();
-				ps.executeBatch();
-				ps.close();	
+			try (Connection con = DatabaseConnection.getConnection();
+				 PreparedStatement psai = con.prepareStatement("INSERT INTO wz_questactitemdata(uniqueid, itemid, count, period, gender, job, jobEx, prop) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+				 PreparedStatement psas = con.prepareStatement("INSERT INTO wz_questactskilldata(uniqueid, skillid, skillLevel, masterLevel) VALUES (?, ?, ?, ?)");
+				 PreparedStatement psaq = con.prepareStatement("INSERT INTO wz_questactquestdata(uniqueid, quest, state) VALUES (?, ?, ?)");
+				 PreparedStatement ps = con.prepareStatement("INSERT INTO wz_questdata(questid, name, autoStart, autoPreComplete, viewMedalItem, selectedSkillID, blocked, autoAccept, autoComplete) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				 PreparedStatement psr = con.prepareStatement("INSERT INTO wz_questreqdata(questid, type, name, stringStore, intStoresFirst, intStoresSecond) VALUES (?, ?, ?, ?, ?, ?)");
+				 PreparedStatement psq = con.prepareStatement("INSERT INTO wz_questpartydata(questid, rank, mode, property, value) VALUES(?,?,?,?,?)");
+				 PreparedStatement psa = con.prepareStatement("INSERT INTO wz_questactdata(questid, type, name, intStore, applicableJobs, uniqueid) VALUES (?, ?, ?, ?, ?, ?)")) {
+				this.con = con;
+				try {
+					dumpQuests(psai, psas, psaq, ps, psr, psq, psa);
+					psai.executeBatch();
+					psas.executeBatch();
+					psaq.executeBatch();
+					psa.executeBatch();
+					psr.executeBatch();
+					psq.executeBatch();
+					ps.executeBatch();
+				} catch (Exception e) {
+					System.out.println(id + " quest.");
+					e.printStackTrace();
+					hadError = true;
+				}
 			}
 		}
 	}
 
 
 	public void delete(String sql) throws Exception {
-		PreparedStatement ps = con.prepareStatement(sql);
-		ps.executeUpdate();
-		ps.close();
+		try (PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.executeUpdate();
+		}
 	}
 
 	public boolean doesExist(String sql) throws Exception {
-		PreparedStatement ps = con.prepareStatement(sql);
-		ResultSet rs = ps.executeQuery();
-		boolean ret = rs.next();
-		rs.close();
-		ps.close();
-		return ret;
+		try (PreparedStatement ps = con.prepareStatement(sql);
+			 ResultSet rs = ps.executeQuery()) {
+			return rs.next();
+		}
 	}
 
 	//kinda inefficient

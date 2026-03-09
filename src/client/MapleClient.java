@@ -71,7 +71,15 @@ public class MapleClient implements Serializable {
     private String accountName;
     private transient long lastPong = 0, lastPing = 0, lastPacketTime = 0;
     private transient int packetCount = 0;
-    private boolean monitored = false, receiving = true;
+    private boolean monitored = false, receiving = true, firstPacket = true;
+    
+    public final boolean isFirstPacket() {
+        return firstPacket;
+    }
+    
+    public final void setFirstPacket(boolean firstPacket) {
+        this.firstPacket = firstPacket;
+    }
     private boolean gm;
     private byte greason = 1, gender = -1;
     public transient short loginAttempt = 0;
@@ -213,13 +221,14 @@ public class MapleClient implements Serializable {
     }
 
         public void charLoginState(int charLoginNewState) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("UPDATE characters SET loginState = ? WHERE id = ?"); //update specific character's row based on character id
-            ps.setInt(1, charLoginNewState); //charLoginNewState = 0 or 1
-            ps.setInt(2, player.getId()); //get character id
+        if (player == null) {
+            return;
+        }
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE characters SET loginState = ? WHERE id = ?")) {
+            ps.setInt(1, charLoginNewState);
+            ps.setInt(2, player.getId());
             ps.executeUpdate();
-            ps.close(); 
         } catch (SQLException e) {
             e.printStackTrace();
         }         
@@ -229,26 +238,24 @@ public class MapleClient implements Serializable {
         if (charInfo.isEmpty()) { // No characters
             return;
         }
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("DELETE FROM `character_cards` WHERE `accid` = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("DELETE FROM `character_cards` WHERE `accid` = ?")) {
             ps.setInt(1, accId);
             ps.executeUpdate();
-            ps.close();
 
-            PreparedStatement psu = con.prepareStatement("INSERT INTO `character_cards` (accid, worldid, characterid, position) VALUES (?, ?, ?, ?)");
-            for (final Entry<Integer, Integer> ii : cids.entrySet()) {
-                final Pair<Short, Short> info = charInfo.get(ii.getValue()); // Charinfo we can use here as characters are already loaded
-                if (info == null || ii.getValue() == 0 || !CharacterCardFactory.getInstance().canHaveCard(info.getLeft(), info.getRight())) {
-                    continue;
+            try (PreparedStatement psu = con.prepareStatement("INSERT INTO `character_cards` (accid, worldid, characterid, position) VALUES (?, ?, ?, ?)")) {
+                for (final Entry<Integer, Integer> ii : cids.entrySet()) {
+                    final Pair<Short, Short> info = charInfo.get(ii.getValue());
+                    if (info == null || ii.getValue() == 0 || !CharacterCardFactory.getInstance().canHaveCard(info.getLeft(), info.getRight())) {
+                        continue;
+                    }
+                    psu.setInt(1, accId);
+                    psu.setInt(2, world);
+                    psu.setInt(3, ii.getValue());
+                    psu.setInt(4, ii.getKey());
+                    psu.executeUpdate();
                 }
-                psu.setInt(1, accId);
-                psu.setInt(2, world);
-                psu.setInt(3, ii.getValue());
-                psu.setInt(4, ii.getKey()); // Position shouldn't matter much, will reset upon login
-                psu.executeUpdate();
             }
-            psu.close();
         } catch (SQLException sqlE) {
             System.out.println("Failed to update character cards. Reason: " + sqlE.toString());
         }
@@ -267,20 +274,18 @@ public class MapleClient implements Serializable {
     }
 
     private List<CharNameAndId> loadCharactersInternal(int serverId) {
-        List<CharNameAndId> chars = new LinkedList<CharNameAndId>();
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT id, name, gm FROM characters WHERE accountid = ? AND world = ?");
+        List<CharNameAndId> chars = new LinkedList<>();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT id, name, gm FROM characters WHERE accountid = ? AND world = ?")) {
             ps.setInt(1, accId);
             ps.setInt(2, serverId);
 
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                chars.add(new CharNameAndId(rs.getString("name"), rs.getInt("id")));
-                LoginServer.getLoginAuth(rs.getInt("id"));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    chars.add(new CharNameAndId(rs.getString("name"), rs.getInt("id")));
+                    LoginServer.getLoginAuth(rs.getInt("id"));
+                }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Error loading characters internal");
             e.printStackTrace();
@@ -290,20 +295,18 @@ public class MapleClient implements Serializable {
 
     private int loadCharactersSize(int serverId) {
         int chars = 0;
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT count(*) FROM characters WHERE accountid = ? AND world = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT count(*) FROM characters WHERE accountid = ? AND world = ?")) {
             ps.setInt(1, accId);
             ps.setInt(2, serverId);
 
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                chars = rs.getInt(1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    chars = rs.getInt(1);
+                }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException e) {
-            System.err.println("Error loading characters internal");
+            System.err.println("Error loading characters size");
             e.printStackTrace();
         }
         return chars;
@@ -320,7 +323,12 @@ public class MapleClient implements Serializable {
             return lTempban;
         }
         Calendar today = Calendar.getInstance();
-        lTempban.setTimeInMillis(rs.getTimestamp("tempban").getTime());
+        java.sql.Timestamp tempbanTimestamp = rs.getTimestamp("tempban");
+        if (tempbanTimestamp == null) {
+            lTempban.setTimeInMillis(0);
+            return lTempban;
+        }
+        lTempban.setTimeInMillis(tempbanTimestamp.getTime());
         if (today.getTimeInMillis() < lTempban.getTimeInMillis()) {
             return lTempban;
         }
@@ -379,137 +387,115 @@ public class MapleClient implements Serializable {
 
     private boolean message; 
 
-public boolean messageOn() { 
-    PreparedStatement ps; 
-    try { 
-        ps = DatabaseConnection.getConnection().prepareStatement("SELECT message FROM accounts WHERE id = ?"); 
-        ps.setInt(1, this.getAccID()); 
-        ResultSet rs = ps.executeQuery(); 
-        while (rs.next()) { 
-            if (rs.getInt("message") == 0) { 
-                message = false; 
-            } else { 
-                message = true; 
-        } 
-        } 
-        rs.close(); 
-        ps.close(); 
-    } catch (Exception e) { 
-        System.out.println("message error"); 
-    } 
-    return message; 
-} 
+    public boolean messageOn() {
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT message FROM accounts WHERE id = ?")) {
+            ps.setInt(1, this.getAccID());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    message = rs.getInt("message") != 0;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("message error");
+        }
+        return message;
+    }
      
-    public void setMessageToggle(int x) { 
-        try { 
-            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("UPDATE accounts SET message = ? WHERE id = ?"); 
-            ps.setInt(1, x); 
-            ps.setInt(2, getAccID()); 
-            ps.executeUpdate(); 
-            ps.close(); 
-        } catch (SQLException e) { 
-            e.printStackTrace(); 
-        } 
-    }  
+    public void setMessageToggle(int x) {
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE accounts SET message = ? WHERE id = ?")) {
+            ps.setInt(1, x);
+            ps.setInt(2, getAccID());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     
     
     
     
     public String getTrueBanReason(String name) {
-        String ret = null;
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT banreason FROM accounts WHERE name = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT banreason FROM accounts WHERE name = ?")) {
             ps.setString(1, name);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-            ret = rs.getString(1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
             }
-            rs.close();
-            ps.close();
-            return ret;
         } catch (SQLException ex) {
             System.err.println("Error getting ban reason: " + ex);
         }
-        return ret;
+        return null;
     }
 
     public boolean hasBannedIP() {
-        boolean ret = false;
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM ipbans WHERE ? LIKE CONCAT(ip, '%')");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM ipbans WHERE ? LIKE CONCAT(ip, '%')")) {
             ps.setString(1, getSessionIPAddress());
-            ResultSet rs = ps.executeQuery();
-            rs.next();
-            if (rs.getInt(1) > 0) {
-                ret = true;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException ex) {
             System.err.println("Error checking ip bans" + ex);
         }
-        return ret;
+        return false;
     }
 
     public boolean hasBannedMac() {
         if (macs.isEmpty()) {
             return false;
         }
-        boolean ret = false;
-        int i = 0;
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM macbans WHERE mac IN (");
-            for (i = 0; i < macs.size(); i++) {
-                sql.append("?");
-                if (i != macs.size() - 1) {
-                    sql.append(", ");
-                }
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM macbans WHERE mac IN (");
+        for (int i = 0; i < macs.size(); i++) {
+            sql.append("?");
+            if (i != macs.size() - 1) {
+                sql.append(", ");
             }
-            sql.append(")");
-            PreparedStatement ps = con.prepareStatement(sql.toString());
-            i = 0;
+        }
+        sql.append(")");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            int i = 0;
             for (String mac : macs) {
                 i++;
                 ps.setString(i, mac);
             }
-            ResultSet rs = ps.executeQuery();
-            rs.next();
-            if (rs.getInt(1) > 0) {
-                ret = true;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException ex) {
             System.err.println("Error checking mac bans" + ex);
         }
-        return ret;
+        return false;
     }
 
     private void loadMacsIfNescessary() throws SQLException {
         if (macs.isEmpty()) {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT macs FROM accounts WHERE id = ?");
-            ps.setInt(1, accId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                if (rs.getString("macs") != null) {
-                    String[] macData = rs.getString("macs").split(", ");
-                    for (String mac : macData) {
-                        if (!mac.equals("")) {
-                            macs.add(mac);
+            try (Connection con = DatabaseConnection.getConnection();
+                 PreparedStatement ps = con.prepareStatement("SELECT macs FROM accounts WHERE id = ?")) {
+                ps.setInt(1, accId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        if (rs.getString("macs") != null) {
+                            String[] macData = rs.getString("macs").split(", ");
+                            for (String mac : macData) {
+                                if (!mac.equals("")) {
+                                    macs.add(mac);
+                                }
+                            }
                         }
+                    } else {
+                        throw new RuntimeException("No valid account associated with this client.");
                     }
                 }
-            } else {
-                rs.close();
-                ps.close();
-                throw new RuntimeException("No valid account associated with this client.");
             }
-            rs.close();
-            ps.close();
         }
     }
 
@@ -531,36 +517,34 @@ public boolean messageOn() {
     }
 
     public static final void banMacs(String[] macs) {
-        Connection con = DatabaseConnection.getConnection();
-        try {
+        try (Connection con = DatabaseConnection.getConnection()) {
             List<String> filtered = new LinkedList<>();
-            PreparedStatement ps = con.prepareStatement("SELECT filter FROM macfilters");
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                filtered.add(rs.getString("filter"));
+            try (PreparedStatement ps = con.prepareStatement("SELECT filter FROM macfilters");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    filtered.add(rs.getString("filter"));
+                }
             }
-            rs.close();
-            ps.close();
 
-            ps = con.prepareStatement("INSERT INTO macbans (mac) VALUES (?)");
-            for (String mac : macs) {
-                boolean matched = false;
-                for (String filter : filtered) {
-                    if (mac.matches(filter)) {
-                        matched = true;
-                        break;
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO macbans (mac) VALUES (?)")) {
+                for (String mac : macs) {
+                    boolean matched = false;
+                    for (String filter : filtered) {
+                        if (mac.matches(filter)) {
+                            matched = true;
+                            break;
+                        }
                     }
-                }
-                if (!matched) {
-                    ps.setString(1, mac);
-                    try {
-                        ps.executeUpdate();
-                    } catch (SQLException e) {
-                        // Can fail because of UNIQUE key, we dont care
+                    if (!matched) {
+                        ps.setString(1, mac);
+                        try {
+                            ps.executeUpdate();
+                        } catch (SQLException e) {
+                            // Can fail because of UNIQUE key, we dont care
+                        }
                     }
                 }
             }
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Error banning MACs" + e);
         }
@@ -603,96 +587,85 @@ public boolean messageOn() {
 
     public int login(String login, String pwd, boolean ipMacBanned) {
         int loginok = 5;
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM accounts WHERE name = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM accounts WHERE name = ?")) {
             ps.setString(1, login);
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    final int banned = rs.getInt("banned");
+                    final String passhash = rs.getString("password");
+                    final String salt = rs.getString("salt");
+                    final String oldSession = rs.getString("SessionIP");
 
-            if (rs.next()) {
-                final int banned = rs.getInt("banned");
-                final String passhash = rs.getString("password");
-                final String salt = rs.getString("salt");
-                final String oldSession = rs.getString("SessionIP");
+                    accountName = login;
+                    accId = rs.getInt("id");
+                    secondPassword = rs.getString("2ndpassword");
+                    salt2 = rs.getString("salt2");
+                    gm = rs.getInt("gm") > 0;
+                    greason = rs.getByte("greason");
+                    tempban = getTempBanCalendar(rs);
+                    gender = rs.getByte("gender");
 
-                accountName = login;
-                accId = rs.getInt("id");
-                secondPassword = rs.getString("2ndpassword");
-                salt2 = rs.getString("salt2");
-                gm = rs.getInt("gm") > 0;
-                greason = rs.getByte("greason");
-                tempban = getTempBanCalendar(rs);
-                gender = rs.getByte("gender");
-
-                final boolean admin = rs.getInt("gm") > 1;
-
-                if (secondPassword != null && salt2 != null) {
-                    secondPassword = LoginCrypto.rand_r(secondPassword);
-                }
-                ps.close();
-
-                if (banned > 0 && !gm) {
-                    loginok = 3;
-                } else {
-                    if (banned == -1) {
-                        unban();
+                    if (secondPassword != null && salt2 != null) {
+                        secondPassword = LoginCrypto.rand_r(secondPassword);
                     }
-                    byte loginstate = getLoginState();
-                    if (loginstate > MapleClient.LOGIN_NOTLOGGEDIN) { // already loggedin
-                        loggedIn = false;
-                        loginok = 7;
-                        if (pwd.equalsIgnoreCase("fixme")) {
-                            try {
-                                ps = con.prepareStatement("UPDATE accounts SET loggedin = 0 WHERE name = ?");
-                                ps.setString(1, login);
-                                ps.executeUpdate();
-                                ps.close();
-                            } catch (SQLException se) {
-                            }
-                        }
+
+                    if (banned > 0 && !gm) {
+                        loginok = 3;
                     } else {
-                        boolean updatePasswordHash = false;
-                        // Check if the passwords are correct here. :B
-                        if (passhash == null || passhash.isEmpty()) {
-                            // Match by sessionIP
-                            if (oldSession != null && !oldSession.isEmpty()) {
-                                loggedIn = getSessionIPAddress().equals(oldSession);
-                                loginok = loggedIn ? 0 : 4;
-                                updatePasswordHash = loggedIn;
-                            } else {
-                                loginok = 4;
-                                loggedIn = false;
-                            }
-                        } else if (LoginCryptoLegacy.isLegacyPassword(passhash) && LoginCryptoLegacy.checkPassword(pwd, passhash)) {
-                            // Check if a password upgrade is needed.
-                            loginok = 0;
-                            updatePasswordHash = true;
-                        } else if (salt == null && LoginCrypto.checkSha1Hash(passhash, pwd)) {
-                            loginok = 0;
-                            updatePasswordHash = true;
-                        } else if (LoginCrypto.checkSaltedSha512Hash(passhash, pwd, salt)) {
-                            loginok = 0;
-                        } else {
-                            loggedIn = false;
-                            loginok = 4;
+                        if (banned == -1) {
+                            unban();
                         }
-                        if (updatePasswordHash) {
-                            PreparedStatement pss = con.prepareStatement("UPDATE `accounts` SET `password` = ?, `salt` = ? WHERE id = ?");
-                            try {
-                                final String newSalt = LoginCrypto.makeSalt();
-                                pss.setString(1, LoginCrypto.makeSaltedSha512Hash(pwd, newSalt));
-                                pss.setString(2, newSalt);
-                                pss.setInt(3, accId);
-                                pss.executeUpdate();
-                            } finally {
-                                pss.close();
+                        byte loginstate = getLoginState();
+                        if (loginstate > MapleClient.LOGIN_NOTLOGGEDIN) { // already loggedin
+                            loggedIn = false;
+                            loginok = 7;
+                            if (pwd.equalsIgnoreCase("fixme")) {
+                                try (PreparedStatement ps2 = con.prepareStatement("UPDATE accounts SET loggedin = 0 WHERE name = ?")) {
+                                    ps2.setString(1, login);
+                                    ps2.executeUpdate();
+                                } catch (SQLException se) {
+                                }
+                            }
+                        } else {
+                            boolean updatePasswordHash = false;
+                            // Check if the passwords are correct here. :B
+                            if (passhash == null || passhash.isEmpty()) {
+                                // Match by sessionIP
+                                if (oldSession != null && !oldSession.isEmpty()) {
+                                    loggedIn = getSessionIPAddress().equals(oldSession);
+                                    loginok = loggedIn ? 0 : 4;
+                                    updatePasswordHash = loggedIn;
+                                } else {
+                                    loginok = 4;
+                                    loggedIn = false;
+                                }
+                            } else if (LoginCryptoLegacy.isLegacyPassword(passhash) && LoginCryptoLegacy.checkPassword(pwd, passhash)) {
+                                // Check if a password upgrade is needed.
+                                loginok = 0;
+                                updatePasswordHash = true;
+                            } else if (salt == null && LoginCrypto.checkSha1Hash(passhash, pwd)) {
+                                loginok = 0;
+                                updatePasswordHash = true;
+                            } else if (LoginCrypto.checkSaltedSha512Hash(passhash, pwd, salt)) {
+                                loginok = 0;
+                            } else {
+                                loggedIn = false;
+                                loginok = 4;
+                            }
+                            if (updatePasswordHash) {
+                                try (PreparedStatement pss = con.prepareStatement("UPDATE `accounts` SET `password` = ?, `salt` = ? WHERE id = ?")) {
+                                    final String newSalt = LoginCrypto.makeSalt();
+                                    pss.setString(1, LoginCrypto.makeSaltedSha512Hash(pwd, newSalt));
+                                    pss.setString(2, newSalt);
+                                    pss.setInt(3, accId);
+                                    pss.executeUpdate();
+                                }
                             }
                         }
                     }
                 }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException e) {
             System.err.println("ERROR" + e);
         }
@@ -715,15 +688,13 @@ public boolean messageOn() {
             allow = true;
         }
         if (updatePasswordHash) {
-            Connection con = DatabaseConnection.getConnection();
-            try {
-                PreparedStatement ps = con.prepareStatement("UPDATE `accounts` SET `2ndpassword` = ?, `salt2` = ? WHERE id = ?");
+            try (Connection con = DatabaseConnection.getConnection();
+                 PreparedStatement ps = con.prepareStatement("UPDATE `accounts` SET `2ndpassword` = ?, `salt2` = ? WHERE id = ?")) {
                 final String newSalt = LoginCrypto.makeSalt();
                 ps.setString(1, LoginCrypto.rand_s(LoginCrypto.makeSaltedSha512Hash(in, newSalt)));
                 ps.setString(2, newSalt);
                 ps.setInt(3, accId);
                 ps.executeUpdate();
-                ps.close();
             } catch (SQLException e) {
                 return false;
             }
@@ -732,37 +703,29 @@ public boolean messageOn() {
     }
 
     private void unban() {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("UPDATE accounts SET banned = 0, banreason = '' WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE accounts SET banned = 0, banreason = '' WHERE id = ?")) {
             ps.setInt(1, accId);
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Error while unbanning" + e);
         }
     }
 
     public static final byte unban(String charname) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT accountid from characters where name = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT accountid from characters where name = ?")) {
             ps.setString(1, charname);
-
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                return -1;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return -1;
+                }
+                final int accid = rs.getInt(1);
+                try (PreparedStatement ps2 = con.prepareStatement("UPDATE accounts SET banned = 0, banreason = '' WHERE id = ?")) {
+                    ps2.setInt(1, accid);
+                    ps2.executeUpdate();
+                }
             }
-            final int accid = rs.getInt(1);
-            rs.close();
-            ps.close();
-
-            ps = con.prepareStatement("UPDATE accounts SET banned = 0, banreason = '' WHERE id = ?");
-            ps.setInt(1, accid);
-            ps.executeUpdate();
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Error while unbanning" + e);
             return -2;
@@ -782,13 +745,11 @@ public boolean messageOn() {
                 newMacData.append(", ");
             }
         }
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("UPDATE accounts SET macs = ? WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE accounts SET macs = ? WHERE id = ?")) {
             ps.setString(1, newMacData.toString());
             ps.setInt(2, accId);
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Error saving MACs" + e);
         }
@@ -803,14 +764,12 @@ public boolean messageOn() {
     }
 
     public final void updateLoginState(final int newstate, final String SessionID) { // TODO: Hide?
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("UPDATE accounts SET loggedin = ?, SessionIP = ?, lastlogin = CURRENT_TIMESTAMP() WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE accounts SET loggedin = ?, SessionIP = ?, lastlogin = CURRENT_TIMESTAMP() WHERE id = ?")) {
             ps.setInt(1, newstate);
             ps.setString(2, SessionID);
             ps.setInt(3, getAccID());
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Error updating login state" + e);
         }
@@ -824,52 +783,43 @@ public boolean messageOn() {
     }
 
     public final void updateSecondPassword() {
-        try {
-            final Connection con = DatabaseConnection.getConnection();
-
-            PreparedStatement ps = con.prepareStatement("UPDATE `accounts` SET `2ndpassword` = ?, `salt2` = ? WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE `accounts` SET `2ndpassword` = ?, `salt2` = ? WHERE id = ?")) {
             final String newSalt = LoginCrypto.makeSalt();
             ps.setString(1, LoginCrypto.rand_s(LoginCrypto.makeSaltedSha512Hash(secondPassword, newSalt)));
             ps.setString(2, newSalt);
             ps.setInt(3, accId);
             ps.executeUpdate();
-            ps.close();
-
         } catch (SQLException e) {
-            System.err.println("Error updating login state" + e);
+            System.err.println("Error updating second password" + e); // Changed error message for clarity
         }
     }
 
     public final byte getLoginState() { // TODO: Hide?
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps;
-            ps = con.prepareStatement("SELECT loggedin, lastlogin, banned, `birthday` + 0 AS `bday` FROM accounts WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT loggedin, lastlogin, banned, `birthday` + 0 AS `bday` FROM accounts WHERE id = ?")) {
             ps.setInt(1, getAccID());
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next() || rs.getInt("banned") > 0) {
-                ps.close();
-                rs.close();
-                disconnect();
-                throw new DatabaseException("Account doesn't exist or is banned");
-            }
-            birthday = rs.getInt("bday");
-            byte state = rs.getByte("loggedin");
-
-            if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL) {
-                if (rs.getTimestamp("lastlogin").getTime() + 20000 < System.currentTimeMillis()) { // Connecting to chanserver timeout
-                    state = MapleClient.LOGIN_NOTLOGGEDIN;
-                    updateLoginState(state, getSessionIPAddress());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next() || rs.getInt("banned") > 0) {
+                    disconnect();
+                    throw new DatabaseException("Account doesn't exist or is banned");
                 }
+                birthday = rs.getInt("bday");
+                byte state = rs.getByte("loggedin");
+
+                if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL) {
+                    if (rs.getTimestamp("lastlogin").getTime() + 20000 < System.currentTimeMillis()) { // Connecting to chanserver timeout
+                        state = MapleClient.LOGIN_NOTLOGGEDIN;
+                        updateLoginState(state, getSessionIPAddress());
+                    }
+                }
+                if (state == MapleClient.LOGIN_LOGGEDIN) {
+                    loggedIn = true;
+                } else {
+                    loggedIn = false;
+                }
+                return state;
             }
-            rs.close();
-            ps.close();
-            if (state == MapleClient.LOGIN_LOGGEDIN) {
-                loggedIn = true;
-            } else {
-                loggedIn = false;
-            }
-            return state;
         } catch (SQLException e) {
             loggedIn = false;
             throw new DatabaseException("Error getting login state", e);
@@ -1121,27 +1071,23 @@ public boolean messageOn() {
         if (this.accId < 0) {
             return false;
         }
-        try {
-            final PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("SELECT SessionIP, banned FROM accounts WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT SessionIP, banned FROM accounts WHERE id = ?")) {
             ps.setInt(1, this.accId);
-            final ResultSet rs = ps.executeQuery();
-
-            boolean canlogin = false;
-
-            if (rs.next()) {
-                final String sessionIP = rs.getString("SessionIP");
-
-                if (sessionIP != null) { // Probably a login proced skipper?
-                    canlogin = getSessionIPAddress().equals(sessionIP.split(":")[0]);
-                }
-                if (rs.getInt("banned") > 0) {
-                    canlogin = false; // canlogin false = close client
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    final String sessionIP = rs.getString("SessionIP");
+                    if (sessionIP != null) {
+                        if (!getSessionIPAddress().equals(sessionIP.split(":")[0])) {
+                            return false;
+                        }
+                    }
+                    if (rs.getInt("banned") > 0) {
+                        return false;
+                    }
                 }
             }
-            rs.close();
-            ps.close();
-
-            return canlogin;
+            return true;
         } catch (final SQLException e) {
             System.out.println("Failed in checking IP address for client.");
         }
@@ -1155,7 +1101,7 @@ public boolean messageOn() {
         sb.append(" Closing: ");
         sb.append(getSession().isClosing());
         sb.append(" ClientKeySet: ");
-        sb.append(getSession().getAttribute(MapleClient.CLIENT_KEY) != null);
+        sb.append(getSession().getAttribute("CLIENT") != null);
         sb.append(" loggedin: ");
         sb.append(isLoggedIn());
         sb.append(" has char: ");
@@ -1171,30 +1117,24 @@ public boolean messageOn() {
     }
 
     public final int deleteCharacter(final int cid) {
-        try {
-            final Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT guildid, guildrank, familyid, name FROM characters WHERE id = ? AND accountid = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT guildid, guildrank, familyid, name FROM characters WHERE id = ? AND accountid = ?")) {
             ps.setInt(1, cid);
             ps.setInt(2, accId);
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                return 9;
-            }
-            if (rs.getInt("guildid") > 0) { // Is in a guild when deleted
-                if (rs.getInt("guildrank") == 1) { // Can't delete when leader
-                    rs.close();
-                    ps.close();
-                    return 22;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return 9;
                 }
-                World.Guild.deleteGuildCharacter(rs.getInt("guildid"), cid);
+                if (rs.getInt("guildid") > 0) { // Is in a guild when deleted
+                    if (rs.getInt("guildrank") == 1) { // Can't delete when leader
+                        return 22;
+                    }
+                    World.Guild.deleteGuildCharacter(rs.getInt("guildid"), cid);
+                }
+                if (rs.getInt("familyid") > 0 && World.Family.getFamily(rs.getInt("familyid")) != null) {
+                    World.Family.getFamily(rs.getInt("familyid")).leaveFamily(cid);
+                }
             }
-            if (rs.getInt("familyid") > 0 && World.Family.getFamily(rs.getInt("familyid")) != null) {
-                World.Family.getFamily(rs.getInt("familyid")).leaveFamily(cid);
-            }
-            rs.close();
-            ps.close();
 
             MapleCharacter.deleteWhereCharacterId(con, "DELETE FROM characters WHERE id = ?", cid);
             MapleCharacter.deleteWhereCharacterId(con, "DELETE FROM hiredmerch WHERE characterid = ?", cid);
@@ -1340,21 +1280,15 @@ public boolean messageOn() {
         return builder.toString();
     }
 
-    public static final int findAccIdForCharacterName(final String charName) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT accountid FROM characters WHERE name = ?");
+    public static final int findAccIdForCharacterName(String charName) {
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT accountid FROM characters WHERE name = ?")) {
             ps.setString(1, charName);
-            ResultSet rs = ps.executeQuery();
-
-            int ret = -1;
-            if (rs.next()) {
-                ret = rs.getInt("accountid");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("accountid");
+                }
             }
-            rs.close();
-            ps.close();
-
-            return ret;
         } catch (final SQLException e) {
             System.err.println("findAccIdForCharacterName SQL error");
         }
@@ -1408,24 +1342,23 @@ public boolean messageOn() {
         if (charslots != DEFAULT_CHARSLOT) {
             return charslots; // Save a sql
         }
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM character_slots WHERE accid = ? AND worldid = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT charslots FROM character_slots WHERE accid = ? AND worldid = ?")) {
             ps.setInt(1, accId);
             ps.setInt(2, world);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                charslots = rs.getInt("charslots");
-            } else {
-                PreparedStatement psu = con.prepareStatement("INSERT INTO character_slots (accid, worldid, charslots) VALUES (?, ?, ?)");
-                psu.setInt(1, accId);
-                psu.setInt(2, world);
-                psu.setInt(3, charslots);
-                psu.executeUpdate();
-                psu.close();
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    charslots = rs.getInt("charslots");
+                } else {
+                    try (PreparedStatement psu = con.prepareStatement("INSERT INTO character_slots (accid, worldid, charslots) VALUES (?, ?, ?)")) {
+                        psu.setInt(1, accId);
+                        psu.setInt(2, world);
+                        psu.setInt(3, charslots);
+                        psu.executeUpdate();
+                    }
+                }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException sqlE) {
             sqlE.printStackTrace();
         }
@@ -1439,14 +1372,12 @@ public boolean messageOn() {
         }
         charslots++;
 
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("UPDATE character_slots SET charslots = ? WHERE worldid = ? AND accid = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE character_slots SET charslots = ? WHERE worldid = ? AND accid = ?")) {
             ps.setInt(1, charslots);
             ps.setInt(2, world);
             ps.setInt(3, accId);
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException sqlE) {
             sqlE.printStackTrace();
             return false;
@@ -1455,49 +1386,52 @@ public boolean messageOn() {
     }
 
     public static final byte unbanIPMacs(String charname) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT accountid from characters where name = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT accountid from characters where name = ?")) {
             ps.setString(1, charname);
 
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
+            int accid = -1;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    accid = rs.getInt(1);
+                }
+            }
+            if (accid == -1) {
                 return -1;
             }
-            final int accid = rs.getInt(1);
-            rs.close();
-            ps.close();
 
-            ps = con.prepareStatement("SELECT * FROM accounts WHERE id = ?");
-            ps.setInt(1, accid);
-            rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
+            String sessionIP = null;
+            String macs = null;
+            try (PreparedStatement ps2 = con.prepareStatement("SELECT SessionIP, macs FROM accounts WHERE id = ?")) {
+                ps2.setInt(1, accid);
+                try (ResultSet rs = ps2.executeQuery()) {
+                    if (rs.next()) {
+                        sessionIP = rs.getString("SessionIP");
+                        macs = rs.getString("macs");
+                    }
+                }
+            }
+
+            if (sessionIP == null && macs == null) {
                 return -1;
             }
-            final String sessionIP = rs.getString("sessionIP");
-            final String macs = rs.getString("macs");
-            rs.close();
-            ps.close();
+
             byte ret = 0;
             if (sessionIP != null) {
-                PreparedStatement psa = con.prepareStatement("DELETE FROM ipbans WHERE ip like ?");
-                psa.setString(1, sessionIP);
-                psa.execute();
-                psa.close();
-                ret++;
+                try (PreparedStatement psa = con.prepareStatement("DELETE FROM ipbans WHERE ip like ?")) {
+                    psa.setString(1, sessionIP);
+                    psa.execute();
+                    ret++;
+                }
             }
             if (macs != null) {
                 String[] macz = macs.split(", ");
                 for (String mac : macz) {
                     if (!mac.equals("")) {
-                        PreparedStatement psa = con.prepareStatement("DELETE FROM macbans WHERE mac = ?");
-                        psa.setString(1, mac);
-                        psa.execute();
-                        psa.close();
+                        try (PreparedStatement psa = con.prepareStatement("DELETE FROM macbans WHERE mac = ?")) {
+                            psa.setString(1, mac);
+                            psa.execute();
+                        }
                     }
                 }
                 ret++;
@@ -1510,40 +1444,43 @@ public boolean messageOn() {
     }
 
     public static final byte unHellban(String charname) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT accountid from characters where name = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT accountid from characters where name = ?")) {
             ps.setString(1, charname);
 
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
+            int accid = -1;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    accid = rs.getInt(1);
+                }
+            }
+            if (accid == -1) {
                 return -1;
             }
-            final int accid = rs.getInt(1);
-            rs.close();
-            ps.close();
 
-            ps = con.prepareStatement("SELECT * FROM accounts WHERE id = ?");
-            ps.setInt(1, accid);
-            rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
+            String sessionIP = null;
+            String email = null;
+            try (PreparedStatement ps2 = con.prepareStatement("SELECT SessionIP, email FROM accounts WHERE id = ?")) {
+                ps2.setInt(1, accid);
+                try (ResultSet rs = ps2.executeQuery()) {
+                    if (rs.next()) {
+                        sessionIP = rs.getString("SessionIP");
+                        email = rs.getString("email");
+                    }
+                }
+            }
+
+            if (email == null) {
                 return -1;
             }
-            final String sessionIP = rs.getString("sessionIP");
-            final String email = rs.getString("email");
-            rs.close();
-            ps.close();
-            ps = con.prepareStatement("UPDATE accounts SET banned = 0, banreason = '' WHERE email = ?" + (sessionIP == null ? "" : " OR sessionIP = ?"));
-            ps.setString(1, email);
-            if (sessionIP != null) {
-                ps.setString(2, sessionIP);
+
+            try (PreparedStatement ps3 = con.prepareStatement("UPDATE accounts SET banned = 0, banreason = '' WHERE email = ?" + (sessionIP == null ? "" : " OR SessionIP = ?"))) {
+                ps3.setString(1, email);
+                if (sessionIP != null) {
+                    ps3.setString(2, sessionIP);
+                }
+                ps3.executeUpdate();
             }
-            ps.execute();
-            ps.close();
             return 0;
         } catch (SQLException e) {
             System.err.println("Error while unbanning" + e);
@@ -1580,24 +1517,18 @@ public boolean messageOn() {
     }
 
     public final Timestamp getCreated() { // TODO: Hide?
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps;
-            ps = con.prepareStatement("SELECT createdat FROM accounts WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT createdat FROM accounts WHERE id = ?")) {
             ps.setInt(1, getAccID());
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                return null;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getTimestamp("createdat");
+                }
             }
-            Timestamp ret = rs.getTimestamp("createdat");
-            rs.close();
-            ps.close();
-            return ret;
         } catch (SQLException e) {
             throw new DatabaseException("error getting create", e);
         }
+        return null;
     }
 
     public String getTempIP() {

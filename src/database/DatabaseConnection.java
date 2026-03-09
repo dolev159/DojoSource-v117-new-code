@@ -66,7 +66,8 @@ public class DatabaseConnection {
                     + "&characterEncoding=UTF-8"
                     + "&useUnicode=true"
                     + "&serverTimezone=UTC"
-                    + "&allowPublicKeyRetrieval=true");
+                    + "&allowPublicKeyRetrieval=true"
+                    + "&zeroDateTimeBehavior=convertToNull");
 
             config.setDriverClassName("com.mysql.jdbc.Driver");
             config.setUsername(user);

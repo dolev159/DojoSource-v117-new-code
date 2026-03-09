@@ -137,6 +137,7 @@ public final class MapleMap {
     private MapleSquadType squad;
     private Map<String, Integer> environment = new LinkedHashMap<String, Integer>();
     private WeakReference<MapleCharacter> changeMobOrigin = null;
+    private server.events.EventInstance eventInstance = null;
 
     public MapleMap(final int mapid, final int channel, final int returnMapId, final float monsterRate) {
         this.mapid = mapid;
@@ -502,7 +503,8 @@ public final class MapleMap {
                     int mesos = Randomizer.nextInt(1 + Math.abs(de.Maximum - de.Minimum)) + de.Minimum;
 
                     if (mesos > 0) {
-                        spawnMobMesoDrop((int) (mesos * (chr.getStat().mesoBuff / 100.0) * chr.getDropMod() * cmServerrate), calcDropPos(pos, mob.getTruePosition()), mob, chr, false, droptype);
+                        int finalMesos = (int) (mesos * (chr.getStat().mesoBuff / 100.0) * chr.getDropMod() * cmServerrate);
+                        spawnMobMesoDrop(finalMesos, calcDropPos(pos, mob.getTruePosition()), mob, chr, false, droptype);
                         mesoDropped = true;
                     }
                 } else {
@@ -608,6 +610,9 @@ public final class MapleMap {
         spawnedMonstersOnMap.decrementAndGet();
         removeMapObject(monster);
         monster.killed();
+        if (monster.getStats().isBoss() && eventInstance != null) {
+            server.events.RewardManager.getInstance(eventInstance).startProtectionTimer();
+        }
         final MapleSquad sqd = getSquadByMap();
         final boolean instanced = sqd != null || monster.getEventInstance() != null || getEMByMap() != null;
         int dropOwner = monster.killBy(chr, lastSkill);
@@ -1138,6 +1143,7 @@ public final class MapleMap {
         final List<MapleMonster> monsters = getAllMonstersThreadsafe();
         for (MapleMonster monster : monsters) {
             monster.updateMonster(now);
+            monster.updateAI(now);
         }
     }
 
@@ -2034,6 +2040,9 @@ public final class MapleMap {
         if (droptype == 0 || droptype == 1) {
             mdrop.registerFFA(30000);
         }
+        if (eventInstance != null) {
+            server.events.RewardManager.getInstance(eventInstance).registerDrop(mdrop);
+        }
     }
 
     public final void spawnMobDrop(final Item idrop, final Point dropPos, final MapleMonster mob, final MapleCharacter chr, final byte droptype, final int questid) {
@@ -2052,6 +2061,9 @@ public final class MapleMap {
         mdrop.registerExpire(120000);
         if (droptype == 0 || droptype == 1) {
             mdrop.registerFFA(30000);
+        }
+        if (eventInstance != null) {
+            server.events.RewardManager.getInstance(eventInstance).registerDrop(mdrop);
         }
         activateItemReactors(mdrop, chr.getClient());
     }
@@ -3482,15 +3494,15 @@ public final class MapleMap {
             if (squad != null) {
                 z = z.substring(0, z.length() - 1);
             }
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("INSERT INTO speedruns(`type`, `leader`, `timestring`, `time`, `members`) VALUES (?,?,?,?,?)");
-            ps.setString(1, type.name());
-            ps.setString(2, leader);
-            ps.setString(3, time);
-            ps.setLong(4, timz);
-            ps.setString(5, z);
-            ps.executeUpdate();
-            ps.close();
+            try (Connection con = DatabaseConnection.getConnection();
+                 PreparedStatement ps = con.prepareStatement("INSERT INTO speedruns(`type`, `leader`, `timestring`, `time`, `members`) VALUES (?,?,?,?,?)")) {
+                ps.setString(1, type.name());
+                ps.setString(2, leader);
+                ps.setString(3, time);
+                ps.setLong(4, timz);
+                ps.setString(5, z);
+                ps.executeUpdate();
+            }
 
             if (lastTime == 0) { // Great, we just add it
                 SpeedRunner.addSpeedRunData(type, SpeedRunner.addSpeedRunData(new StringBuilder(SpeedRunner.getPreamble(type)), new HashMap<Integer, String>(), z, leader, 1, time), timz);
@@ -3950,12 +3962,22 @@ public final class MapleMap {
         }, 500); //avoid dl
     }
 
+
+
     public int getInstanceId() {
         return instanceid;
     }
 
-    public void setInstanceId(int ii) {
-        this.instanceid = ii;
+    public void setInstanceId(int instanceid) {
+        this.instanceid = instanceid;
+    }
+
+    public server.events.EventInstance getEventInstance() {
+        return eventInstance;
+    }
+
+    public void setEventInstance(server.events.EventInstance eventInstance) {
+        this.eventInstance = eventInstance;
     }
 
     public int getPartyBonusRate() {

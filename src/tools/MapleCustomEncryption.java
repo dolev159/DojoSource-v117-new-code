@@ -20,6 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package tools;
 
+import constants.ServerConstants;
+
+
 /**
  * Provides MapleStory's custom encryption routines.
  * 
@@ -36,7 +39,6 @@ public class MapleCustomEncryption {
      * @return The encrypted data.
      */
     public static final byte[] encryptData(final byte data[]) {
-
         for (int j = 0; j < 6; j++) {
             byte remember = 0;
             byte dataLength = (byte) (data.length & 0xFF);

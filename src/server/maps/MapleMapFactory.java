@@ -63,13 +63,12 @@ public class MapleMapFactory {
     private final ReentrantLock lock = new ReentrantLock();
     private static final Map<Integer, List<AbstractLoadedMapleLife>> customLife = new HashMap<>();  
     private int channel;
-    
+
     public static int loadCustomLife() {
         customLife.clear(); // init
-        try {
-            Connection con = (Connection) DatabaseConnection.getConnection();
-            java.sql.PreparedStatement ps = con.prepareStatement("SELECT * FROM `wz_customlife`");
-            ResultSet rs = ps.executeQuery();
+        try (java.sql.Connection con = DatabaseConnection.getConnection();
+             java.sql.PreparedStatement ps = con.prepareStatement("SELECT * FROM `wz_customlife`");
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 final int mapid = rs.getInt("mid");
                 final AbstractLoadedMapleLife myLife = loadLife(rs.getInt("dataid"), rs.getInt("f"), rs.getByte("hide") > 0, rs.getInt("fh"), rs.getInt("cy"), rs.getInt("rx0"), rs.getInt("rx1"), rs.getInt("x"), rs.getInt("y"), rs.getString("type"), rs.getInt("mobtime"));
@@ -87,8 +86,6 @@ public class MapleMapFactory {
                     customLife.put(mapid, collections);
                 }
             }
-            rs.close();
-            ps.close();
             return customLife.size();
             //System.out.println("Successfully loaded " + customLife.size() + " maps with custom life.");
         } catch (SQLException e) {

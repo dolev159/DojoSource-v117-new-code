@@ -62,8 +62,8 @@ public class MapleCharacterUtil {
     }
 
     public static final int getIdByName(final String name) {
-        try {
-            return CharacterDAO.getIdByName(DatabaseConnection.getConnection(), name);
+        try (Connection con = DatabaseConnection.getConnection()) {
+            return CharacterDAO.getIdByName(con, name);
         } catch (SQLException e) {
             System.err.println("error 'getIdByName' " + e);
             return -1;
@@ -76,33 +76,25 @@ public class MapleCharacterUtil {
     // 1 = The password you have input is wrong
     // 2 = Password Changed successfully
     public static final int Change_SecondPassword(final int accid, final String password, final String newpassword) {
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("SELECT * from accounts where id = ?");
-            ps.setInt(1, accid);
-            final ResultSet rs = ps.executeQuery();
-
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                return -1;
+        try (Connection con = DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement("SELECT * from accounts where id = ?")) {
+                ps.setInt(1, accid);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        return -1;
+                    }
+                    String secondPassword = rs.getString("2ndpassword");
+                    final String salt2 = rs.getString("salt2");
+                    if (secondPassword != null && salt2 != null) {
+                        secondPassword = LoginCrypto.rand_r(secondPassword);
+                    } else if (secondPassword == null && salt2 == null) {
+                        return 0;
+                    }
+                    if (!check_ifPasswordEquals(secondPassword, password, salt2)) {
+                        return 1;
+                    }
+                }
             }
-            String secondPassword = rs.getString("2ndpassword");
-            final String salt2 = rs.getString("salt2");
-            if (secondPassword != null && salt2 != null) {
-                secondPassword = LoginCrypto.rand_r(secondPassword);
-            } else if (secondPassword == null && salt2 == null) {
-                rs.close();
-                ps.close();
-                return 0;
-            }
-            if (!check_ifPasswordEquals(secondPassword, password, salt2)) {
-                rs.close();
-                ps.close();
-                return 1;
-            }
-            rs.close();
-            ps.close();
 
             String SHA1hashedsecond;
             try {
@@ -110,19 +102,18 @@ public class MapleCharacterUtil {
             } catch (Exception e) {
                 return -2;
             }
-            ps = con.prepareStatement("UPDATE accounts set 2ndpassword = ?, salt2 = ? where id = ?");
-            ps.setString(1, SHA1hashedsecond);
-            ps.setString(2, null);
-            ps.setInt(3, accid);
+            try (PreparedStatement ps = con.prepareStatement("UPDATE accounts set 2ndpassword = ?, salt2 = ? where id = ?")) {
+                ps.setString(1, SHA1hashedsecond);
+                ps.setString(2, null);
+                ps.setInt(3, accid);
 
-            if (!ps.execute()) {
-                ps.close();
-                return 2;
+                if (ps.executeUpdate() > 0) {
+                    return 2;
+                }
             }
-            ps.close();
             return -2;
         } catch (SQLException e) {
-            System.err.println("error 'getIdByName' " + e);
+            System.err.println("error 'Change_SecondPassword' " + e);
             return -2;
         }
     }
@@ -142,8 +133,8 @@ public class MapleCharacterUtil {
 
     //id accountid gender
     public static Triple<Integer, Integer, Integer> getInfoByName(String name, int world) {
-        try {
-            return CharacterDAO.getInfoByName(DatabaseConnection.getConnection(), name, world);
+        try (Connection con = DatabaseConnection.getConnection()) {
+            return CharacterDAO.getInfoByName(con, name, world);
         } catch (SQLException e) {
             System.err.println("error 'getInfoByName' " + e);
             return null;

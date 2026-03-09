@@ -32,6 +32,14 @@ import tools.HexTool;
 import tools.StringUtil;
 import tools.packet.CField;
 import tools.packet.CWvsContext;
+import server.events.EventInstanceManager;
+import server.events.AbstractEventInstance;
+import server.events.RewardManager;
+import server.life.MapleLifeFactory;
+import server.life.MapleMonster;
+import server.maps.MapleMap;
+import java.awt.Point;
+import java.util.Random;
 
 /**
  *
@@ -335,10 +343,10 @@ public class AdminCommand {
 
         @Override
         public int execute(MapleClient c, String[] splitted) {
-            try {
-                Connection con = (Connection) DatabaseConnection.getConnection();
-                PreparedStatement ps = (PreparedStatement) con.prepareStatement(StringUtil.joinStringFrom(splitted, 1));
-                ps.executeUpdate();
+            try (java.sql.Connection con = DatabaseConnection.getConnection()) {
+                try (java.sql.PreparedStatement ps = con.prepareStatement(StringUtil.joinStringFrom(splitted, 1))) {
+                    ps.executeUpdate();
+                }
             } catch (SQLException e) {
                 c.getPlayer().dropMessage(0, "Failed to execute SQL command.");
                 return 0;

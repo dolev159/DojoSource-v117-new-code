@@ -3,6 +3,7 @@ package server;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import database.DatabaseConnection;
 import java.io.File;
 import java.util.List;
@@ -60,11 +61,10 @@ public class CashItemFactory {
             itemPackage.put(Integer.parseInt(c.getName()), packageItems);
         }
 
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM cashshop_modified_items");
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM cashshop_modified_items");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
                 CashModInfo ret = new CashModInfo(rs.getInt("serial"), rs.getInt("discount_price"), rs.getInt("mark"), rs.getInt("showup") > 0, rs.getInt("itemid"), rs.getInt("priority"), rs.getInt("package") > 0, rs.getInt("period"), rs.getInt("gender"), rs.getInt("count"), rs.getInt("meso"), rs.getInt("unk_1"), rs.getInt("unk_2"), rs.getInt("unk_3"), rs.getInt("extra_flags"));
                 itemMods.put(ret.sn, ret);
                 if (ret.showUp) {
@@ -74,9 +74,7 @@ public class CashItemFactory {
                     }
                 }
             }
-            rs.close();
-            ps.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 

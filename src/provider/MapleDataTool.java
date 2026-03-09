@@ -87,7 +87,7 @@ public class MapleDataTool {
 
     public static int getIntConvert(MapleData data) {
         if (data.getType() == MapleDataType.STRING) {
-            return Integer.parseInt(getString(data));
+            return Integer.parseInt(getString(data).trim());
         } else {
             return getInt(data);
         }
@@ -96,7 +96,7 @@ public class MapleDataTool {
     public static int getIntConvert(String path, MapleData data) {
         MapleData d = data.getChildByPath(path);
         if (d.getType() == MapleDataType.STRING) {
-            return Integer.parseInt(getString(d));
+            return Integer.parseInt(getString(d).trim());
         } else {
             return getInt(d);
         }

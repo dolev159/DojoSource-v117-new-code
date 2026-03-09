@@ -6,7 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import tools.Randomizer;
+import server.Randomizer;
 import tools.packet.LoginPacket;
 import constants.ServerConstants;
 import tools.MapleAESOFB;
@@ -21,9 +21,9 @@ public class MaplePacketHandler extends SimpleChannelInboundHandler<byte[]> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         final String address = ctx.channel().remoteAddress().toString().split(":")[0];
 
-        // Generate IVs for AES encryption
-        final byte ivRecv[] = new byte[]{(byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255)};
-        final byte ivSend[] = new byte[]{(byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255)};
+        // Standard OdinMS IVs for v117
+        final byte ivRecv[] = new byte[]{70, 114, 122, (byte) Randomizer.nextInt(255)};
+        final byte ivSend[] = new byte[]{82, 48, 120, (byte) Randomizer.nextInt(255)};
 
         final MapleClient client = new MapleClient(
                 new MapleAESOFB(ivSend, (short) (0xFFFF - ServerConstants.MAPLE_VERSION)),
@@ -58,14 +58,12 @@ public class MaplePacketHandler extends SimpleChannelInboundHandler<byte[]> {
         final MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
         
         if (client != null) {
-            // DECOUPLING: Move heavy game logic to the GameWorkerPool
-            // This prevents blocking the I/O event loop.
             GameWorkerPool.submit(() -> {
                 try {
                     MapleServerHandler.handlePacket(packet, client);
                 } catch (Exception e) {
-                    // Log packet handling exception
-                    System.err.println("[Netty] Error handling packet from " + client.getRemoteAddress() + ": " + e.getMessage());
+                    System.err.println("[Netty] Error handling packet from " + client.getRemoteAddress() + ":");
+                    e.printStackTrace();
                 }
             });
         }
@@ -76,7 +74,6 @@ public class MaplePacketHandler extends SimpleChannelInboundHandler<byte[]> {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
             if (e.state() == IdleState.READER_IDLE || e.state() == IdleState.WRITER_IDLE) {
-                // Close connection on idle
                 ctx.close();
             }
         }
@@ -84,7 +81,10 @@ public class MaplePacketHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        // Silent close on network errors
+        if (!(cause instanceof java.io.IOException)) {
+            System.err.println("[Netty] Exception in channel " + ctx.channel().remoteAddress() + ": " + cause.getMessage());
+            cause.printStackTrace();
+        }
         ctx.close();
     }
 }

@@ -74,7 +74,9 @@ public class CashShopServer {
 	playersMTS.disconnectAll();
         MTSStorage.getInstance().saveBuyNow(true);
         System.out.println("Shutting down Cash Shop...");
-	//acceptor.unbindAll();
+        if (acceptor != null) {
+            acceptor.close();
+        }
         finishedShutdown = true;
     }
 

@@ -57,7 +57,17 @@ import tools.packet.CField;
 import tools.Pair;
 import tools.packet.CWvsContext.InfoPacket;
 
-public class EventInstanceManager {
+public class EventInstanceManager implements server.events.EventInstance {
+    
+    @Override
+    public List<server.maps.MapleMap> getMapInstances() {
+        List<server.maps.MapleMap> maps = new java.util.ArrayList<>();
+        for (int id : mapIds) {
+            maps.add(ChannelServer.getInstance(channel).getMapFactory().getMap(id));
+        }
+        return maps;
+    }
+
 
     private List<MapleCharacter> chars = new LinkedList<MapleCharacter>(); // This is messy
     private List<Integer> dced = new LinkedList<Integer>();
@@ -436,7 +446,8 @@ public class EventInstanceManager {
      * @param chr
      * @param mob
      */
-    public void monsterKilled(final MapleCharacter chr, final MapleMonster mob) {
+    @Override
+    public void monsterKilled(final MapleCharacter chr, final server.life.MapleMonster mob) {
         if (disposed) {
             return;
         }
@@ -467,7 +478,8 @@ public class EventInstanceManager {
         }
     }
 
-    public void monsterDamaged(final MapleCharacter chr, final MapleMonster mob, final int damage) {
+    @Override
+    public void monsterDamaged(final MapleCharacter chr, final server.life.MapleMonster mob, final int damage) {
         if (disposed || mob.getId() != 9700037) { // Ghost PQ boss only.
             return;
         }
@@ -914,5 +926,15 @@ public class EventInstanceManager {
 
     public void applySkill(final MapleCharacter chr, final int id) {
         SkillFactory.getSkill(id).getEffect(1).applyTo(chr);
+    }
+
+    @Override
+    public String getStatus() {
+        return props.getProperty("status", "Legacy");
+    }
+
+    @Override
+    public long getLastTickDuration() {
+        return 0; // Legacy scripting doesn't track this yet
     }
 }

@@ -42,11 +42,11 @@ import java.util.ArrayList;
 import server.maps.*;
 import tools.packet.CField.NPCPacket;
 import tools.packet.CWvsContext;
-
+import java.sql.SQLException;
 public class PlayerNPC extends MapleNPC implements MapleCharacterLook {
 
     public static final boolean Auto_Update = false;
-    
+
     private Map<Byte, Integer> equips = new HashMap<Byte, Integer>();
     private int mapid, face, hair, charId, elf, demonmarking;
     private short job;
@@ -74,15 +74,17 @@ public class PlayerNPC extends MapleNPC implements MapleCharacterLook {
             }
         }
 
-        Connection con = DatabaseConnection.getConnection();
-        PreparedStatement ps = con.prepareStatement("SELECT * FROM playernpcs_equip WHERE NpcId = ?");
-        ps.setInt(1, getId());
-        ResultSet rs2 = ps.executeQuery();
-        while (rs2.next()) {
-            equips.put(rs2.getByte("equippos"), rs2.getInt("equipid"));
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM playernpcs_equip WHERE NpcId = ?")) {
+            ps.setInt(1, getId());
+            try (ResultSet rs2 = ps.executeQuery()) {
+                while (rs2.next()) {
+                    equips.put(rs2.getByte("equippos"), rs2.getInt("equipid"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        rs2.close();
-        ps.close();
     }
 
     public PlayerNPC(MapleCharacter cid, int npc, MapleMap map, MapleCharacter base) {
@@ -103,16 +105,13 @@ public class PlayerNPC extends MapleNPC implements MapleCharacterLook {
     }
 
     public static void loadAll() {
-	List<PlayerNPC> toAdd = new ArrayList<PlayerNPC>();
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM playernpcs");
-            ResultSet rs = ps.executeQuery();
+        List<PlayerNPC> toAdd = new ArrayList<PlayerNPC>();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM playernpcs");
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 toAdd.add(new PlayerNPC(rs));
             }
-            rs.close();
-            ps.close();
         } catch (Exception se) {
             se.printStackTrace();
         }
@@ -170,17 +169,16 @@ public class PlayerNPC extends MapleNPC implements MapleCharacterLook {
         }
 
     public void destroy(boolean remove) {
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("DELETE FROM playernpcs WHERE scriptid = ?");
-            ps.setInt(1, getId());
-            ps.executeUpdate();
-            ps.close();
+        try (Connection con = DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM playernpcs WHERE scriptid = ?")) {
+                ps.setInt(1, getId());
+                ps.executeUpdate();
+            }
 
-            ps = con.prepareStatement("DELETE FROM playernpcs_equip WHERE npcid = ?");
-            ps.setInt(1, getId());
-            ps.executeUpdate();
-            ps.close();
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM playernpcs_equip WHERE npcid = ?")) {
+                ps.setInt(1, getId());
+                ps.executeUpdate();
+            }
             if (remove) {
                 removeFromServer();
             }
@@ -190,49 +188,47 @@ public class PlayerNPC extends MapleNPC implements MapleCharacterLook {
     }
 
     public void saveToDB() {
-        Connection con = DatabaseConnection.getConnection();
-        try {
-
-            if (getNPCFromWZ() == null) {
-                destroy(true);
-                return;
-            }
-            destroy();
-            PreparedStatement ps = con.prepareStatement("INSERT INTO playernpcs(name, hair, face, skin, x, y, map, charid, scriptid, foothold, dir, gender, pets, job, elf, demonmarking) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            ps.setString(1, getName());
-            ps.setInt(2, getHair());
-            ps.setInt(3, getFace());
-            ps.setInt(4, getSkinColor());
-            ps.setInt(5, getTruePosition().x);
-            ps.setInt(6, getTruePosition().y);
-            ps.setInt(7, getMapId());
-            ps.setInt(8, getCharId());
-            ps.setInt(9, getId());
-            ps.setInt(10, getFh());
-            ps.setInt(11, getF());
-            ps.setInt(12, getGender());
-            String[] pet = {"0", "0", "0"};
-            for (int i = 0; i < 3; i++) {
-                if (pets[i] > 0) {
-                    pet[i] = String.valueOf(pets[i]);
+        if (getNPCFromWZ() == null) {
+            destroy(true);
+            return;
+        }
+        destroy();
+        try (Connection con = DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO playernpcs(name, hair, face, skin, x, y, map, charid, scriptid, foothold, dir, gender, pets, job, elf, demonmarking) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                ps.setString(1, getName());
+                ps.setInt(2, getHair());
+                ps.setInt(3, getFace());
+                ps.setInt(4, getSkinColor());
+                ps.setInt(5, getTruePosition().x);
+                ps.setInt(6, getTruePosition().y);
+                ps.setInt(7, getMapId());
+                ps.setInt(8, getCharId());
+                ps.setInt(9, getId());
+                ps.setInt(10, getFh());
+                ps.setInt(11, getF());
+                ps.setInt(12, getGender());
+                String[] pet = {"0", "0", "0"};
+                for (int i = 0; i < 3; i++) {
+                    if (pets[i] > 0) {
+                        pet[i] = String.valueOf(pets[i]);
+                    }
                 }
-            }
-            ps.setString(13, pet[0] + "," + pet[1] + "," + pet[2]);
-            ps.setShort(14, getJob());
-            ps.setInt(15, getElf());
-            ps.setInt(16, getDemonMarking());
-            ps.executeUpdate();
-            ps.close();
-
-            ps = con.prepareStatement("INSERT INTO playernpcs_equip(npcid, charid, equipid, equippos) VALUES (?, ?, ?, ?)");
-            ps.setInt(1, getId());
-            ps.setInt(2, getCharId());
-            for (Entry<Byte, Integer> equip : equips.entrySet()) {
-                ps.setInt(3, equip.getValue());
-                ps.setInt(4, equip.getKey());
+                ps.setString(13, pet[0] + "," + pet[1] + "," + pet[2]);
+                ps.setShort(14, getJob());
+                ps.setInt(15, getElf());
+                ps.setInt(16, getDemonMarking());
                 ps.executeUpdate();
             }
-            ps.close();
+
+            try (PreparedStatement ps = con.prepareStatement("INSERT INTO playernpcs_equip(npcid, charid, equipid, equippos) VALUES (?, ?, ?, ?)")) {
+                ps.setInt(1, getId());
+                ps.setInt(2, getCharId());
+                for (Entry<Byte, Integer> equip : equips.entrySet()) {
+                    ps.setInt(3, equip.getValue());
+                    ps.setInt(4, equip.getKey());
+                    ps.executeUpdate();
+                }
+            }
         } catch (Exception se) {
             se.printStackTrace();
         }

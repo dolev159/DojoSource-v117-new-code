@@ -28,6 +28,7 @@ import constants.ServerConstants.PlayerGMRank;
 import database.DatabaseConnection;
 import handling.channel.ChannelServer;
 import java.lang.reflect.Modifier;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -183,9 +184,8 @@ public class CommandProcessor {
     }
 
     private static void logCommandToDB(MapleCharacter player, String command, String table) {
-        PreparedStatement ps = null;
-        try {
-            ps = DatabaseConnection.getConnection().prepareStatement("INSERT INTO " + table + " (cid, command, mapid) VALUES (?, ?, ?)");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("INSERT INTO " + table + " (cid, command, mapid) VALUES (?, ?, ?)")) {
             ps.setInt(1, player.getId());
             ps.setString(2, command);
             ps.setInt(3, player.getMap().getId());
@@ -193,11 +193,6 @@ public class CommandProcessor {
         } catch (SQLException ex) {
             FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, ex);
             ex.printStackTrace();
-        } finally {
-            try {
-                ps.close();
-            } catch (SQLException e) {
-            }
         }
     }
 }

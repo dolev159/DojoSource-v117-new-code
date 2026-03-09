@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Wizet\MapleStory]
+"SoScreenMode"=dword:00000003
+"ResWidth"=dword:00000500
+"ResHeight"=dword:000002d0
+"GMS"=dword:00000001
+"SnapshotQuality"=dword:00000000

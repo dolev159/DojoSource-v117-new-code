@@ -56,36 +56,32 @@ public class MapleFamily implements java.io.Serializable {
     public MapleFamily(final int fid) {
         super();
 
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM families WHERE familyid = ?");
-            ps.setInt(1, fid);
-            ResultSet rs = ps.executeQuery();
-
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                id = -1;
-		proper = false;
-                return;
-            }
-            id = fid;
-            leaderid = rs.getInt("leaderid");
-            notice = rs.getString("notice");
-            rs.close();
-            ps.close();
-            //does not need to be in any order
-            ps = con.prepareStatement("SELECT id, name, level, job, seniorid, junior1, junior2, currentrep, totalrep FROM characters WHERE familyid = ?", ResultSet.CONCUR_UPDATABLE);
-            ps.setInt(1, fid);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                if (rs.getInt("id") == leaderid) {
-                    leadername = rs.getString("name");
+        try (Connection con = DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM families WHERE familyid = ?")) {
+                ps.setInt(1, fid);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        id = -1;
+                        proper = false;
+                        return;
+                    }
+                    id = fid;
+                    leaderid = rs.getInt("leaderid");
+                    notice = rs.getString("notice");
                 }
-                members.put(rs.getInt("id"), new MapleFamilyCharacter(rs.getInt("id"), rs.getShort("level"), rs.getString("name"), (byte) -1, rs.getInt("job"), fid, rs.getInt("seniorid"), rs.getInt("junior1"), rs.getInt("junior2"), rs.getInt("currentrep"), rs.getInt("totalrep"), false));
             }
-            rs.close();
-            ps.close();
+            //does not need to be in any order
+            try (PreparedStatement ps = con.prepareStatement("SELECT id, name, level, job, seniorid, junior1, junior2, currentrep, totalrep FROM characters WHERE familyid = ?", ResultSet.CONCUR_UPDATABLE)) {
+                ps.setInt(1, fid);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        if (rs.getInt("id") == leaderid) {
+                            leadername = rs.getString("name");
+                        }
+                        members.put(rs.getInt("id"), new MapleFamilyCharacter(rs.getInt("id"), rs.getShort("level"), rs.getString("name"), (byte) -1, rs.getInt("job"), fid, rs.getInt("seniorid"), rs.getInt("junior1"), rs.getInt("junior2"), rs.getInt("currentrep"), rs.getInt("totalrep"), false));
+                    }
+                }
+            }
 
             if (leadername == null || members.size() < 2) {
                 System.err.println("Leader " + leaderid + " isn't in family " + id + ". Members: " + members.size() + ".  Impossible... family is disbanding.");
@@ -93,46 +89,46 @@ public class MapleFamily implements java.io.Serializable {
                 proper = false;
                 return;
             }
-	    //upon startup, load all the seniorid/junior1/junior2 that aren't in this family
-	    for (MapleFamilyCharacter mfc : members.values()) { //just in case
-		if (mfc.getJunior1() > 0 && (getMFC(mfc.getJunior1()) == null || mfc.getId() == mfc.getJunior1())) {
-		    mfc.setJunior1(0);
-		}
-		if (mfc.getJunior2() > 0 && (getMFC(mfc.getJunior2()) == null || mfc.getId() == mfc.getJunior2() || mfc.getJunior1() == mfc.getJunior2())) {
-		    mfc.setJunior2(0);
-		}
-		if (mfc.getSeniorId() > 0 && (getMFC(mfc.getSeniorId()) == null || mfc.getId() == mfc.getSeniorId())) {
-		    mfc.setSeniorId(0);
-		}
-		if (mfc.getJunior2() > 0 && mfc.getJunior1() <= 0) {
-		    mfc.setJunior1(mfc.getJunior2());
-		    mfc.setJunior2(0);
-		}
-		if (mfc.getJunior1() > 0) {
-		    MapleFamilyCharacter mfc2 = getMFC(mfc.getJunior1());
-		    if (mfc2.getJunior1() == mfc.getId()) {
-		        mfc2.setJunior1(0);
-		    }
-		    if (mfc2.getJunior2() == mfc.getId()) {
-		        mfc2.setJunior2(0);
-		    }
-		    if (mfc2.getSeniorId() != mfc.getId()) {
-		        mfc2.setSeniorId(mfc.getId());
-		    }
-		}
-		if (mfc.getJunior2() > 0) {
-		    MapleFamilyCharacter mfc2 = getMFC(mfc.getJunior2());
-		    if (mfc2.getJunior1() == mfc.getId()) {
-		        mfc2.setJunior1(0);
-		    }
-		    if (mfc2.getJunior2() == mfc.getId()) {
-		        mfc2.setJunior2(0);
-		    }
-		    if (mfc2.getSeniorId() != mfc.getId()) {
-		        mfc2.setSeniorId(mfc.getId());
-		    }
-		}
-	    }
+            //upon startup, load all the seniorid/junior1/junior2 that aren't in this family
+            for (MapleFamilyCharacter mfc : members.values()) { //just in case
+                if (mfc.getJunior1() > 0 && (getMFC(mfc.getJunior1()) == null || mfc.getId() == mfc.getJunior1())) {
+                    mfc.setJunior1(0);
+                }
+                if (mfc.getJunior2() > 0 && (getMFC(mfc.getJunior2()) == null || mfc.getId() == mfc.getJunior2() || mfc.getJunior1() == mfc.getJunior2())) {
+                    mfc.setJunior2(0);
+                }
+                if (mfc.getSeniorId() > 0 && (getMFC(mfc.getSeniorId()) == null || mfc.getId() == mfc.getSeniorId())) {
+                    mfc.setSeniorId(0);
+                }
+                if (mfc.getJunior2() > 0 && mfc.getJunior1() <= 0) {
+                    mfc.setJunior1(mfc.getJunior2());
+                    mfc.setJunior2(0);
+                }
+                if (mfc.getJunior1() > 0) {
+                    MapleFamilyCharacter mfc2 = getMFC(mfc.getJunior1());
+                    if (mfc2.getJunior1() == mfc.getId()) {
+                        mfc2.setJunior1(0);
+                    }
+                    if (mfc2.getJunior2() == mfc.getId()) {
+                        mfc2.setJunior2(0);
+                    }
+                    if (mfc2.getSeniorId() != mfc.getId()) {
+                        mfc2.setSeniorId(mfc.getId());
+                    }
+                }
+                if (mfc.getJunior2() > 0) {
+                    MapleFamilyCharacter mfc2 = getMFC(mfc.getJunior2());
+                    if (mfc2.getJunior1() == mfc.getId()) {
+                        mfc2.setJunior1(0);
+                    }
+                    if (mfc2.getJunior2() == mfc.getId()) {
+                        mfc2.setJunior2(0);
+                    }
+                    if (mfc2.getSeniorId() != mfc.getId()) {
+                        mfc2.setSeniorId(mfc.getId());
+                    }
+                }
+            }
             resetPedigree();
             resetDescendants(); //set
         } catch (SQLException se) {
@@ -161,15 +157,12 @@ public class MapleFamily implements java.io.Serializable {
     }
 	
    public static final void loadAll() {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT familyid FROM families");
-            ResultSet rs = ps.executeQuery();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT familyid FROM families");
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 World.Family.addLoadedFamily(new MapleFamily(rs.getInt("familyid")));
-	    }
-            rs.close();
-            ps.close();
+            }
         } catch (SQLException se) {
             System.err.println("Unable to read family information from sql");
             se.printStackTrace();
@@ -177,20 +170,17 @@ public class MapleFamily implements java.io.Serializable {
     }
 
     public static final void loadAll(Object toNotify) {
-        try {
-	    boolean cont = false;
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT familyid FROM families");
-            ResultSet rs = ps.executeQuery();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT familyid FROM families");
+             ResultSet rs = ps.executeQuery()) {
+            boolean cont = false;
             while (rs.next()) {
                 FamilyLoad.QueueFamilyForLoad(rs.getInt("familyid"));
-		cont = true;
-	    }
-            rs.close();
-            ps.close();
-	    if (!cont) {
-		return;
-	    }
+                cont = true;
+            }
+            if (!cont) {
+                return;
+            }
         } catch (SQLException se) {
             System.err.println("Unable to read family information from sql");
             se.printStackTrace();
@@ -216,27 +206,26 @@ public class MapleFamily implements java.io.Serializable {
     }
 
     public final void writeToDB(final boolean bDisband) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
+        try (Connection con = DatabaseConnection.getConnection()) {
             if (!bDisband) {
-		if (changed) {
-                    PreparedStatement ps = con.prepareStatement("UPDATE families SET notice = ? WHERE familyid = ?");
-                    ps.setString(1, notice);
-                    ps.setInt(2, id);
-                    ps.execute();
-                    ps.close();
-		}
-		changed = false;
+                if (changed) {
+                    try (PreparedStatement ps = con.prepareStatement("UPDATE families SET notice = ? WHERE familyid = ?")) {
+                        ps.setString(1, notice);
+                        ps.setInt(2, id);
+                        ps.execute();
+                    }
+                }
+                changed = false;
             } else {
                 // Members is less than 2, this shall be executed
                 if (leadername == null || members.size() < 2) {
                     broadcast(null, -1, FCOp.DISBAND, null);
                 }
 
-                PreparedStatement ps = con.prepareStatement("DELETE FROM families WHERE familyid = ?");
-                ps.setInt(1, id);
-                ps.execute();
-                ps.close();
+                try (PreparedStatement ps = con.prepareStatement("DELETE FROM families WHERE familyid = ?")) {
+                    ps.setInt(1, id);
+                    ps.execute();
+                }
             }
         } catch (SQLException se) {
             System.err.println("Error saving family to sql");
@@ -469,9 +458,8 @@ public class MapleFamily implements java.io.Serializable {
     }
 
     public static void setOfflineFamilyStatus(int familyid, int seniorid, int junior1, int junior2, int currentrep, int totalrep, int cid) {
-        try {
-            java.sql.Connection con = DatabaseConnection.getConnection();
-            java.sql.PreparedStatement ps = con.prepareStatement("UPDATE characters SET familyid = ?, seniorid = ?, junior1 = ?, junior2 = ?, currentrep = ?, totalrep = ? WHERE id = ?");
+        try (java.sql.Connection con = DatabaseConnection.getConnection();
+             java.sql.PreparedStatement ps = con.prepareStatement("UPDATE characters SET familyid = ?, seniorid = ?, junior1 = ?, junior2 = ?, currentrep = ?, totalrep = ? WHERE id = ?")) {
             ps.setInt(1, familyid);
             ps.setInt(2, seniorid);
             ps.setInt(3, junior1);
@@ -480,7 +468,6 @@ public class MapleFamily implements java.io.Serializable {
             ps.setInt(6, totalrep);
             ps.setInt(7, cid);
             ps.execute();
-            ps.close();
         } catch (SQLException se) {
             System.out.println("SQLException: " + se.getLocalizedMessage());
             se.printStackTrace();
@@ -488,22 +475,16 @@ public class MapleFamily implements java.io.Serializable {
     }
 
     public static int createFamily(int leaderId) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-
-            PreparedStatement ps = con.prepareStatement("INSERT INTO families (`leaderid`) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("INSERT INTO families (`leaderid`) VALUES (?)", Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, leaderId);
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (!rs.next()) {
-		rs.close();
-		ps.close();
-		return 0;
-	    }
-            int ret = rs.getInt(1);
-            rs.close();
-            ps.close();
-            return ret;
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (!rs.next()) {
+                    return 0;
+                }
+                return rs.getInt(1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return 0;

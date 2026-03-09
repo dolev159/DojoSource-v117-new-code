@@ -74,6 +74,7 @@ public class ServerTickManager {
         for (MapleMap map : cserv.getMapFactory().getAllMaps()) {
             if (map.getCharactersSize() > 0) {
                 map.respawn(false, now);
+                map.updateMobs(now);
             }
         }
     }
@@ -93,7 +94,7 @@ public class ServerTickManager {
      * Clean up expired events and instances.
      */
     private void updateExpiredEvents(long now) {
-        // Implementation for EventInstanceManager cleanup if needed
+        server.events.EventInstanceManager.getInstance().update(now);
     }
 
     public void stop() {

@@ -45,6 +45,21 @@ public abstract class AbstractScriptManager {
 
                 if (compiled == null) {
                     engine = sem.getEngineByName("javascript");
+                    if (engine == null) {
+                        engine = sem.getEngineByName("Nashorn");
+                    }
+                    if (engine == null) {
+                        engine = sem.getEngineByName("Rhino");
+                    }
+                    if (engine == null) {
+                        engine = sem.getEngineByExtension("js");
+                    }
+                    
+                    if (engine == null) {
+                        System.err.println("Fatal: No JavaScript engine found (Nashorn/Rhino/js). Path: " + path);
+                        return null;
+                    }
+
                     if (!(engine instanceof Compilable)) {
                         // Fallback if engine doesn't support compilation
                         try (InputStreamReader fr = new InputStreamReader(new FileInputStream(scriptFile), StandardCharsets.UTF_8)) {
@@ -60,10 +75,9 @@ public abstract class AbstractScriptManager {
 
                 if (compiled != null) {
                     engine = compiled.getEngine();
-                    // We must use a fresh set of bindings for each execution if we want isolation,
-                    // but here we often want to reuse the client state.
-                    // For now, let's keep it simple.
                     compiled.eval(engine.getBindings(javax.script.ScriptContext.ENGINE_SCOPE));
+                } else if (engine == null) {
+                    return null;
                 }
 
                 if (c != null) {

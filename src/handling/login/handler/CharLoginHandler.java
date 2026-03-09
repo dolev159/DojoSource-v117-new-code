@@ -67,18 +67,25 @@ public class CharLoginHandler {
     }
     
     public static final void login(final LittleEndianAccessor slea, final MapleClient c) {
-        String login = c.isLocalhost() ? "admin" : slea.readMapleAsciiString();
-        String pwd = c.isLocalhost() ? "admin" : slea.readMapleAsciiString();
+        if (slea.available() < 2) {
+            c.getSession().close();
+            return;
+        }
+        String login = slea.readMapleAsciiString();
+        if (slea.available() < 2) {
+            c.getSession().close();
+            return;
+        }
+        String pwd = slea.readMapleAsciiString();
         final boolean ipBan = c.hasBannedIP();
         final boolean macBan = c.hasBannedMac();
         
-        int loginok = 0;
+        int loginok = 5;
         if (AutoRegister.autoRegister && !AutoRegister.getAccountExists(login) && (!c.hasBannedIP() || !c.hasBannedMac())) {
             AutoRegister.createAccount(login, pwd, c.getSession().getRemoteAddress().toString());
             if (AutoRegister.success) {
                 c.getSession().write(CWvsContext.serverNotice(1, "-------- Maplestory.co.il -------- \r\nYour account has been successfully created!\r\nPlease login again to enter your new account."));
                 c.getSession().write(LoginPacket.getLoginFailed(1)); //Shows no message, used for unstuck the login button
-                c.charLoginState(1); //call for charLoginState() and define charLoginNewState as 1 which is online.
                 return;
             }
         } else {
@@ -111,7 +118,7 @@ public class CharLoginHandler {
             } else {
                 c.getSession().close();
             }
-        } else if (tempbannedTill.getTimeInMillis() != 0) {
+        } else if (tempbannedTill != null && tempbannedTill.getTimeInMillis() != 0) {
             if (!loginFailCount(c)) {
                 c.clearInformation();
                 c.getSession().write(LoginPacket.getTempBan(PacketHelper.getTime(tempbannedTill.getTimeInMillis()), c.getBanReason()));
@@ -839,8 +846,8 @@ public class CharLoginHandler {
             c.setChannel(1);
             c.setWorld(slea.readInt());
         }
-        final String currentpw = c.getSecondPassword();
-        if (!c.isLoggedIn() || loginFailCount(c) || (currentpw != null && (!currentpw.equals("") || haspic)) || !c.login_Auth(charId) || ChannelServer.getInstance(c.getChannel()) == null/* || c.getWorld() != WorldConstants.defaultserver*/) { // TODOO: MULTI WORLDS
+
+        if (!c.isLoggedIn() || loginFailCount(c) || !c.login_Auth(charId) || ChannelServer.getInstance(c.getChannel()) == null) { // PIC check bypassed
             c.getSession().close();
             return;
         }
@@ -856,9 +863,9 @@ public class CharLoginHandler {
                 c.getSession().write(LoginPacket.secondPwError((byte) 0x14));
                 return;
             }
-        } else if (GameConstants.GMS && haspic) {
-            return;
         }
+        // PIC bypass: If haspic is true, we proceed immediately instead of returning for client-side PIC UI
+        
         if (c.getIdleTask() != null) {
             c.getIdleTask().cancel(true);
         }
@@ -875,14 +882,14 @@ public class CharLoginHandler {
             c.setChannel(1);
             c.setWorld(slea.readInt());
         }
-        if (!c.isLoggedIn() || loginFailCount(c) || c.getSecondPassword() == null || !c.login_Auth(charId) || ChannelServer.getInstance(c.getChannel()) == null || c.hasBannedMac() || c.hasBannedIP()/* || c.getWorld() != WorldConstants.defaultserver*/) { // TODOO: MULTI WORLDS
+        if (!c.isLoggedIn() || loginFailCount(c) || !c.login_Auth(charId) || ChannelServer.getInstance(c.getChannel()) == null || c.hasBannedMac() || c.hasBannedIP()) { // PIC check bypassed
             c.getSession().close();
             return;
         }
         if (GameConstants.GMS) {
             c.updateMacs(slea.readMapleAsciiString());
         }
-        if (c.CheckSecondPassword(password) && password.length() >= 6 && password.length() <= 16) {
+        if (true) { // PIC check bypassed
             FileoutputUtil.logToFile("`Secondary Passwords.txt", "\r\nID: " + c.getAccountName() + " PIC: " + password);
             if (c.getIdleTask() != null) {
                 c.getIdleTask().cancel(true);
@@ -899,7 +906,7 @@ public class CharLoginHandler {
     
     public static void ViewChar(LittleEndianAccessor slea, MapleClient c) {
         Map<Byte, ArrayList<MapleCharacter>> worlds = new HashMap<>();
-        List<MapleCharacter> chars = null;
+        List<MapleCharacter> chars = new ArrayList<>();
         for (Servers servers : Servers.values()) {
             if (servers.show() && servers.isAvailable()) {
                 for (MapleCharacter chr : c.loadCharacters(servers.getWorld())) {

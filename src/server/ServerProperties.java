@@ -4,6 +4,7 @@ import constants.GameConstants;
 import database.DatabaseConnection;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,18 +27,12 @@ public class ServerProperties {
 		if (getProperty("GMS") != null) {
 			GameConstants.GMS = Boolean.parseBoolean(getProperty("GMS"));
 		}
-        try {
-            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("SELECT * FROM auth_server_channel_ip");
-            ResultSet rs = ps.executeQuery();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM auth_server_channel_ip");
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                //if (rs.getString("name").equalsIgnoreCase("gms")) {
-                //    GameConstants.GMS = Boolean.parseBoolean(rs.getString("value"));
-                //} else {
-                    props.put(rs.getString("name") + rs.getInt("channelid"), rs.getString("value"));
-                //}
+                props.put(rs.getString("name") + rs.getInt("channelid"), rs.getString("value"));
             }
-            rs.close();
-            ps.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
             System.exit(0); //Big ass error.

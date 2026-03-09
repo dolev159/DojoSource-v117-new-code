@@ -73,6 +73,7 @@ import server.Randomizer;
 import server.StructFamiliar;
 import server.StructItemOption;
 import server.StructRewardItem;
+import server.events.RewardManager;
 import server.events.MapleEvent;
 import server.events.MapleEventType;
 import server.life.MapleLifeFactory;
@@ -3770,6 +3771,10 @@ public class InventoryHandler {
         lock.lock();
         try {
             if (mapitem.isPickedUp()) {
+                c.getSession().write(CWvsContext.enableActions());
+                return;
+            }
+            if (chr.getMap().getEventInstance() != null && !RewardManager.getInstance(chr.getMap().getEventInstance()).canPickup(chr, mapitem)) {
                 c.getSession().write(CWvsContext.enableActions());
                 return;
             }

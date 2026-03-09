@@ -178,10 +178,9 @@ public class World {
         private static final AtomicInteger runningPartyId = new AtomicInteger(1), runningExpedId = new AtomicInteger(1);
 
         static {
-            try {
-                PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("UPDATE characters SET party = -1, fatigue = 0");
+            try (Connection con = DatabaseConnection.getConnection();
+                 PreparedStatement ps = con.prepareStatement("UPDATE characters SET party = -1, fatigue = 0")) {
                 ps.executeUpdate();
-                ps.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -1712,13 +1711,11 @@ public class World {
     public static void handleMap(final MapleMap map, final int numTimes, final int size, final long now) {
         // TODO: Test the achievement reset
         if (getHour() == 0 && getMinute() >= 0 && getMinute() <= 1) { // Not sure if put it here
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps;
-            try {
-                ps = con.prepareStatement("DELETE FROM `moonlightachievements` where achievementid > 0;");
+            try (Connection con = DatabaseConnection.getConnection();
+                 PreparedStatement ps = con.prepareStatement("DELETE FROM `moonlightachievements` where achievementid > 0;")) {
                 ps.executeUpdate();
-                ps.close();
             } catch (SQLException ex) {
+                // Ignore
             }
         }
         if (map.getItemsSize() > 0) {

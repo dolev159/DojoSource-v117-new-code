@@ -163,7 +163,7 @@ public class CWvsContext {
         mplew.writeShort(SendPacketOpcode.FIND_FRIEND.getValue());
         mplew.write(11);
         mplew.writeInt(chr.getId());
-        PacketHelper.addCharLook(mplew, chr, true, chr.getClient());
+        PacketHelper.addCharLook(mplew, chr, true);
         return mplew.getPacket();
     }
     public static byte[] loadInformation(int location, int what, int birthday, int found) {

@@ -46,7 +46,7 @@ public class MaplePacketDecoder extends CumulativeProtocolDecoder {
 	    decoderState = new DecoderState();
 	    session.setAttribute(DECODER_STATE_KEY, decoderState);
 	}*/
-	final MapleClient client = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
+	final MapleClient client = (MapleClient) session.getAttribute("CLIENT");
 
 	if (decoderState.packetlength == -1) {
 	    if (in.remaining() >= 4) {

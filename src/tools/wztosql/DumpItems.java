@@ -56,7 +56,7 @@ public class DumpItems {
     protected boolean hadError = false;
     protected boolean update = false;
     protected int id = 0;
-    private Connection con = DatabaseConnection.getConnection();
+    private Connection con;
     private final List<String> subCon = new LinkedList<>();
     private final List<String> subMain = new LinkedList<>();
 
@@ -75,42 +75,38 @@ public class DumpItems {
 
     public void dumpItems() throws Exception {
         if (!hadError) {
-            PreparedStatement psa = con.prepareStatement("INSERT INTO wz_itemadddata(itemid, `key`, `subKey`, `value`) VALUES (?, ?, ?, ?)");
-            PreparedStatement psr = con.prepareStatement("INSERT INTO wz_itemrewarddata(itemid, item, prob, quantity, period, worldMsg, effect) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            PreparedStatement ps = con.prepareStatement("INSERT INTO wz_itemdata(itemid, name, msg, `desc`, slotMax, price, wholePrice, stateChange, flags, karma, meso, monsterBook, itemMakeLevel, questId, scrollReqs, consumeItem, totalprob, incSkill, replaceId, replaceMsg, `create`, afterImage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            PreparedStatement pse = con.prepareStatement("INSERT INTO wz_itemequipdata(itemid, itemLevel, `key`, `value`) VALUES (?, ?, ?, ?)");
-            try {
-                dumpItems(psa, psr, ps, pse);
-            } catch (Exception e) {
-                System.out.println(id + " quest.");
-                e.printStackTrace();
-                hadError = true;
-            } finally {
-                psr.executeBatch();
-                psr.close();
-                psa.executeBatch();
-                psa.close();
-                pse.executeBatch();
-                pse.close();
-                ps.executeBatch();
-                ps.close();
+            try (Connection con = DatabaseConnection.getConnection();
+                 PreparedStatement psa = con.prepareStatement("INSERT INTO wz_itemadddata(itemid, `key`, `subKey`, `value`) VALUES (?, ?, ?, ?)");
+                 PreparedStatement psr = con.prepareStatement("INSERT INTO wz_itemrewarddata(itemid, item, prob, quantity, period, worldMsg, effect) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                 PreparedStatement ps = con.prepareStatement("INSERT INTO wz_itemdata(itemid, name, msg, `desc`, slotMax, price, wholePrice, stateChange, flags, karma, meso, monsterBook, itemMakeLevel, questId, scrollReqs, consumeItem, totalprob, incSkill, replaceId, replaceMsg, `create`, afterImage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                 PreparedStatement pse = con.prepareStatement("INSERT INTO wz_itemequipdata(itemid, itemLevel, `key`, `value`) VALUES (?, ?, ?, ?)")) {
+                this.con = con;
+                try {
+                    dumpItems(psa, psr, ps, pse);
+                    psr.executeBatch();
+                    psa.executeBatch();
+                    pse.executeBatch();
+                    ps.executeBatch();
+                } catch (Exception e) {
+                    System.out.println(id + " quest.");
+                    e.printStackTrace();
+                    hadError = true;
+                }
             }
         }
     }
 
     public void delete(String sql) throws Exception {
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.executeUpdate();
-        ps.close();
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.executeUpdate();
+        }
     }
 
     public boolean doesExist(String sql) throws Exception {
-        PreparedStatement ps = con.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
-        boolean ret = rs.next();
-        rs.close();
-        ps.close();
-        return ret;
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        }
     }
 
     public void dumpItems(MapleDataProvider d, PreparedStatement psa, PreparedStatement psr, PreparedStatement ps, PreparedStatement pse, boolean charz) throws Exception {

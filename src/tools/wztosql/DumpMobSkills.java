@@ -40,7 +40,7 @@ public class DumpMobSkills {
 	protected boolean hadError = false;
 	protected boolean update = false;
 	protected int id = 0;
-	private Connection con = DatabaseConnection.getConnection();
+	private Connection con;
 
 	public DumpMobSkills(boolean update) throws Exception {
 		this.update = update;
@@ -56,34 +56,33 @@ public class DumpMobSkills {
 
 	public void dumpMobSkills() throws Exception {
 		if (!hadError) {
-			PreparedStatement ps = con.prepareStatement("INSERT INTO wz_mobskilldata(skillid, `level`, hp, mpcon, x, y, time, prop, `limit`, spawneffect,`interval`, summons, ltx, lty, rbx, rby, once) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-			try {
-				dumpMobSkills(ps);
-			} catch (Exception e) {
-				System.out.println(id + " skill.");
-				e.printStackTrace();
-				hadError = true;
-			} finally {
-				ps.executeBatch();
-				ps.close();	
+			try (Connection con = DatabaseConnection.getConnection();
+				 PreparedStatement ps = con.prepareStatement("INSERT INTO wz_mobskilldata(skillid, `level`, hp, mpcon, x, y, time, prop, `limit`, spawneffect,`interval`, summons, ltx, lty, rbx, rby, once) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+				this.con = con;
+				try {
+					dumpMobSkills(ps);
+					ps.executeBatch();
+				} catch (Exception e) {
+					System.out.println(id + " skill.");
+					e.printStackTrace();
+					hadError = true;
+				}
 			}
 		}
 	}
 
 
 	public void delete(String sql) throws Exception {
-		PreparedStatement ps = con.prepareStatement(sql);
-		ps.executeUpdate();
-		ps.close();
+		try (PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.executeUpdate();
+		}
 	}
 
 	public boolean doesExist(String sql) throws Exception {
-		PreparedStatement ps = con.prepareStatement(sql);
-		ResultSet rs = ps.executeQuery();
-		boolean ret = rs.next();
-		rs.close();
-		ps.close();
-		return ret;
+		try (PreparedStatement ps = con.prepareStatement(sql);
+			 ResultSet rs = ps.executeQuery()) {
+			return rs.next();
+		}
 	}
 
 	// kinda inefficient

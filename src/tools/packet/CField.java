@@ -28,7 +28,7 @@ import tools.data.MaplePacketLittleEndianWriter;
 public class CField {
 
     public static int DEFAULT_BUFFMASK = 0;
-    public static byte[] NEXON_IP = {8, 31, 98, 53};
+    public static byte[] NEXON_IP = {127, 0, 0, 1};
 
     public static byte[] getPacketFromHexString(String hex) {
         return HexTool.getByteArrayFromHexString(hex);

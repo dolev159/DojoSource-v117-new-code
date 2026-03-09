@@ -1094,9 +1094,8 @@ public static class Mute extends CommandExecute {
                 npc.setRx1(xpos);
                 npc.setFh(fh);
                 npc.setCustom(true);
-                try {
-                    Connection con = (Connection) DatabaseConnection.getConnection();
-                    try (PreparedStatement ps = (PreparedStatement) con.prepareStatement("INSERT INTO wz_customlife (dataid, f, hide, fh, cy, rx0, rx1, type, x, y, mid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                try (Connection con = DatabaseConnection.getConnection()) {
+                    try (PreparedStatement ps = con.prepareStatement("INSERT INTO wz_customlife (dataid, f, hide, fh, cy, rx0, rx1, type, x, y, mid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                         ps.setInt(1, npcId);
                         ps.setInt(2, 0); // 1 = right , 0 = left
                         ps.setInt(3, 0); // 1 = hide, 0 = show
@@ -1150,9 +1149,8 @@ public static class Mute extends CommandExecute {
                 npc.setRx0(xpos);
                 npc.setRx1(xpos);
                 npc.setFh(fh);
-                try {
-                    Connection con = (Connection) DatabaseConnection.getConnection();
-                    try (PreparedStatement ps = (PreparedStatement) con.prepareStatement("INSERT INTO wz_customlife (dataid, f, hide, fh, cy, rx0, rx1, type, x, y, mid, mobtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                try (Connection con = DatabaseConnection.getConnection()) {
+                    try (PreparedStatement ps = con.prepareStatement("INSERT INTO wz_customlife (dataid, f, hide, fh, cy, rx0, rx1, type, x, y, mid, mobtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                         ps.setInt(1, mobid);
                         ps.setInt(2, 0); // 1 = right , 0 = left
                         ps.setInt(3, 0); // 1 = hide, 0 = show

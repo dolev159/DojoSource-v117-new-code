@@ -129,6 +129,25 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
     public void dispose() {
         NPCScriptManager.getInstance().dispose(c);
     }
+
+    /**
+     * Starts a new event instance by name for the current player.
+     * @param eventName The registered name of the event (e.g. "Zakum")
+     */
+    public server.events.AbstractEventInstance startEvent(String eventName) {
+        server.events.AbstractEventInstance eim = server.events.EventInstanceManager.getInstance().createEventInstance(eventName, c.getChannel());
+        if (eim != null) {
+            eim.registerPlayer(c.getPlayer());
+        }
+        return eim;
+    }
+
+    /**
+     * Creates an event instance without registering the player immediately.
+     */
+    public server.events.AbstractEventInstance createEvent(String eventName) {
+        return server.events.EventInstanceManager.getInstance().createEventInstance(eventName, c.getChannel());
+    }
     
     public void askMapSelection(final String sel) {
         if (lastMsg > -1) {
@@ -1581,21 +1600,14 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         if (name.matches("^.*[^a-zA-Z0-9 ].*$")) {
             return false;
         }
-        Connection con = DatabaseConnection.getConnection();
-        PreparedStatement ps;
-        try {
-            ps = con.prepareStatement("SELECT name FROM characters WHERE name = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT name FROM characters WHERE name = ?")) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    if (rs.getString("name") != null) {
-                        return true;
-                    }
-                } else {
-                    return false;
+                    return rs.getString("name") != null;
                 }
             }
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Special characters were used...: " + e);
             return false;
@@ -2127,21 +2139,20 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         final int chz = World.Find.findChannel(getPlayer().getMarriageId());
         if (chz == -1) {
             // Sql queries
-            try {
-                Connection con = DatabaseConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement("UPDATE queststatus SET customData = ? WHERE characterid = ? AND (quest = ? OR quest = ?)");
-                ps.setString(1, "0");
-                ps.setInt(2, getPlayer().getMarriageId());
-                ps.setInt(3, 160001);
-                ps.setInt(4, 160002);
-                ps.executeUpdate();
-                ps.close();
+            try (Connection con = DatabaseConnection.getConnection()) {
+                try (PreparedStatement ps = con.prepareStatement("UPDATE queststatus SET customData = ? WHERE characterid = ? AND (quest = ? OR quest = ?)")) {
+                    ps.setString(1, "0");
+                    ps.setInt(2, getPlayer().getMarriageId());
+                    ps.setInt(3, 160001);
+                    ps.setInt(4, 160002);
+                    ps.executeUpdate();
+                }
 
-                ps = con.prepareStatement("UPDATE characters SET marriageid = ? WHERE id = ?");
-                ps.setInt(1, 0);
-                ps.setInt(2, getPlayer().getMarriageId());
-                ps.executeUpdate();
-                ps.close();
+                try (PreparedStatement ps = con.prepareStatement("UPDATE characters SET marriageid = ? WHERE id = ?")) {
+                    ps.setInt(1, 0);
+                    ps.setInt(2, getPlayer().getMarriageId());
+                    ps.executeUpdate();
+                }
             } catch (SQLException e) {
                 outputFileError(e);
                 return;
@@ -2184,15 +2195,14 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
 
     public Triple<Integer, Integer, Integer> getCompensation() {
         Triple<Integer, Integer, Integer> ret = null;
-        try {
-            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("SELECT * FROM compensationlog_confirmed WHERE chrname LIKE ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM compensationlog_confirmed WHERE chrname LIKE ?")) {
             ps.setString(1, getPlayer().getName());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                ret = new Triple<Integer, Integer, Integer>(rs.getInt("value"), rs.getInt("taken"), rs.getInt("donor"));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ret = new Triple<Integer, Integer, Integer>(rs.getInt("value"), rs.getInt("taken"), rs.getInt("donor"));
+                }
             }
-            rs.close();
-            ps.close();
             return ret;
         } catch (SQLException e) {
             FileoutputUtil.outputFileError(FileoutputUtil.ScriptEx_Log, e);
@@ -2201,12 +2211,11 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
     }
 
     public boolean deleteCompensation(int taken) {
-        try {
-            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("UPDATE compensationlog_confirmed SET taken = ? WHERE chrname LIKE ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE compensationlog_confirmed SET taken = ? WHERE chrname LIKE ?")) {
             ps.setInt(1, taken);
             ps.setString(2, getPlayer().getName());
             ps.executeUpdate();
-            ps.close();
             return true;
         } catch (SQLException e) {
             FileoutputUtil.outputFileError(FileoutputUtil.ScriptEx_Log, e);
@@ -2280,7 +2289,8 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
     }
 
     public String searchId(int type, String search) {
-        return MapleInventoryManipulator.searchId(type, search);
+        // return MapleInventoryManipulator.searchId(type, search);
+        return "SearchId is currently disabled due to missing implementation in MapleInventoryManipulator.";
     }
 
     public int parseInt(String s) {

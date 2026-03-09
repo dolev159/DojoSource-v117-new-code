@@ -60,10 +60,9 @@ public class Start {
             System.out.println("Maintenance is currently active.");
         }
 
-        try {
-            final PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("UPDATE accounts SET loggedin = 0");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE accounts SET loggedin = 0")) {
             ps.executeUpdate();
-            ps.close();
             FileoutputUtil.logStartup("Database connection successful.");
         } catch (SQLException ex) {
             FileoutputUtil.logCrash("Database connection failed", ex);
@@ -124,12 +123,9 @@ public class Start {
         MapleInventoryIdentifier.getInstance();
         MapleMapFactory.loadCustomLife();
         FileoutputUtil.logStartup("Finished Loading Instances");
-        Connection con = DatabaseConnection.getConnection();
-        PreparedStatement ps;
-        try {
-            ps = con.prepareStatement("DELETE FROM `moonlightachievements` where achievementid > 0;");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("DELETE FROM `moonlightachievements` where achievementid > 0;")) {
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException ex) {
             FileoutputUtil.logDatabaseError("DELETE moonlightachievements", ex);
         }
@@ -170,7 +166,10 @@ public class Start {
         }
     }
 
-    public static void main(final String args[]) {
+    public static void main(final String[] args) {
+        // Redirect system streams to files immediately on startup
+        FileoutputUtil.redirectSystemStreams();
+        
         try {
             instance.run();
         } catch (Exception e) {

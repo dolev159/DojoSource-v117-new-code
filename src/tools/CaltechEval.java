@@ -307,7 +307,6 @@ public class CaltechEval
    
     private double eval(String s)
     {
-        Double D = new Double(0);
         // System.out.println("Evaluating " + s);
        
         Vector tokens = toTokens(s);
@@ -325,13 +324,12 @@ public class CaltechEval
             tokens = reduceTokens(tokens);
         }
        
-        return D.parseDouble((String) tokens.elementAt(0));
+        return Double.parseDouble((String) tokens.elementAt(0));
        
     }
    
     public Vector reduceTokens(Vector tokens)
     {
-        Double D = new Double(0);
         double leftValue = 0, rightValue1, rightValue2;
         // System.out.print("Simplify Tokens :");
         // for (int i = 0; i < tokens.size(); i++)
@@ -441,7 +439,7 @@ public class CaltechEval
                         }
                         else
                         {
-                            leftValue = D.parseDouble(stleft);
+                            leftValue = Double.parseDouble(stleft);
                         }
                     }
                     else
@@ -450,7 +448,7 @@ public class CaltechEval
                         leftValue = 0.0;
                     }
                     String stright = (String) tokens.elementAt(it + 1);
-                    rightValue1 = D.parseDouble(stright);
+                    rightValue1 = Double.parseDouble(stright);
                     // System.out.print("DoOp " + leftValue + st + rightValue1);
                     double value = doOp(st, leftValue, rightValue1);
                     stright = "" + value;
@@ -474,12 +472,12 @@ public class CaltechEval
             {
                 int nargs = OperatorsArgs[iop];
                 String stright = (String) tokens.elementAt(it + 1);
-                rightValue1 = D.parseDouble(stright);
+                rightValue1 = Double.parseDouble(stright);
                 rightValue2 = 0;
                 if (nargs > 1)
                 {
                     stright = (String) tokens.elementAt(it + 2);
-                    rightValue2 = D.parseDouble(stright);
+                    rightValue2 = Double.parseDouble(stright);
                 }
                 // System.out.print("DoOp " + st + " "+
                 // rightValue1+" "+rightValue2);

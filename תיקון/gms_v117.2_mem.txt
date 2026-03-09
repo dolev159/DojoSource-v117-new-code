@@ -1,0 +1,50 @@
+lazy...
+
+// GameLaunching
+00CA499E: // 0F 84 46 03 00 00 38 18 0F 84 3E 03 00 00 53
+db 90 90 90 90 90 90
+
+00CA49A6: // below
+db 90 90 90 90 90 90
+
+00CA4A3F: // 74 0C 83 C0 F4 50 E8 ?? ?? ?? ?? 83 C4 04 38 5C 24 17 74 ?? 6A FF 6A 0D 8D
+db EB
+
+00CA4A51: // below
+db 90 90
+
+
+// Check_Mutex
+00C9B051:
+db 90 E9
+
+// Launcher
+0084FC90:
+db B8 01 00 00 00 C3
+
+// Ad
+0042E180:
+db B8 01 00 00 00 C3
+
+// HS Init
+004E8290: // E8 ?? ?? ?? ?? 85 C0 75 05 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 74 0C E8 ?? ?? ?? ?? 89 C1 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 74 0C E8 ?? ?? ?? ?? 89 C1 E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 - caller
+db 31 C0 C3
+
+// HideDLL
+00480CF0: // 55 8B EC 83 EC 08 EB 10 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 C7 45 FC 00 00 00 00 50 64 A1 18 00 00 00 8B 40 30 8B 40 0C 89 45 FC 58 8B 45 FC 8B 48 0C 89 4D F8 8B 55 F8 83 7A 18 00 74
+db 31 C0 C3
+
+// 00CCEE69 | RemoveMSCRC_OnEnterField (CWvsContext::OnEnterField EnterVM)
+00CCEE69: // 6A 46 8B 8D ?? ?? ?? ?? E8 ?? ?? ?? ?? EB 10
+jmp 00CCEF4E
+
+// 00847C20 | RemoveMSCRC_Main (IWzGr2D::RenderFrame)
+// 00CA1617 | RemoveMSCRC_Main (CWvsApp::Run LeaveVM)
+0116E3B9: // MSCRC VMProtect ret
+jmp 00CA1617
+
+
+// Login Fix, may be wrong ~~~ password buffer will be broken (?)
+// 8B 84 24 ?? ?? ?? ?? 8B 8C 24 ?? ?? ?? ?? 6A 00 6A 00 68
+006950C6: // CLogin::SendCheckPasswordPacket
+jmp 00695378 // CSystemInfo::CSystemInfo caller

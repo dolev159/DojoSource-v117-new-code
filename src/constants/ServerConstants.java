@@ -79,7 +79,9 @@ public class ServerConstants {
     public static final String SOURCE_REVISION = "0.0.1";
     public static final boolean BLOCK_CS = false;
     public static final boolean Old_Maps = false; // Example: It will use old maple event's henesys instead of current one
-    public static boolean Use_Localhost = false; // true = Packets are logged, false = Others can connect to server
+    public static boolean Use_Localhost = true; // true = Packets are logged, false = Others can connect to server
+    public static final boolean USE_AES = true;
+    public static final boolean USE_SHANDA = true;
     
     public static enum PlayerGMRank {
 

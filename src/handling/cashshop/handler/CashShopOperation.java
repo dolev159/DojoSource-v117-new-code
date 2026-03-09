@@ -105,12 +105,7 @@ public class CashShopOperation {
         if (code.length() <= 0) {
             return;
         }
-        Triple<Boolean, Integer, Integer> info = null;
-        try {
-            info = MapleCharacterUtil.getNXCodeInfo(code);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        Triple<Boolean, Integer, Integer> info = MapleCharacterUtil.getNXCodeInfo(code);
 
         if (info != null && info.left) {
             int type = info.mid, item = info.right;

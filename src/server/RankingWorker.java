@@ -52,12 +52,11 @@ public class RankingWorker {
         System.out.println("Loading Rankings::");
         long startTime = System.currentTimeMillis();
         loadJobCommands();
-        try {
-            Connection con = DatabaseConnection.getConnection();
+        try (Connection con = DatabaseConnection.getConnection()) {
             updateRanking(con);
         } catch (Exception ex) {
             ex.printStackTrace();
-	    FileoutputUtil.outputFileError(FileoutputUtil.ScriptEx_Log, ex);
+            FileoutputUtil.outputFileError(FileoutputUtil.ScriptEx_Log, ex);
             System.err.println("Could not update Rankings");
         }
         System.out.println("Done loading Rankings in " + ((System.currentTimeMillis() - startTime) / 1000) + " seconds :::"); // Keep

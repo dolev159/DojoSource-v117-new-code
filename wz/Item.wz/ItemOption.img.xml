@@ -15159,4 +15159,288 @@
             </imgdir>
         </imgdir>
     </imgdir>
+    <imgdir name="060001">
+        <imgdir name="info">
+            <int name="weight" value="3"/>
+            <string name="string" value="Total Damage: +#incDAMr%"/>
+        </imgdir>
+        <imgdir name="level">
+            <imgdir name="1">
+                <int name="incDAMr" value="20"/>
+            </imgdir>
+            <imgdir name="2">
+                <int name="incDAMr" value="15"/>
+            </imgdir>
+            <imgdir name="3">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="4">
+                <int name="incDAMr" value="9"/>
+            </imgdir>
+            <imgdir name="5">
+                <int name="incDAMr" value="9"/>
+            </imgdir>
+            <imgdir name="6">
+                <int name="incDAMr" value="9"/>
+            </imgdir>
+            <imgdir name="7">
+                <int name="incDAMr" value="9"/>
+            </imgdir>
+            <imgdir name="8">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="9">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="10">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="11">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="12">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="13">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="14">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="15">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="16">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="17">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="18">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="19">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+            <imgdir name="20">
+                <int name="incDAMr" value="12"/>
+            </imgdir>
+        </imgdir>
+    </imgdir>
+    <imgdir name="060002">
+        <imgdir name="info">
+            <int name="weight" value="2"/>
+            <string name="string" value="All Stats: +#incSTRr%"/>
+        </imgdir>
+        <imgdir name="level">
+            <imgdir name="1">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="2">
+                <int name="incSTRr" value="15"/>
+                <int name="incDEXr" value="15"/>
+                <int name="incINTr" value="15"/>
+                <int name="incLUKr" value="15"/>
+            </imgdir>
+            <imgdir name="3">
+                <int name="incSTRr" value="12"/>
+                <int name="incDEXr" value="12"/>
+                <int name="incINTr" value="12"/>
+                <int name="incLUKr" value="12"/>
+            </imgdir>
+            <imgdir name="4">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="5">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="6">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="7">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="8">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="9">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="10">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="11">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="12">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="13">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="14">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="15">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="16">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="17">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="18">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="19">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+            <imgdir name="20">
+                <int name="incSTRr" value="20"/>
+                <int name="incDEXr" value="20"/>
+                <int name="incINTr" value="20"/>
+                <int name="incLUKr" value="20"/>
+            </imgdir>
+        </imgdir>
+    </imgdir>
+    <imgdir name="060003">
+        <imgdir name="info">
+            <int name="weight" value="2"/>
+            <string name="string" value="Damage to Bosses: +#incDAMr%"/>
+        </imgdir>
+        <imgdir name="level">
+            <imgdir name="1">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="40"/>
+            </imgdir>
+            <imgdir name="2">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="25"/>
+            </imgdir>
+            <imgdir name="3">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="15"/>
+            </imgdir>
+            <imgdir name="4">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="5">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="6">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="7">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="8">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="9">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="10">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="11">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="12">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="13">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="14">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="15">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="16">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="17">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="18">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="19">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+            <imgdir name="20">
+                <int name="boss" value="1"/>
+                <int name="incDAMr" value="30"/>
+            </imgdir>
+        </imgdir>
+    </imgdir>
 </imgdir>

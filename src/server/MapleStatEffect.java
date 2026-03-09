@@ -176,10 +176,10 @@ public class MapleStatEffect implements Serializable {
         ret.charColor = 0;
         String cColor = MapleDataTool.getString("charColor", source, null);
         if (cColor != null) {
-            ret.charColor |= Integer.parseInt("0x" + cColor.substring(0, 2));
-            ret.charColor |= Integer.parseInt("0x" + cColor.substring(2, 4) + "00");
-            ret.charColor |= Integer.parseInt("0x" + cColor.substring(4, 6) + "0000");
-            ret.charColor |= Integer.parseInt("0x" + cColor.substring(6, 8) + "000000");
+            ret.charColor |= Long.parseLong(cColor.substring(0, 2), 16);
+            ret.charColor |= Long.parseLong(cColor.substring(2, 4) + "00", 16);
+            ret.charColor |= Long.parseLong(cColor.substring(4, 6) + "0000", 16);
+            ret.charColor |= Long.parseLong(cColor.substring(6, 8) + "000000", 16);
         }
         ret.traits = new EnumMap<>(MapleTraitType.class);
         for (MapleTraitType t : MapleTraitType.values()) {

@@ -80,6 +80,26 @@ public class FileoutputUtil {
     }
 
     /**
+     * Redirect System.out and System.err to files while keeping console output.
+     * This ensures that even if the console is closed/disappears, logs are saved.
+     */
+    public static void redirectSystemStreams() {
+        try {
+            String dir = "logs/system/";
+            new File(dir).mkdirs();
+            PrintStream out = new PrintStream(new FileOutputStream(dir + "stdout.txt", true));
+            PrintStream err = new PrintStream(new FileOutputStream(dir + "stderr.txt", true));
+            
+            System.setOut(new tools.TeedPrintStream(System.out, out));
+            System.setErr(new tools.TeedPrintStream(System.err, err));
+            
+            logStartup("System streams redirected to " + dir);
+        } catch (Exception e) {
+            System.err.println("Failed to redirect system streams: " + e.getMessage());
+        }
+    }
+
+    /**
      * Create all necessary log directories on startup.
      */
     private static void createLogDirectories() {

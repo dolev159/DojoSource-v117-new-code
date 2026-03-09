@@ -140,15 +140,17 @@ public class MapleAESOFB {
      * @param iv The 4-byte IV to use.
      */
     public MapleAESOFB(byte iv[], short mapleVersion) {
+        boolean keyFound = false;
         for (EncryptionKey encryptkey : EncryptionKey.values()) {
             if (("V" + ServerConstants.MAPLE_VERSION).equals(encryptkey.name())) {
                 skey = encryptkey.getEncryptionKey();
+                keyFound = true;
                 break;
-            } else {
-                //System.out.println("System could not locate encryption for the current version, so it is using " + EncryptionKey.values()[EncryptionKey.values().length].name() + " Encryption.");
-                skey = EncryptionKey.values()[EncryptionKey.values().length].getEncryptionKey();
-                // Always lastest encryption.
             }
+        }
+        if (!keyFound) {
+            // Use the latest available encryption key as default
+            skey = EncryptionKey.values()[EncryptionKey.values().length - 1].getEncryptionKey();
         }
         try {
             cipher = Cipher.getInstance("AES");
@@ -231,6 +233,7 @@ public class MapleAESOFB {
         this.iv = getNewIv(this.iv);
     }
 
+
     /**
      * Generates a packet header for a packet that is
      * <code>length</code> long.
@@ -245,6 +248,7 @@ public class MapleAESOFB {
         return new byte[]{(byte) ((iiv >>> 8) & 0xFF), (byte) (iiv & 0xFF), (byte) ((mlength >>> 8) & 0xFF), (byte) (mlength & 0xFF)};
     }
 
+
     /**
      * Gets the packet length from a header.
      *
@@ -256,6 +260,7 @@ public class MapleAESOFB {
         packetLength = ((packetLength << 8) & 0xFF00) | ((packetLength >>> 8) & 0xFF); // fix endianness
         return packetLength;
     }
+
 
     /**
      * Check the packet to make sure it has a header.

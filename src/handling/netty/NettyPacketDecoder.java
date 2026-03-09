@@ -32,6 +32,10 @@ public class NettyPacketDecoder extends ByteToMessageDecoder {
 
         final int packetHeader = in.readInt();
         if (!client.getReceiveCrypto().checkPacket(packetHeader)) {
+            in.resetReaderIndex();
+            byte[] raw = new byte[in.readableBytes()];
+            in.readBytes(raw);
+            System.err.println("[Netty] Header check failed for " + ctx.channel().remoteAddress() + ". Raw data: " + tools.HexTool.toString(raw));
             ctx.close();
             return;
         }

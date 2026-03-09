@@ -45,10 +45,10 @@ public class ControllerCommand {
 
         @Override
         public int execute(MapleClient c, String[] splitted) {
-            try {
-                Connection con = (Connection) DatabaseConnection.getConnection();
-                PreparedStatement ps = (PreparedStatement) con.prepareStatement(StringUtil.joinStringFrom(splitted, 1));
-                ps.executeUpdate();
+            try (java.sql.Connection con = DatabaseConnection.getConnection()) {
+                try (java.sql.PreparedStatement ps = con.prepareStatement(StringUtil.joinStringFrom(splitted, 1))) {
+                    ps.executeUpdate();
+                }
             } catch (SQLException e) {
                 c.getPlayer().dropMessage(0, "Failed to execute SQL command.");
                 return 0;

@@ -113,30 +113,27 @@ public class CharacterCardFactory {
     public final Map<Integer, CardData> loadCharacterCards(final int accId, final int serverId) {
         Map<Integer, CardData> cards = new LinkedHashMap<>(); // Order
         Map<Integer, Pair<Short, Short>> inf = loadCharactersInfo(accId, serverId);
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM `character_cards` WHERE `accid` = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * FROM `character_cards` WHERE `accid` = ?")) {
             ps.setInt(1, accId);
-            ResultSet rs = ps.executeQuery();
-            int deck1 = 0, deck2 = 3;
-            while (rs.next()) {
-                final int cid = rs.getInt("characterid");
-                final Pair<Short, Short> x = inf.get(cid);
-                if (x == null || !canHaveCard(x.getLeft(), x.getRight())) { // We don't need to delete them as it'll be there till the user reupdate the char cards
-                    continue;
-                }
-                final int position = rs.getInt("position");
-                if (position < 4) {
-                    deck1++;
-                    cards.put(deck1, new CardData(cid, x.getLeft(), x.getRight()));
-                } else {
-                    deck2++;
-                    cards.put(deck2, new CardData(cid, x.getLeft(), x.getRight()));
+            try (ResultSet rs = ps.executeQuery()) {
+                int deck1 = 0, deck2 = 3;
+                while (rs.next()) {
+                    final int cid = rs.getInt("characterid");
+                    final Pair<Short, Short> x = inf.get(cid);
+                    if (x == null || !canHaveCard(x.getLeft(), x.getRight())) { // We don't need to delete them as it'll be there till the user reupdate the char cards
+                        continue;
+                    }
+                    final int position = rs.getInt("position");
+                    if (position < 4) {
+                        deck1++;
+                        cards.put(deck1, new CardData(cid, x.getLeft(), x.getRight()));
+                    } else {
+                        deck2++;
+                        cards.put(deck2, new CardData(cid, x.getLeft(), x.getRight()));
+                    }
                 }
             }
-            rs.close();
-            ps.close();
-
         } catch (SQLException sqlE) {
             System.out.println("Failed to load Character Cards. Reason: " + sqlE.toString());
         }
@@ -150,17 +147,15 @@ public class CharacterCardFactory {
 
     public Map<Integer, Pair<Short, Short>> loadCharactersInfo(int accId, int serverId) {
         Map<Integer, Pair<Short, Short>> chars = new HashMap<>();
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT id, level, job FROM characters WHERE accountid = ? AND world = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT id, level, job FROM characters WHERE accountid = ? AND world = ?")) {
             ps.setInt(1, accId);
             ps.setInt(2, serverId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                chars.put(rs.getInt("id"), new Pair<>(rs.getShort("level"), rs.getShort("job")));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    chars.put(rs.getInt("id"), new Pair<>(rs.getShort("level"), rs.getShort("job")));
+                }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException e) {
             System.err.println("Error loading Characters Information. reason: " + e.toString());
         }

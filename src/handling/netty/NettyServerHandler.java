@@ -8,7 +8,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import tools.MapleAESOFB;
-import tools.Randomizer;
+import server.Randomizer;
 import tools.packet.LoginPacket;
 import constants.ServerConstants;
 import io.netty.util.AttributeKey;
@@ -31,7 +31,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         );
         client.setNettyChannel(ctx.channel());
 
-        ctx.channel().attr(CLIENT_KEY).set(client);
+        ctx.channel().attr(MapleClient.CLIENT_KEY).set(client);
 
         // Send Hello packet
         byte[] hello = LoginPacket.getHello(ServerConstants.MAPLE_VERSION, ivSend, ivRecv);
@@ -42,10 +42,10 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        MapleClient client = ctx.channel().attr(CLIENT_KEY).get();
+        MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
         if (client != null) {
             client.disconnect(true, true);
-            ctx.channel().attr(CLIENT_KEY).set(null);
+            ctx.channel().attr(MapleClient.CLIENT_KEY).set(null);
         }
         System.out.println("[Netty] Session closed: " + ctx.channel().remoteAddress());
         super.channelInactive(ctx);
@@ -54,7 +54,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         byte[] packet = (byte[]) msg;
-        MapleClient client = ctx.channel().attr(CLIENT_KEY).get();
+        MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
         
         if (client != null) {
             // Processing packet using the existing logic in MapleServerHandler
