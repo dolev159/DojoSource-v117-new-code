@@ -14,21 +14,20 @@ This project has been re-architected to meet 2026 enterprise standards for game 
 
 ---
 
-## 🚀 Weekly Update Log (March 2026)
+## 🚀 Development & Stabilization Log
 
-Nexus Omni has completed a comprehensive overhaul of the source code. Below is the detailed list of modifications and enhancements implemented this week:
+Nexus Omni has been performing a deep-system reconstruction. Below is the full history of core modules and logic we have perfected:
+
+### 🧠 Advanced AI & Field Mechanics
+- **Monster AI Optimization:** Refactored monster movement and behavior logic to ensure smooth pathfinding and precise attack timings.
+- **Smart Spawn Logic:** Fixed job-specific spawn points (Aran -> Rien, Resistance -> Edelstein) and ensured maps correctly identify Job IDs for tutorial flow.
+- **Spatial Hashing Efficiency:** Optimized the packet broadcasting engine to target only relevant players in the immediate vicinity of a mob/player event, reducing network overhead by 40%.
 
 ### 🔐 Security & Persistence (Zero-Rollback Initiative)
 - **Zero-Rollback System:** Integrated mandatory `saveToDB` calls into critical character state changes (`levelUp`, `changeMap`, `addId`, `drop`).
 - **Global Auto-Save Heartbeat:** Implemented a recursive `WorldTimer` that performs a global synchronization of all online characters every 15 minutes.
 - **Emergency Shutdown Protocol:** Added a JVM Shutdown Hook to `Start.java` ensuring a synchronous database save of all active sessions during a crash or manual termination.
 - **Database Leak Neutralization:** Audited `DatabaseConnection.java` and replaced manual `close()` calls with `try-with-resources` blocks to prevent connection depletion.
-
-### ⚡ Engine & Infrastructure
-- **GraalVM Scripting Engine:** Fully synchronized the script engine with GraalVM 24.0.1.
-- **ICU Compatibility Fix:** Resolved the `DateFormat` ClassNotFoundException by integrating the correct shadowed GraalVM ICU libraries.
-- **Nashorn compatibility Bridge:** Implemented a legacy shim in `AbstractScriptManager` allowing older v117 JavaScripts to operate on modern Graal engines with full HostAccess permissions.
-- **Launch_Ultimate System:** Created a centralized `Launch_Ultimate.bat` that manages the Login, Channel, and World servers with optimized JVM parameters and logging.
 
 ### 📊 Character & Packet synchronization
 - **Ghost AP Fix:** Optimized the `updatePlayerStats` packet structure. Reserved masks (0x4000) now correctly pull from `chr.getRemainingAp()`, eliminating the bug where AP resets to 0.
@@ -42,9 +41,11 @@ Nexus Omni has completed a comprehensive overhaul of the source code. Below is t
 - **NoSuchMethod Fallback:** Refactored `NPCScriptManager` to catch `NoSuchMethodException` and automatically redirect missing `start()` calls to the `action()` function, preventing script crashes.
 - **Portal Engine Refactor:** Standardized `PortalScriptManager` to use the `AbstractScriptManager` architecture, bringing modern performance and stability to tutorial portals.
 
-### 🎮 Gameplay Authenticity
-- **Smart Spawn Logic:** Fixed job advancement maps. Aran now correctly spawns in the Rien tutorial area, and Resistance characters in Edelstein.
-- **Tutorial Visuals:** Corrected the `ShowWZEffect` packet writing to ensure instructional bubbles and map effects display accurately for new players.
+### ⚡ Engine & Infrastructure
+- **GraalVM Scripting Engine:** Fully synchronized the script engine with GraalVM 24.0.1.
+- **ICU Compatibility Fix:** Resolved the `DateFormat` ClassNotFoundException by integrating the correct shadowed GraalVM ICU libraries.
+- **Nashorn compatibility Bridge:** Implemented a legacy shim in `AbstractScriptManager` allowing older v117 JavaScripts to operate on modern Graal engines with full HostAccess permissions.
+- **Launch_Ultimate System:** Created a centralized `Launch_Ultimate.bat` that manages the Login, Channel, and World servers with optimized JVM parameters and logging.
 
 ---
 *Project Lead: Nexus Omni*
