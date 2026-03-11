@@ -1,6 +1,19 @@
 # DojoSource-v117-Ultimate
 The most advanced GMS v117 Emulator project focused on stabilization, security, and authentic gameplay.
 
+## 🛠️ Technical Stack & Architecture
+
+This project has been re-architected to meet 2026 enterprise standards for game server development:
+
+- **Runtime Environment:** Optimized for **Java 11+ / OpenJDK 17**.
+- **Networking Layer:** High-performance **Netty 4.1.x NIO** framework for non-blocking packet I/O, ensuring zero-lag communication.
+- **Scripting Engine:** **GraalVM Polyglot API** (JavaScript) with a custom **Nashorn compatibility bridge**, enabling high-speed script execution while maintaining support for legacy GMS scripts.
+- **Database Architecture:** **MariaDB / MySQL** integration using **HikariCP** for ultra-fast, leak-proof connection pooling.
+- **Security:** Implementations of **AES-256 CTR** cryptography and custom CRC bypasses matching the GMS v117.2 protocol.
+- **Concurrency Model:** Enterprise-grade **ReentrantReadWriteLocks** for character data thread safety and optimized **Spatial Hashing** for packet broadcasting.
+
+---
+
 ## 🚀 Weekly Update Log (March 2026)
 
 Nexus Omni has completed a comprehensive overhaul of the source code. Below is the detailed list of modifications and enhancements implemented this week:
