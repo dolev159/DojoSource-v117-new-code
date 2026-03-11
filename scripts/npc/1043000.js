@@ -1,29 +1,27 @@
-/**
-	A Pile of Flowers - The Forest of Patience <Step 2> (101000101)
-**/
+/*
+	名字:	花簇
+	地圖:	第2階段
+	描述:	910130001
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	if (cm.getPlayer().getPosition().y > -3322) {
+		cm.sendOk("You can't see the inside of the pile of flowers very well because you're too far. Go a little closer.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Etc item inventory is full."));
+		cm.dispose();
+		return;
+		}
+		cm.sendYesNo("Are you sure you want to take #b#t4031020##k with you?");
 }
 
 function action(mode, type, selection) {
-    if (status >= 2 && mode == 0) {
-	cm.sendOk("Alright, see you next time.");
-	cm.dispose();
-	return;
-    }
-    if (mode == 1) {
-	status++;
-    }
-    else {
-	status--;
-    }
-    if (status == 0) {
-	
-	cm.sendOk("Talk to him which under me.");
-	cm.dispose();
-
-    }
-}	
-
+	if (mode > 0) {
+		cm.gainItem(4031020, 1);
+		cm.getPlayer().changeMap(cm.getMap(101000000), cm.getMap(101000000).getPortal(0));
+		}
+		cm.dispose();
+}

@@ -1,13 +1,10 @@
-/* Storage
+/*
+	名字:	倉庫 魯老闆
+	地圖:	童話村
+	描述:	222000000
 */
 
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-}
-
-function action(mode, type, selection) {
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 2070000);
+	cm.dispose();
 }

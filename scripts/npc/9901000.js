@@ -1,27 +1,10 @@
-importPackage(java.util);
-importPackage(java.lang);
-var status = -1;
-var sr = null;
+/*
+	名字:	龍騎士
+	地圖:	戰士聖殿
+	描述:	102000003
+*/
 
 function start() {
-	action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-	if (mode != 1) {
-		cm.dispose();
-		return;
-	}
-	status++;
-	if (status == 0) {
-		sr = cm.getSpeedRun("Normal_Balrog");
-		if (sr.getLeft().equals("")) {
-			cm.sendOk("No speedruns have been done yet.");
-			cm.dispose();
-		} else {
-			cm.sendSimple(sr.getLeft());
-		}
-	} else if (sr != null && selection > 0 && cm.getSR(sr, selection)) {
-		status = -1;	
-	}
+	cm.sendOk("Hello, I am #bFangBlade#k, and I am LEVEL 200.");
+	cm.dispose();
 }

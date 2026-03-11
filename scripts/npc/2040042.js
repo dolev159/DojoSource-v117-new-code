@@ -1,40 +1,60 @@
-var status = -1;
+/*
+	名字:	天藍氣球
+	地圖:	遺棄之塔&amp;lt;第4階段&gt;
+	描述:	922010700
+*/
+
+var status;
+
+var open = true;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-        status++;
-    } else {
-        cm.dispose();
-        return;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+		eim = cm.getPlayer().getEventInstance();
+		reactor = 'action' + (eim.getProperty("stage4") == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId() ? 0 : 1);
+		eval(reactor)(mode, type, selection);
+}
 
-    if (cm.getMapId() == 922010700) {
-        if (status == 0) {
-            cm.sendNext("I am the officer in charge of the 7th stage. Defeat all the Rombots and bring me the passes.");
-        } else if (status == 1) {
-            if (cm.getParty() == null || !cm.isLeader()) {
-                cm.sendOk("Only your party leader can talk to me.");
-                cm.dispose();
-            } else {
-                if (cm.haveItem(4001022, 3)) {
-                    cm.gainItem(4001022, -3);
-                    Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 7);
-                    cm.gainPartyExp(9000);
-                    cm.sendOk("You've cleared the stage! The portal is now open.");
-                    cm.dispose();
-                } else {
-                    cm.sendOk("You don't have enough Dimension Tickets. You need 3.");
-                    cm.dispose();
-                }
-            }
-        }
-    } else {
-        cm.sendOk("I am the officer in charge of the 7th stage.");
-        cm.dispose();
-    }
+function action0(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("Welcome to the fourth stage. Here, you must face the powerful #b#o9300010##k. #b#o9300010##k is a fearsome opponent, so do not let your guard down. Once you defeat it, let me know and I'll show you to the next stage.");
+		cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 0:
+		if (eim.getProperty("stage4") > 0 && open) {
+			cm.sendNext("Congratulations on clearing the quests for this stage. Please use the portal you see over there and move on to the next stage.");
+			cm.dispose();
+			return;
+			}
+			open = false;
+			cm.sendNext("Wow, not a single #b#o9300010##k left! I'm impressed! I can open the portal to the next stage now.");
+			break;
+	case 1:
+		eim.setProperty("stage4", 1);
+		cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("gate", 2));
+		cm.sendNextPrev("The portal that leads you to the next stage is now open.");
+		break;
+	case 2:
+		cm.dispose();
+}
 }

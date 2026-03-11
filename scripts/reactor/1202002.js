@@ -1,7 +1,12 @@
 /*
-Relic - Aran Find the Puppet quest
+	名字:	鯨魚號
+	地圖:	動力機房
+	描述:	120000301
 */
 
 function act() {
-    rm.dropItems();
+	rm.dropItems();
 }
+
+
+//4033016		巨大的珍珠

@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112008.js: Zakum Party Quest Rock - drops an item (elixir)
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	10-1區域
+	描述:	280010100
 */
 
-function act(){
-    rm.dropItems();
+function act() {
+	rm.dropItems();
 }
+
+
+//2000004		特殊藥水

@@ -34,47 +34,40 @@ public class MapleAndroid
   }
 
   public static final MapleAndroid loadFromDb(int itemid, int uid) {
-    try {
+    try (Connection con = DatabaseConnection.getConnection();
+         PreparedStatement ps = con.prepareStatement("SELECT * FROM androids WHERE uniqueid = ?")) {
       MapleAndroid ret = new MapleAndroid(itemid, uid);
-
-      Connection con = DatabaseConnection.getConnection();
-      PreparedStatement ps = con.prepareStatement("SELECT * FROM androids WHERE uniqueid = ?");
       ps.setInt(1, uid);
 
-      ResultSet rs = ps.executeQuery();
-      if (!rs.next()) {
-        rs.close();
-        ps.close();
-        return null;
+      try (ResultSet rs = ps.executeQuery()) {
+        if (!rs.next()) {
+          return null;
+        }
+
+        ret.setHair(rs.getInt("hair"));
+        ret.setFace(rs.getInt("face"));
+        ret.setName(rs.getString("name"));
+        ret.changed = false;
+
+        return ret;
       }
-
-      ret.setHair(rs.getInt("hair"));
-      ret.setFace(rs.getInt("face"));
-      ret.setName(rs.getString("name"));
-      ret.changed = false;
-
-      rs.close();
-      ps.close();
-
-      return ret;
     } catch (SQLException ex) {
       ex.printStackTrace();
-    }return null;
+    }
+    return null;
   }
 
   public final void saveToDb()
   {
     if (!this.changed)
       return;
-    try
-    {
-      PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("UPDATE androids SET hair = ?, face = ?, name = ? WHERE uniqueid = ?");
+    try (Connection con = DatabaseConnection.getConnection();
+         PreparedStatement ps = con.prepareStatement("UPDATE androids SET hair = ?, face = ?, name = ? WHERE uniqueid = ?")) {
       ps.setInt(1, this.hair);
       ps.setInt(2, this.face);
       ps.setString(3, this.name);
       ps.setInt(4, this.uniqueid);
       ps.executeUpdate();
-      ps.close();
       this.changed = false;
     } catch (SQLException ex) {
       ex.printStackTrace();
@@ -92,15 +85,13 @@ public class MapleAndroid
   public static final MapleAndroid create(int itemid, int uniqueid, int hair, int face) {
     if (uniqueid <= -1)
       uniqueid = MapleInventoryIdentifier.getInstance();
-    try
-    {
-      PreparedStatement pse = DatabaseConnection.getConnection().prepareStatement("INSERT INTO androids (uniqueid, hair, face, name) VALUES (?, ?, ?, ?)");
+    try (Connection con = DatabaseConnection.getConnection();
+         PreparedStatement pse = con.prepareStatement("INSERT INTO androids (uniqueid, hair, face, name) VALUES (?, ?, ?, ?)")) {
       pse.setInt(1, uniqueid);
       pse.setInt(2, hair);
       pse.setInt(3, face);
       pse.setString(4, "Android");
       pse.executeUpdate();
-      pse.close();
     } catch (SQLException ex) {
       ex.printStackTrace();
       return null;

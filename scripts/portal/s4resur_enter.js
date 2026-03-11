@@ -1,19 +1,12 @@
+/*
+	名字:	玩具城
+	地圖:	遺忘的迴廊
+	描述:	220070400
+*/
+
 function enter(pi) {
-    if (pi.getQuestStatus(6134) == 1) {
-	var em = pi.getEventManager("s4resurrection2");
-	if (em == null) {
-	    pi.playerMessage("You're not allowed to enter with unknown reason. Try again.");
-	} else {
-	    var prop = em.getProperty("started");
-	    if (prop == null || prop.equals("false")) {
-		em.startInstance(pi.getPlayer());
-		return true;
-	    } else {
-		pi.playerMessage("Someone is already attempting on the quest.");
-	    }
-	}
-    } else {
-	pi.playerMessage("You can't enter sealed place.");
-    }
-    return false;
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(6134)).getStatus() == 1) {
+		pi.getPlayer().changeMap(pi.getMap(922020000), pi.getMap(922020000).getPortal(1)); //被遺忘的黑暗
+		}
+		return false;
 }

@@ -1,14 +1,11 @@
 /*
-Papulatus Reactor: Performs the Papulatus commands
+	名字:	玩具城
+	地圖:	動力室
+	描述:	220080001
 */
 
-function act(){
-try {
-    rm.mapMessage(5, "The dimensional hole has been filled by the <Piece of Cracked Dimension>.");
-    rm.changeMusic("Bgm09/TimeAttack");
-    rm.spawnMonster(8500000, -410, -400);
-    rm.getMap(220080000).setReactorState();
-} catch(e) {
-    rm.mapMessage(5, "Error: " + e);
-}
+function act() {
+	rm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("Bgm09/TimeAttack", 6));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "The dimensional hole has been filled by the <Piece of Cracked Dimension>."));
+	rm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(8500000), new java.awt.Point(-410, -400));
 }

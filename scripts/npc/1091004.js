@@ -1,11 +1,10 @@
 /*
-Dondlass - Nautilus' Port
+	名字:	守財奴
+	地圖:	上層走廊
+	描述:	120000100
 */
 
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1091004);
+	cm.dispose();
 }

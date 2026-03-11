@@ -35,11 +35,10 @@ import javax.script.ScriptEngineManager;
 import server.MaplePortal;
 import tools.FileoutputUtil;
 
-public class PortalScriptManager {
+public class PortalScriptManager extends AbstractScriptManager {
 
     private static final PortalScriptManager instance = new PortalScriptManager();
     private final Map<String, PortalScript> scripts = new HashMap<String, PortalScript>();
-    private final static ScriptEngineFactory sef = new ScriptEngineManager().getEngineByName("javascript").getFactory();
 
     public final static PortalScriptManager getInstance() {
         return instance;
@@ -50,30 +49,12 @@ public class PortalScriptManager {
             return scripts.get(scriptName);
         }
 
-        final File scriptFile = new File("scripts/portal/" + scriptName + ".js");
-        if (!scriptFile.exists()) {
+        final Invocable iv = getInvocable("portal/" + scriptName + ".js", null);
+        if (iv == null) {
             return null;
         }
 
-        FileReader fr = null;
-        final ScriptEngine portal = sef.getScriptEngine();
-        try {
-            fr = new FileReader(scriptFile);
-            CompiledScript compiled = ((Compilable) portal).compile(fr);
-            compiled.eval();
-        } catch (final Exception e) {
-            System.err.println("Error executing Portalscript: " + scriptName + ":" + e);
-            FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Error executing Portal script. (" + scriptName + ") " + e);
-        } finally {
-            if (fr != null) {
-                try {
-                    fr.close();
-                } catch (final IOException e) {
-                    System.err.println("ERROR CLOSING" + e);
-                }
-            }
-        }
-        final PortalScript script = ((Invocable) portal).getInterface(PortalScript.class);
+        final PortalScript script = iv.getInterface(PortalScript.class);
         scripts.put(scriptName, script);
         return script;
     }

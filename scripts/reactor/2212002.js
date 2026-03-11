@@ -1,9 +1,12 @@
-/* @Author Lerk
- * 
- * 2212002.js: Mateon Field reactors - Parts 3, Meso, White Pots
- * 
+/*
+	名字:	地球防御本部
+	地圖:	马体安的草原
+	描述:	221030301
 */
 
-function act(){
-	rm.dropItems(true, 2, 80, 100);
+function act() {
+	rm.dropItems();
 }
+
+
+//4031143		3號零件箱

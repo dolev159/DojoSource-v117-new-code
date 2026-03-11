@@ -1,10 +1,10 @@
-function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
-}
+/*
+	名字:	搶匪
+	地圖:	新叶城-市区中心
+	描述:	600000000
+*/
 
-function action(mode, type, selection) {
+function start() {
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 9201081);
+	cm.dispose();
 }

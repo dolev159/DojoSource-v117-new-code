@@ -1,39 +1,53 @@
-var status = -1;
+/*
+	名字:	鬥神的象徵交換機
+	地圖:	戰鬥廣場
+	描述:	960000000
+*/
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (status == 0) {
-		cm.sendSimple("You currently have #r" + cm.getPlayer().getBattlePoints() + "BP.#b\r\n#L3##i4310015##t4310015# x 1 (500BP)#l\r\n#L4##i4310015##t4310015# x 4 (1500BP)#l\r\n#L5##i4310015##t4310015# x 7 (2500BP)#l");
-    } else if (status == 1) {
-	if (selection == 3) {
-	    if (cm.getPlayer().getBattlePoints() >= 500 && cm.canHold(4310015,1)) {
-			cm.getPlayer().setBattlePoints(cm.getPlayer().getBattlePoints() - 500);
-			cm.gainItem(4310015,1);
-		} else {
-			cm.sendOk("Check if you have the correct BP.");
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
 		}
-	} else if (selection == 4) {
-	    if (cm.getPlayer().getBattlePoints() >= 1500 && cm.canHold(4310015,4)) {
-			cm.getPlayer().setBattlePoints(cm.getPlayer().getBattlePoints() - 1500);
-			cm.gainItem(4310015,4);
-		} else {
-			cm.sendOk("Check if you have the correct BP.");
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
 		}
-	} else if (selection == 5) {
-	    if (cm.getPlayer().getBattlePoints() >= 2500 && cm.canHold(4310015,7)) {
-			cm.getPlayer().setBattlePoints(cm.getPlayer().getBattlePoints() - 2500);
-			cm.gainItem(4310015,7);
-		} else {
-			cm.sendOk("Check if you have the correct BP.");
-		}
-	}
-	cm.dispose();
-    }
+	switch (status) {
+	case 0:
+		cm.sendSimple("#r#eCrawson's BP Exchanger#n#k \r\nTrade in your BP for Gallant Emblems. \r\nYou currently have #b" + cm.getPlayer().getBattlePoints() + " BP#k. \r\n#L0# Dont Trade#l\r\n#L500##v4310015# #t4310015# x 1 (500BP)#l\r\n#L1500##v4310015# #t4310015# x 4 (1500BP)#l\r\n#L2500##v4310015# #t4310015# x 7 (2500BP)#l");
+		break;
+	case 1:
+		if (selection < 1) {
+			cm.dispose();
+			return;
+			}
+		if (cm.getPlayer().getBattlePoints() < selection) {
+			cm.sendNext("You've only got " + cm.getPlayer().getBattlePoints() + " BP. If you want " + (selection < 1500 ? 1 : selection < 2500 ? 4 : 7) + " Gallant Emblems, you have to have at least " + selection + " BP.");
+			cm.dispose();
+			return;
+			}
+		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.EQUIP).getNumFreeSlot() < 1) {
+			cm.sendOk("It seems like you have no slots available in your Inventory. Could you check again?");
+			cm.dispose();
+			return;
+			}
+			cm.getPlayer().setBattlePoints(cm.getPlayer().getBattlePoints() - selection);
+			cm.gainItem(4310015, selection < 1500 ? 1 : selection < 2500 ? 4 : 7);
+			cm.dispose();
+}
 }

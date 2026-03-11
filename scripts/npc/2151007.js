@@ -1,26 +1,29 @@
+/*
+	名字:	升降機操作臺
+	地圖:	訓練房入口
+	描述:	310010010
+*/
+
 function start() {
-    cm.sendSimple("#b\r\n#L0#Training Room A#l\r\n#L1#Training Room B#l\r\n#L2#Training Room C#l\r\n#L3#Training Room D#l#k");
+	cm.sendSimple("An elevator that will take you to your desired training room. Choose the floor you'd like to go to. \r\n#L0##bUnderground 2nd Floor Training Room A#l\r\n#L1#Underground 3rd Floor Training Room B#l\r\n#L2#Underground 4th Floor Training Room C#l\r\n#L3#Underground 5th Floor Training Room D#l" + (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23118)).getStatus() == 1 ? "\r\n#L4#Underground 6th Floor Training Room E" : "") + "");
 }
 
 function action(mode,type,selection) {
-    if (mode == 1) { //or 931000400 + selection..?
-	switch(selection) {
-	    case 0:
-		cm.warp(310010100,0);
-		break;
-	    case 1:
-		cm.warp(310010200,0);
-		break;
-	    case 2:
-		cm.warp(310010300,0);
-		break;
-	    case 3:
-		cm.warp(310010400,0);
-		break;
-	    case 4:
-		cm.warp(310010500,0);
-		break;
-	}
-    }
-    cm.dispose();
+	if (mode > 0) {
+		if (selection < 4) {
+			cm.getPlayer().changeMap(cm.getMap(310010100 + selection * 100), cm.getMap(310010100 + selection * 100).getPortal(1));
+			cm.dispose();
+			return;
+			}
+		if (cm.getMap(931000400).getCharacters().size() > 0) {
+			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The Training Room door is closed. Is someone else using it? Come back later."));
+			cm.dispose();
+			return;
+			}
+			cm.getMap(931000400).resetFully();
+			cm.getPlayer().changeMap(cm.getMap(931000400), cm.getMap(931000400).getPortal(1));
+			cm.getPlayer().startMapTimeLimitTask(300, cm.getMap(310010010));
+			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Defeat the Training Robots before the effect of Vita's medicine wears off!"));
+			}
+			cm.dispose();
 }

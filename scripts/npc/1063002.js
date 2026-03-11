@@ -1,17 +1,21 @@
-/* NPC : A pile of white flower
- * Location : Sleepywood, forest of patient
- */
+/*
+	名字:	白花簇
+	地圖:	第7階段
+	描述:	910530202
+*/
 
-var itemSet = new Array(4020007, 4020008, 4010006);
-var rand = Math.floor(Math.random() * itemSet.length);
-
-function action(mode, type, selection) {
-    if (mode == 1) {
-	cm.sendOk("Go the flower which under me.");
-            
-	if (cm.getQuestStatus(2054) == 1 && !cm.haveItem(4031028)) {
-	    cm.gainItem(4031028, 20);
-	}
-    }
-    cm.dispose();
+function start() {
+	if (cm.getPlayer().getPosition().y > -3165) {
+		cm.sendOk("You can't see the inside of the pile of flowers very well because you're too far. Go a little closer.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Etc item inventory is full."));
+		cm.dispose();
+		return;
+		}
+		cm.gainItem(4031028, 30);
+		cm.getPlayer().changeMap(cm.getMap(105000000), cm.getMap(105000000).getPortal(0)); //奇幻村
+		cm.dispose();
 }

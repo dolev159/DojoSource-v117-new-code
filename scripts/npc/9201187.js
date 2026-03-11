@@ -1,37 +1,47 @@
-var status = -1;
+/*
+	名字:	Nebulite Gachapon
+	地圖:	新葉城-市區中心
+	描述:	600000000
+*/
+
+var z0 = [3064000, 3064001, 3064002, 3064010, 3064011, 3064012, 3064020, 3064021, 3064022, 3064030, 3064031, 3064032, 3064040, 3064041, 3064042, 3064050, 3064051, 3064052, 3064060, 3064061, 3064062, 3064070, 3064071, 3064072, 3064080, 3064081, 3064082, 3064090, 3064091, 3064100, 3064101, 3064111, 3064120, 3064121, 3064122, 3064123, 3064124, 3064130, 3064131, 3064132, 3064133, 3064134, 3064140, 3064141, 3064150, 3064151, 3064160, 3064161, 3064170, 3064171, 3064180, 3064181, 3064190, 3064191, 3064200, 3064201, 3064210, 3064211, 3064220, 3064221, 3064230, 3064231, 3064240, 3064241, 3064250, 3064251, 3064260, 3064261, 3064270, 3064271, 3064272, 3064280, 3064281, 3064282, 3064290, 3064291, 3064300, 3064301, 3064302, 3064310, 3064311, 3064320, 3064330, 3064331, 3064340, 3064341, 3064342, 3064350, 3064351, 3064352, 3064360, 3064361, 3064370, 3064380, 3064390];
+
+var z1 = [3063000, 3063001, 3063010, 3063011, 3063020, 3063021, 3063030, 3063031, 3063040, 3063041, 3063042, 3063050, 3063051, 3063052, 3063060, 3063061, 3063062, 3063063, 3063070, 3063071, 3063072, 3063073, 3063080, 3063081, 3063090, 3063091, 3063100, 3063101, 3063110, 3063120, 3063121, 3063122, 3063130, 3063131, 3063132, 3063140, 3063141, 3063150, 3063151, 3063160, 3063161, 3063170, 3063171, 3063180, 3063181, 3063190, 3063191, 3063200, 3063201, 3063210, 3063211, 3063220, 3063221, 3063230, 3063240, 3063241, 3063250, 3063251, 3063260, 3063261, 3063270, 3063271, 3063280, 3063281, 3063290, 3063300, 3063310, 3063320, 3063330, 3063340, 3063341, 3063350, 3063351, 3063360, 3063361, 3063370, 3063380, 3063390, 3063400];
+
+var z2 = [3062000, 3062001, 3062010, 3062011, 3062020, 3062021, 3062030, 3062031, 3062040, 3062041, 3062042, 3062050, 3062051, 3062052, 3062060, 3062061, 3062062, 3062070, 3062071, 3062072, 3062080, 3062081, 3062090, 3062091, 3062100, 3062101, 3062110, 3062120, 3062121, 3062122, 3062130, 3062131, 3062132, 3062140, 3062150, 3062160, 3062170, 3062180, 3062190, 3062200, 3062210, 3062220, 3062230, 3062240, 3062250, 3062260, 3062261, 3062270, 3062271, 3062280, 3062281, 3062290, 3062291, 3062292, 3062293, 3062294, 3062295, 3062300, 3062301, 3062302, 3062303, 3062304, 3062305, 3062310, 3062320, 3062321, 3062322, 3062323, 3062324, 3062325, 3062330, 3062331, 3062332, 3062333, 3062334, 3062335, 3062340, 3062341, 3062342, 3062343, 3062344, 3062345, 3062350, 3062360, 3062370, 3062371, 3062372, 3062373, 3062374, 3062375, 3062380, 3062381, 3062382, 3062383, 3062384, 3062385];
+
+var z3 = [3061000, 3061001, 3061010, 3061011, 3061020, 3061021, 3061030, 3061031, 3061040, 3061041, 3061042, 3061050, 3061051, 3061052, 3061060, 3061061, 3061070, 3061071, 3061080, 3061081, 3061090, 3061091, 3061100, 3061110, 3061120, 3061121, 3061122, 3061123, 3061124, 3061125, 3061130, 3061131, 3061132, 3061133, 3061134, 3061135, 3061140, 3061150, 3061160, 3061170, 3061180, 3061190, 3061200, 3061210, 3061220, 3061230, 3061240, 3061250, 3061260, 3061270, 3061271, 3061280, 3061290, 3061291, 3061292, 3061293, 3061294, 3061295, 3061300, 3061301, 3061302, 3061303, 3061304, 3061305, 3061310, 3061311, 3061312, 3061313, 3061314, 3061315, 3061320, 3061321, 3061322, 3061323, 3061324, 3061325, 3061330, 3061331, 3061332, 3061333, 3061334, 3061335, 3061340, 3061341, 3061350, 3061351, 3061360, 3061361, 3061362, 3061370, 3061371, 3061380, 3061381, 3061390];
+
+var z4 = [3060000, 3060001, 3060010, 3060011, 3060020, 3060021, 3060030, 3060031, 3060040, 3060041, 3060042, 3060050, 3060051, 3060052, 3060060, 3060061, 3060070, 3060071, 3060080, 3060081, 3060090, 3060091, 3060100, 3060110, 3060120, 3060121, 3060122, 3060130, 3060131, 3060132, 3060140, 3060150, 3060160, 3060170, 3060180];
+
+function start() {
+	if (cm.getPlayer().itemQuantity(5220094))
+		cm.sendSimple("You may use the Nebulite Gachapon. Which service would you like to use? \r\n#L0##bUse a Gachapon Ticket.#l");
+	else
+		cm.sendSimple("Welcome to the Nebulite Gachapon. How may I help you? \r\n\r\n#L1##bWhat is Gachapon?#l\r\n#L2#Where can you buy Gachapon Tickets?#l");
+}
 
 function action(mode, type, selection) {
-	if (mode <= 0) {
+	switch (selection) {
+	case 0:
+		var rand = Math.floor(Math.random() * 100);
+		y = rand < 3 ? z0 : rand < 10 ? z1 : rand < 20 ? z2 : rand < 40 ? z3 : z4;
+		z = cm.gainGachaponItem(y[Math.floor(Math.random() * y.length)], 1);
+		//z = cm.useNebuliteGachapon(); //原版物品
+		if (z != -1) {
+			cm.gainItem(5220094, -1);
+			cm.gainItem(2430748, 1);
+			cm.sendNext("You have obtained #b#t" + z + "##k from Nebulite Gachapon. \r\nThank you for using our Gachapon services. Please come again!");
+			cm.dispose();
+			return;
+			}
+			cm.sendOk("Please check your item inventory and see if you have the ticket, or if the inventory is full.");
+			break;
+	case 1:
+		cm.sendNext("Play Gachapon to gain all rate Nebulites and Premium Nebulite Ticket! All you need is a Nebulte Gachapon Ticket to be the winner of a random mix of useful items.");
+		break;
+	case 2:
+		cm.sendOk("Gachapon Tickets are available at the #rCash Shop#k and can be purchased using NX or Maple Points. Click on the red SHOP button at the bottom of the screen to the right of your EXP. bar to visit the #rCash Shop#k where you can purchase tickets.");
+		}
 		cm.dispose();
-	} else {
-		if (mode == 1) {
-			status++;
-		} else {
-			status--;
-		}
-		if (status == 0) {
-			if (cm.haveItem(5220094)) {
-				cm.sendYesNo("You may use the Nebulite Gachapon. Which service would you like to use?\r\n#b#L0#Use a Gachapon Ticket#l#k");
-			} else {
-				cm.sendSimple("Welcome to the Nebulite Gachapon. How may I help you?\r\n\r\n#b#L0#What is Gachapon?#l\r\n#L1#Where can you buy Gachapon Tickets?#l#k");
-			}
-		} else if (status == 1) {
-			if (cm.haveItem(5220094)) {
-				var item = cm.useNebuliteGachapon();
-				if (item != -1) {					
-					cm.sendNext("You have obtained #b#t" + item + "##k from Nebulite Gachapon.\r\nThank you for using our gachapon services. Please come again!");
-				} else {
-					cm.sendOk("Please check your item inventory and see if you have the ticket, or if the inventory is full.");
-				}
-				cm.safeDispose();
-			} else {
-				if (selection == 0) {
-					cm.sendNext("Play Gachapon for a chance to win rare Nebulites and Preminum Fusion Ticket Pieces! All you need is a Nebuilte Gachapon Ticket to be the winner of a random Nebulite.");
-				} else if (selection == 1) {
-					cm.sendOk("Gachapon Tickets are available at the #rCash Shop#k and can be purchased using NX or Maple Points. Click on the red SHOP button at the bottom of the screen to the right of your EXP. bar to visit the #rCash Shop#k where you can purchase tickets.");
-				}
-				cm.safeDispose();
-			}
-		}
-    }
 }

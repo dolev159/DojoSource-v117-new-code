@@ -1,40 +1,31 @@
-var status;
+/*
+	名字:	一堆利耶尼礦石
+	地圖:	外星基地走廊
+	描述:	610040010
+*/
 
 function start() {
-status = -1;
-action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-
-if (mode == -1) {
-cm.dispose();
-}
-else {
-if (status == 0 && mode == 0) {
-cm.dispose();
-return;
-    }
-}
-
-if (mode == 1) 
-   status++;
-
-else 
-   status--;
-    if (status == 0) { 
-cm.sendAcceptDecline("You have completed the Jumping Quest. Click accept to receive:\r\n\r\n#b1) #i 4310025# (20)\r\n2) 8 Jumping Quest Point#k.");
-}else if (status == 1) {
- var map = cm.getPlayer().getMapId();
- var mapname = "Unknown MapID";
- if (map == 682000200) {
- mapname = "Ghost Chimney";
-}
-    cm.warp(910000000,0);
-	cm.gainJQPoints(8);
-	cm.gainItem(4310025, 20);
-	cm.gainItem(4032024, -1);
-	cm.msiMessage("[Jumping Quest Notice] Congratulations to "+cm.getPlayer().getName()+" for trying to beat the Jumping Quest without the required item.");
-	cm.dispose();
-}
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(28751)).getStatus() != 1) {
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getPosition().x < 440 || cm.getPlayer().getPosition().x > 640 || cm.getPlayer().getPosition().y != -433) {
+		cm.sendOkS("(It's too far away to pick up.)", 3);
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(28751)).getCustomData() == null) {
+		cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(28751)).setCustomData("00000");
+		}
+		var progress = cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(28751)).getCustomData();
+		var slot = cm.getNpc() - 9201177;
+		var ch = progress[slot];
+	if (ch == '0') {
+		var nextProgress = progress.substr(0, slot) + '3' + progress.substr(slot + 1);
+		cm.gainItem(4033193, 1);
+		Packages.server.quest.MapleQuest.getInstance(28774).forceStart(cm.getPlayer(), 0, null);
+		cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(28751)).setCustomData(nextProgress);
+		cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(28751)), true);
+		}
+		cm.dispose();
 }

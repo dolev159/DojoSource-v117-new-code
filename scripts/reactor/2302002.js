@@ -1,9 +1,12 @@
-/* @Author Lerk
- * 
- * 2302002.js: Aqua Road Reactor - Shell - Drops Air Bubbles, Orange Pots, meso
- * 
+/*
+	名字:	隱藏地圖
+	地圖:	魚兒休息地
+	描述:	230030001
 */
 
-function act(){
-	rm.dropItems(true, 2, 55, 70);
+function act() {
+	rm.dropItems();
 }
+
+
+//2022040		氣泡

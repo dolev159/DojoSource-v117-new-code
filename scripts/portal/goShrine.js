@@ -1,8 +1,11 @@
+/*
+	名字:	黃金寺廟
+	地圖:	黃金寺廟
+	描述:	809060000
+*/
+
 function enter(pi) {
-	if (pi.getPlayer().getLevel() < 50) {
-		pi.playerMessage(5, "You must be at least level 50.");
-		return false;
-	}
-	pi.warp(950101000,0);
+	var map = pi.getPlayer().getMap().getId() == 809060000 ? 809061000 : 950101000;
+	pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(6));
 	return true;
 }

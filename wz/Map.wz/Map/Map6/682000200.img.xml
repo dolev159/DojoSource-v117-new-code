@@ -31,6 +31,19 @@
         </imgdir>
     </imgdir>
     <imgdir name="life">
+		<imgdir name="0">
+			<string name="type" value="n"/>
+			<string name="id" value="9201177"/>
+			<int name="x" value="122"/>
+			<int name="y" value="-3191"/>
+			<int name="mobTime" value="1000"/>
+			<int name="f" value="0"/>
+			<int name="hide" value="0"/>
+			<int name="fh" value="359"/>
+			<int name="cy" value="-3191"/>
+			<int name="rx0" value="122"/>
+			<int name="rx1" value="122"/>
+		</imgdir>
     </imgdir>
     <imgdir name="reactor">
     </imgdir>

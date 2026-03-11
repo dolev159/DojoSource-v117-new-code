@@ -1,38 +1,27 @@
-/**
--- Odin JavaScript --------------------------------------------------------------------------------
-	A Pile of Herbs - The Forest of Patience <Step 5> (101000104)
--- By ---------------------------------------------------------------------------------------------
-	Information
--- Version Info -----------------------------------------------------------------------------------
-	1.0 - First Version by Information
----------------------------------------------------------------------------------------------------
+/*
+	名字:	草藥叢
+	地圖:	第5階段
+	描述:	910130102
 */
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	if (cm.getPlayer().getPosition().y > -2962) {
+		cm.sendOk("You can't see the inside of the pile of flowers very well because you're too far. Go a little closer.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Etc item inventory is full."));
+		cm.dispose();
+		return;
+		}
+		cm.sendYesNo("Are you sure you want to take #b#t4031032##k with you?");
 }
 
 function action(mode, type, selection) {
-    if (status >= 2 && mode == 0) {
-	cm.sendOk("Alright, see you next time.");
-	cm.dispose();
-	return;
-    }
-    if (mode == 1) {
-	status++;
-    }
-    else {
-	status--;
-    }
-    if (status == 0) {
-	cm.sendOk("Very nice #h#, You finished the last stage of jump quests! \r\nYou get these list of prizes:\r\n1) #i 4310025# (6)\r\n2) #b100,000 Mesos#k\r\n3) #b6 Jump quest points #k");
-	cm.gainItem(4032024, -1);
-	cm.gainItem(4310025, 6);
-        cm.gainMeso(100000);
- 	cm.gainJQPoints(6);
-	cm.warp(101000000, 0);
-    }
-	cm.dispose();
-
+	if (mode > 0) {
+		cm.gainItem(4031032, 1);
+		cm.getPlayer().changeMap(cm.getMap(101000000), cm.getMap(101000000).getPortal(0));
+		}
+		cm.dispose();
 }

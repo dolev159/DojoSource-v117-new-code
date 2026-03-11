@@ -1,11 +1,10 @@
 /*
-	Mr. Wang - Victoria Road : Perion (102000000)
+	名字:	倉庫王老闆
+	地圖:	勇士之村
+	描述:	102000000
 */
 
-function action(mode, type, selection) {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+function start() {
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1022005);
+	cm.dispose();
 }

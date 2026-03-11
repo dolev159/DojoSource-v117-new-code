@@ -1,18 +1,14 @@
 /*
-Warp to Sharen III's Grave - Guild Quest
-Give guild points if holding appropriate item and not gained already
-Save location to return.
-
-@Author Lerk
+	名字:	威廉的古堡
+	地圖:	地下水路
+	描述:	990000600
 */
 
 function enter(pi) {
-    if (pi.getPlayerStat("LVL") <= 30) {
-	pi.playPortalSE();
-        pi.warp(990000640, 1);
-        return true;
-    } else {
-        pi.playerMessage("You cannot proceed past this point.");
-        return false;
-    }
+	if (pi.getPlayer().getLevel() > 30) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You cannot proceed past this point."));
+		return false;
+		}
+		pi.getPlayer().changeMap(pi.getMap(990000640), pi.getMap(990000640).getPortal(1)); //水路之迷宮
+		return true;
 }

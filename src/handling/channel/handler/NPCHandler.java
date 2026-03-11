@@ -227,11 +227,18 @@ public class NPCHandler {
         if (chr == null) {
             return;
         }
-        final MapleStorage storage = chr.getStorage();
+        final java.util.concurrent.locks.Lock lock = chr.getInventoryLock();
+        if (!lock.tryLock()) {
+            System.err.println("[Anti-Dupe] Potential Dupe Exploit caught for " + chr.getName() + " on Storage.");
+            c.getSession().write(CWvsContext.enableActions());
+            return;
+        }
+        try {
+            final MapleStorage storage = chr.getStorage();
 
-        switch (mode) {
-            case 4: { // Take Out
-                final byte type = slea.readByte();
+            switch (mode) {
+                case 4: { // Take Out
+                    final byte type = slea.readByte();
                 final byte slot = storage.getSlot(MapleInventoryType.getByType(type), slea.readByte());
                 final Item item = storage.takeOut(slot);
 
@@ -351,6 +358,9 @@ public class NPCHandler {
             default:
                 System.out.println("Unhandled Storage mode : " + mode);
                 break;
+        }
+        } finally {
+            lock.unlock();
         }
     }
 

@@ -560,10 +560,10 @@ public class PlayerStats implements Serializable {
         recalcPVPRank(chra);
         if (first_login) {
             chra.silentEnforceMaxHpMp();
-            relocHeal(chra);
         } else {
             chra.enforceMaxHpMp();
         }
+        relocHeal(chra);
         calculateMaxBaseDamage(Math.max(magic, watk), pvpDamage, chra);
         trueMastery = Math.min(100, trueMastery);
         passive_sharpeye_min_percent = (short) Math.min(passive_sharpeye_min_percent, passive_sharpeye_percent);
@@ -2958,8 +2958,8 @@ public class PlayerStats implements Serializable {
 
         shouldHealHP = 10 + recoverHP; // Reset
         shouldHealMP = GameConstants.isDemon(chra.getJob()) ? 0 : (3 + recoverMP + (localint_ / 10)); // I think
-        mpRecoverTime = 0;
-        hpRecoverTime = 0;
+        mpRecoverTime = 10000;
+        hpRecoverTime = 10000;
         if (playerjob == 111 || playerjob == 112) {
             final Skill effect = SkillFactory.getSkill(1110000); // Improving MP Recovery
             final int lvl = chra.getSkillLevel(effect);

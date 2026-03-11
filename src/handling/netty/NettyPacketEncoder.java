@@ -7,6 +7,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import java.util.concurrent.locks.Lock;
 import tools.MapleAESOFB;
 import tools.MapleCustomEncryption;
+import constants.ServerConstants;
 
 public class NettyPacketEncoder extends MessageToByteEncoder<byte[]> {
 
@@ -22,16 +23,21 @@ public class NettyPacketEncoder extends MessageToByteEncoder<byte[]> {
                     client.setFirstPacket(false);
                     out.writeBytes(message);
                 } else {
-                    final MapleAESOFB send_crypto = client.getSendCrypto();
-                    final byte[] unencrypted = new byte[message.length];
-                    System.arraycopy(message, 0, unencrypted, 0, message.length);
-                    
-                    final byte[] header = send_crypto.getPacketHeader(unencrypted.length);
-                    MapleCustomEncryption.encryptData(unencrypted);
-                    send_crypto.crypt(unencrypted);
+                    final byte[] data = new byte[message.length];
+                    System.arraycopy(message, 0, data, 0, message.length);
 
-                    out.writeBytes(header);
-                    out.writeBytes(unencrypted);
+                    if (ServerConstants.USE_AES) {
+                        final MapleAESOFB send_crypto = client.getSendCrypto();
+                        final byte[] header = send_crypto.getPacketHeader(data.length);
+                        if (ServerConstants.USE_SHANDA) {
+                            MapleCustomEncryption.encryptData(data);
+                        }
+                        send_crypto.crypt(data);
+                        out.writeBytes(header);
+                    } else if (ServerConstants.USE_SHANDA) {
+                        MapleCustomEncryption.encryptData(data);
+                    }
+                    out.writeBytes(data);
                 }
             } finally {
                 mutex.unlock();

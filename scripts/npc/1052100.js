@@ -1,59 +1,89 @@
-/* Don Giovanni
-	Kerning VIP Hair/Hair Color Change.
+/*
+	名字:	錢老闆
+	地圖:	墮落城市美髮店
+	描述:	103000005
 */
-var status = -1;
-var beauty = 0;
-var hair_Colo_new;
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("Hello! I'm Don Giovanni, head of the beauty salon! If you have either #b#t5150053##k or #b#t5151036##k, why don't you let me take care of the rest? Decide what you want to do with your hair... \r\n#L0##bChange hair style (VIP coupon)#l\r\n#L1#Dye your hair (VIP coupon)#l");
+		break;
+	default:
+		if (status == 1) select = selection;
+		reactor = 'action' + select;
+		eval(reactor)(mode, type, selection);
+}
+}
 
-    if (status == 0) {
-	cm.sendSimple("Hello! I'm Don Giovanni, head of the beauty salon! If you have either #b#t5150003##k or #b#t5151003##k, why don't you let me take care of the rest? Decide what you want to do with your hair... \r\n#L0#Haircut: #i5150003##t5150003##l\r\n#L1#Dye your hair: #i5151003##t5151003##l");
-    } else if (status == 1) {
-	if (selection == 0) {
-	    var hair = cm.getPlayerStat("HAIR");
-	    hair_Colo_new = [];
-	    beauty = 1;
+function action0(mode, type, selection) {
+	switch (status) {
+	case 1:
+		if (cm.getPlayer().getGender() < 1)
+			hair = [30130, 33040, 30850, 30780, 30040, 30920];
+		else
+			hair = [34090, 31090, 31880, 31140, 31330, 31760];
 
-	    if (cm.getPlayerStat("GENDER") == 0) {
-		hair_Colo_new = [30030, 30020, 30000, 30130, 30350, 30190, 30110, 30180, 30050, 30040, 30160];
-	    } else {
-		hair_Colo_new = [31050, 31040, 31000, 31060, 31090, 31020, 31130, 31120, 31140, 31330, 31010];
-	    }
-	    for (var i = 0; i < hair_Colo_new.length; i++) {
-		hair_Colo_new[i] = hair_Colo_new[i] + (hair % 10);
-	    }
-	    cm.askAvatar("I can totally change up your hairstyle and make it look so good. Why don't you change it up a bit? If you have #b#t5150003##k I'll change it for you. Choose the one to your liking~.", hair_Colo_new);
-	} else if (selection == 1) {
-	    var currenthaircolo = Math.floor((cm.getPlayerStat("HAIR") / 10)) * 10;
-	    hair_Colo_new = [];
-	    beauty = 2;
+			for (var i = 0; i < hair.length; i++)
+			hair[i] = hair[i] + parseInt(cm.getPlayer().getHair() % 10);
 
-	    for (var i = 0; i < 8; i++) {
-		hair_Colo_new[i] = currenthaircolo + i;
-	    }
-	    cm.askAvatar("I can totally change your haircolor and make it look so good. Why don't you change it up a bit? With #b#t5151003##k I'll change it for you. Choose the one to your liking.", hair_Colo_new);
-	}
-    } else if (status == 2){
-	if (beauty == 1){
-	    if (cm.setAvatar(5150003, hair_Colo_new[selection]) == 1) {
-		cm.sendOk("Enjoy your new and improved hairstyle!");
-	    } else {
-		cm.sendOk("Hmmm...it looks like you don't have our designated coupon...I'm afraid I can't give you a haircut without it. I'm sorry...");
-	    }
-	} else {
-	    if (cm.setAvatar(5151003, hair_Colo_new[selection]) == 1) {
-		cm.sendOk("Enjoy your new and improved haircolor!");
-	    } else {
-		cm.sendOk("Hmmm...it looks like you don't have our designated coupon...I'm afraid I can't dye your hair without it. I'm sorry...");
-	    }
-	}
-	cm.safeDispose();
-    }
+			cm.sendStyle("I can change your hairstyle to something totally new. Aren't you sick of your hairdo? I'II give you a haircut with #b#t5150053##k. Choose the hairstyle of your liking.", hair);
+			break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5150053)) {
+			cm.gainItem(5150053, -1);
+			cm.getPlayer().setHair(hair[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.HAIR, hair[selection]);
+			cm.sendNext("Ok, check out your new haircut. What do you think? Even I admit this one is a masterpiece! AHAHAHA. Let me know when you want another haircut. I'll take care of the rest!");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmmm...it looks like you don't have our designated coupon...I'm afraid I can't give you a haircut without it. I'm sorry...");
+			cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 1:
+		hair = parseInt(cm.getPlayer().getHair() / 10) * 10;
+
+		hair = [hair +0, hair +2, hair +3, hair +5];
+
+		cm.sendStyle("I can change the color of your hair to something totally new. Aren't you sick of your hair-color? I'll dye your hair if you have #bVIP hair color coupon#k. Choose the hair-color of your liking!", hair);
+		break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5151036)) {
+			cm.gainItem(5151036, -1);
+			cm.getPlayer().setHair(hair[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.HAIR, hair[selection]);
+			cm.sendNext("Ok, check out your new hair color. What do you think? Even I admit this one is a masterpiece! AHAHAHA. Let me know when you want another haircut. I'll take care of the rest!");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmmm...it looks like you don't have our designated coupon...I'm afraid I can't dye your hair without it. I'm sorry...");
+			cm.dispose();
+}
 }

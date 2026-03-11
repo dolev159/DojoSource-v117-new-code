@@ -1,31 +1,80 @@
-/* 
- *  NPC  : Guide Summoner
- *  Maps : Erev Map of the Start // 20021
- */
+/*
+	名字:	提酷
+	地圖:	開始之森林1
+	描述:	130030000
+*/
 
-var status = -1;
+var status;
 
 function start() {
-    cm.sendSimple("Wait! The information listed below can all be obtained simply by playing through Level 10, so it's not something you'll need to learn way in advance. Only the ones that would like to learn these in advance should continue from here on out. \n\r Okay, which of these would you like to learn more of?  \n\r #b#L0#Tell me more about you.#l \n\r #b#L1#Minimap#l \n\r #b#L2#Quest window#l \n\r #b#L3#Inventory#l \n\r #b#L4#Regular attacks#l \n\r #b#L5#Picking up items#l \n\r #b#L6#Equipping an item#l \n\r #b#L7#Skill window#l \n\r #b#L8#How to use Quick Slot#l \n\r #b#L9#Breaking the box#l \n\r #b#L10#Sitting on a chair#l \n\r #b#L11#Raising stats#l \n\r #b#L12#What are Knights of Cygnus?#l");
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	cm.dispose();
-    }
-    if (status == 0) {
-	if (selection == 0) {
-	    cm.sendNext("I am currently serving the Divine Bird, who's responsible for protecting Queen Cygnus and Erev. The Divine Bird ordered me to take care of the Queen's requests, and that was to guide the souls that have arrived in the world of Maple in search of becoming a Knight of Cygnus. That is why I am here, and I will be with you until you become a knight of your own, or if you reach Level 11. If you have any questions, let me know!");
-	} else if (selection == 12) {
-	    cm.sendOk("The world of Maple had been keeping peace intact for a long time, but I fear that the presence of Black Wizard is slowly creeping back in. In order to stop sinster Black Wizard, the queen decided to form the Knights of cygnus. Once you reach Level 10, you can formally request to become a Knight of Cygnus yourself.");
-	    cm.dispose();
-	} else {
-	    cm.summonMsg(selection);
-	    cm.dispose();
-	}
-    } else if (status == 1) {
-	cm.sendNext("But you really don't need to try to figure out everything in such a short amount of time. All the information I have here are basic knowledge of the game that you'll learn simply by playing the game. In fact, I feel that you should only ask if you're either at Level 10 but still clueless on what to do, or if you just want to clarify and double-check what you already know. You really don't need to know everything all at once, so relax.");
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		var chat = "Wait! You'll figure the stuff out by the time you reach Lv. 10 anyway, but if you absolutely want to prepare beforehand, you may view the following information. \r\n\r\n Tell me, what would you like to know?#b";
+		chat += "\r\n#L0#Abot You";
+		chat += "\r\n#L1#Mini Map";
+		chat += "\r\n#L2#Quest Window";
+		chat += "\r\n#L3#Inventory";
+		chat += "\r\n#L4#Regular Attack Hunting";
+		chat += "\r\n#L5#How to Pick Up Items";
+		chat += "\r\n#L6#How to Equip Items";
+		chat += "\r\n#L7#Skill Window";
+		chat += "\r\n#L8#How to Use Quick Slots";
+		chat += "\r\n#L9#How to Break Boxes";
+		chat += "\r\n#L10#How to Sit in a Chair";
+		chat += "\r\n#L11#World Map";
+		chat += "\r\n#L12#Quest Notifications";
+		chat += "\r\n#L13#Enhancing Stats";
+		chat += "\r\n#L14#Who are the Cygnus Knights?";
+		cm.sendSimple(chat);
+		break;
+	default:
+		if (status == 1 && type == 5) select = selection;
+		reactor = 'action' + (select < 1 ? 0 : select < 14 ? 1 : 2);
+		eval(reactor)(mode, type, selection);
+}
+}
+
+function action0(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("I serve under Shinsoo, the guardian of Empress Cygnus. My master, Shinsoo, has ordered me to guide everyone who comes to Maple World to join Cygnus Knights. I will be assisting and following you around until you become a Knight or reach Lv. 11. Please let me know if you have any questions.");
+		break;
+	case 2:
+		cm.sendNextPrev("There is no need for you to check this info now. These are basics that you'll pick up as you play. You can always ask me questions that come up after you've reached Lv. 10, so just relax.");
+		break;
+	case 3:
+		cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.summonMessage(select));
+		cm.dispose();
+}
+}
+
+function action2(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendOk("The Black Mage is trying to revive and conquer our peaceful Maple World. As a response to this threat, Empress Cygnus has formed a knighthood, now known as Cygnus Knights. You can become a Knight when you reach Lv. 10.");
+		cm.dispose();
+}
 }

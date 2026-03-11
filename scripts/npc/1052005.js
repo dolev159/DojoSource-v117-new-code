@@ -1,45 +1,54 @@
-/* Dr. Feeble
-	Henesys Random Eye Change.
+/*
+	名字:	差不多醫生
+	地圖:	弓箭手村整容院
+	描述:	100000103
 */
-var status = 0;
-var beauty = 0;
+
+var status;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0 && status == 0) {
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-    if (status == 0) {
-	cm.sendNext("Hi, I pretty much shouldn't be doing this, but with a #b#t5152000##k, I will do it anyways for you. But don't forget, it will be random!");
-    } else if (status == 1) {
-	cm.sendYesNo("If you use the regular coupon, your face may transform into a random new look...do you still want to do it using #b#t5152000##k?");
-    } else if (status == 2){
-	var face = cm.getPlayerStat("FACE");
-	var facetype;
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.sendNext("I see...take your time and see if you really want it. Let me know when you've decided.");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendYesNo("If you use the regular coupon, you may end up with a random new look for your face...do you still want to do it using #b#t5152056##k?");
+		break;
+	case 1:
+		if (cm.getPlayer().getGender() < 1)
+			face = [20000, 20005, 20008, 20012, 20016, 20022, 20032];
+		else
+			face = [21000, 21002, 21008, 21014, 21020, 21024, 21029];
 
-	if (cm.getPlayerStat("GENDER") == 0) {
-	    facetype = [20000, 20001, 20002, 20003, 20004, 20005, 20006, 20007, 20008, 20012, 20014];
-	} else {
-	    facetype = [21000, 21001, 21002, 21003, 21004, 21005, 21006, 21007, 21008, 21012, 21014];
-	}
-	for (var i = 0; i < facetype.length; i++) {
-	    facetype[i] = facetype[i] + face % 1000 - (face % 100);
-	}
+			face = face[Math.floor(Math.random() * face.length)] + parseInt(cm.getPlayer().getFace() / 100 % 10) * 100;
 
-	if (cm.setRandomAvatar(5152000, facetype) == 1) {
-	    cm.sendOk("Enjoy your new and improved face!");
-	} else {
-	    cm.sendOk("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
-	}
-	cm.dispose();
-    }
+		if (cm.getPlayer().itemQuantity(5152056)) {
+			cm.gainItem(5152056, -1);
+			cm.getPlayer().setFace(face);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.FACE, face);
+			cm.sendNext("Okay, the surgery's done. Here's a mirror--check it out. What a masterpiece, no? Haha! If you ever get tired of this look, please feel free to come visit me again.");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
+			cm.dispose();
+}
 }

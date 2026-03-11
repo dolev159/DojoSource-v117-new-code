@@ -1,60 +1,91 @@
-/* Brittany
-	Henesys Random Hair/Hair Color Change.
+/*
+	名字:	伯麗特
+	地圖:	弓箭手村美髮店
+	描述:	100000104
 */
-var status = -1;
-var beauty = 0;
-var hair_Colo_new;
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("I'm Brittany the assistant. If you have #b#t5150052##k or #b#t5151035##k by any chance, then how about letting me change your hairdo? \r\n#L0##bHaircut(REG coupon)#l\r\n#L1#Dye your hair(REG coupon)#l");
+		break;
+	default:
+		if (status == 1) select = selection;
+		reactor = 'action' + select;
+		eval(reactor)(mode, type, selection);
+}
+}
 
-    if (status == 0) {
-	cm.sendSimple("I'm Brittany the assistant. If you have #b#t5150010##k or #b#t5151000##k by any chance, then how about letting me change your hairdo? \r\n#L0#Haircut: #i5150000##t5150000##l\r\n#L1#Dye your hair: #i5151000##t5151000##l");
-    } else if (status == 1) {
-	if (selection == 0) {
-	    var hair = cm.getPlayerStat("HAIR");
-	    hair_Colo_new = [];
-	    beauty = 1;
+function action0(mode, type, selection) {
+	switch (status) {
+	case 1:
+		if (cm.getPlayer().getGender() < 1)
+			hair = [30310, 30330, 30060, 30150, 30410, 30210, 30140, 30120, 30200, 30560, 30510, 30610, 30470];
+		else
+			hair = [31150, 31310, 31300, 31160, 31100, 31410, 31030, 31080, 31070, 31610, 31350, 31510, 31740];
 
-	    if (cm.getPlayerStat("GENDER") == 0) {
-		hair_Colo_new = [30310, 30330, 30060, 30150, 30410, 30210, 30140, 30120, 30200, 30560, 30510, 30610, 30470];
-	    } else {
-		hair_Colo_new = [31150, 31310, 31300, 31160, 31100, 31410, 31030, 31080, 31070, 31610, 31350, 31510, 31740];
-	    }
-	    for (var i = 0; i < hair_Colo_new.length; i++) {
-		hair_Colo_new[i] = hair_Colo_new[i] + (hair % 10);
-	    }
-	    cm.sendYesNo("If you use the EXP coupon your hair will change RANDOMLY with a chance to obtain a new experimental style that even you didn't think was possible. Are you going to use #b#t5150010##k and really change your hairstyle?");
+			hair = hair[Math.floor(Math.random() * hair.length)] + parseInt(cm.getPlayer().getHair() % 10);
 
-	} else if (selection == 1) {
-	    var currenthaircolo = Math.floor((cm.getPlayerStat("HAIR") / 10)) * 10;
-	    hair_Colo_new = [];
-	    beauty = 2;
+			cm.sendYesNo("If you use the REG coupon your hair will change RANDQMLY with a chance to obtain a new experimental style that even you didn't think was possible. Are you going to use #b#t5150052##k and really change your hairstyle?");
+			break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5150052)) {
+			cm.gainItem(5150052, -1);
+			cm.getPlayer().setHair(hair);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.HAIR, hair);
+			cm.sendNext("Hey, here's the mirror. What do you think of your new haircut? I know it wasn't the smoothest of all, but didn't it come out pretty nice? Come back later when you need to change it up again!");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmmm...are you sure you have our designated coupon? Sorry but no haircut without it.");
+			cm.dispose();
+}
+}
 
-	    for (var i = 0; i < 8; i++) {
-		hair_Colo_new[i] = currenthaircolo + i;
-	    }
-	    cm.sendYesNo("If you use a regular coupon your hair will change RANDOMLY. Do you still want to use #b#t5151000##k and change it up?");
-	}
-    } else if (status == 2){
-	if (beauty == 1){
-	    if (cm.setRandomAvatar(5150000, hair_Colo_new) == 1) {
-		cm.sendOk("Enjoy your new and improved hairstyle!");
-	    } else {
-		cm.sendOk("Hmmm...it looks like you don't have our designated coupon...I'm afraid I can't give you a haircut without it. I'm sorry...");
-	    }
-	} else {
-	    if (cm.setRandomAvatar(5151000, hair_Colo_new) == 1) {
-		cm.sendOk("Enjoy your new and improved haircolor!");
-	    } else {
-		cm.sendOk("Hmmm...it looks like you don't have our designated coupon...I'm afraid I can't dye your hair without it. I'm sorry...");
-	    }
-	}
-	cm.safeDispose();
-    }
+function action1(mode, type, selection) {
+	switch (status) {
+	case 1:
+
+		hair = parseInt(cm.getPlayer().getHair() / 10) * 10;
+
+		hair = [hair +0, hair +1, hair +2, hair +3, hair +4, hair +5];
+
+		hair = hair[Math.floor(Math.random() * hair.length)];
+
+		cm.sendYesNo("If you use a regular coupon your hair will change RANDOMLY. Do you still want to use #b#t5151035##k and change it up?");
+		break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5151035)) {
+			cm.gainItem(5151035, -1);
+			cm.getPlayer().setHair(hair);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.HAIR, hair);
+			cm.sendNext("Hey, here's the mirror. What do you think of your new haircolor? I know it wasn't the smoothest of all, but didn't it come out pretty nice? Come back later when you need to change it up again!");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmmm...are you sure you have our designated coupon? Sorry but no dye your hair without it.");
+			cm.dispose();
+}
 }

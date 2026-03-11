@@ -1,60 +1,52 @@
-var status = -1;
+/*
+	名字:	猶利塔
+	地圖:	猶利塔的痕跡
+	描述:	926110500
+*/
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
+
 function action(mode, type, selection) {
-    if (cm.getMapId() == 926110600) {
-	    cm.removeAll(4001130);
-	    cm.removeAll(4001131);
-	    cm.removeAll(4001132);
-	    cm.removeAll(4001133);
-	    cm.removeAll(4001134);
-	    cm.removeAll(4001135);
-	var em = cm.getEventManager("Juliet");
-    if (em != null) {
-	var itemid = 4001159;
-	if (!cm.canHold(itemid, 1)) {
-	    cm.sendOk("Please clear 1 ETC slot.");
-	    cm.dispose();
-	    return;
-	}
-	cm.gainItem(itemid, 1);
-	if (em.getProperty("stage").equals("2")) {
-    		cm.gainNX(30);
-	} else {
-		cm.gainNX(20);
-	}
-cm.gainExp_PQ(120, 1.0);
-    }
-    cm.addTrait("will", 25);
-    cm.addTrait("sense", 1);
-    cm.getPlayer().endPartyQuest(1205);
-    cm.warp(926110700,0);
-    cm.dispose();
-    return;
-    }
-    if (mode > 0) {
-	status++;
-    } else {
-	status--;
-    }
-    if (status == 0) {
-	    cm.removeAll(4001130);
-	    cm.removeAll(4001131);
-	    cm.removeAll(4001132);
-	    cm.removeAll(4001133);
-	    cm.removeAll(4001134);
-	    cm.removeAll(4001135);
-	cm.sendSimple("#b#L0#Get me out of here#l\r\n#L1#Get me Proof of Love.#l#k");
-    } else {
-	if (selection == 0) {
-    	    cm.warp(926110600,0);
-	} else if (selection == 1) { //TODO JUMP, 2112002 too
-	    if (cm.canHold(cm.isGMS() ? 1122118 : 1122010,1) && cm.haveItem(4001160,10) && cm.haveItem(4001159,10)) {
-		cm.gainItem(cm.isGMS() ? 1122118 : 1122010,1);
-		cm.gainItem(4001160,-10);
-		cm.gainItem(4001159,-10);
-	    } else {
-		cm.sendOk("You will need 10 Alcadno Marble and 10 Zenumist Marble to get Proof of Love, as well as have EQP space.");
-	    }
-	}
-    	cm.dispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(6, "With the glasses removed, Yulete seems to be coming into senses."));
+		cm.sendSimple("I can't believe this... all these years I have worked on... going down in flames... \r\n#L0##bYou didn't lose anything. The main thing is that you are alive, which means you can still start over.#l");
+		break;
+	case 1:
+		cm.sendSimple("Really... can I really... start over...? \r\n#L0##bWe will make sure that your great work will not go unnoticed.#l");
+		break;
+	case 2:
+		cm.sendNext("Yes... you are right... if someone is really helping me out, then... maybe I can start over again...");
+		break;
+	case 3:
+		cm.sendNextPrev("I will come out of the underground and reveal the results of my work to the Society. Maybe this will help break the ice between Zenumist and Alcadno.");
+		break;
+	case 4:
+		cm.sendNextPrev("I will now send you to different place.");
+		break;
+	case 5:
+		Packages.server.quest.MapleQuest.getInstance(7072).forceStart(cm.getPlayer(), 0, 1);
+		cm.getPlayer().changeMap(cm.getMap(926110600), cm.getMap(926110600).getPortal(0));
+		cm.dispose();
+}
 }

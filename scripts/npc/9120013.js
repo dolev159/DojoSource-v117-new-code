@@ -1,84 +1,93 @@
-/* Boss Kitty
-	Zipangu : Showa Town (801000000)
-	
-	Quiz for quest 8012 (Sakura, the Kitty, and the Orange Marble)
+/*
+	名字:	波斯貓
+	地圖:	昭和村
+	描述:	801000000
 */
 
-var status = -1;
-var questions = new Array("Which of these items does the Flaming Raccoon NOT drop?","Which NPC is responsible for transporting travellers from Kerning City to Zipangu, and back?","Which of the items sold at the Mushroom Shrine increases your attack power?","Which of these items do the Extras NOT drop?","Which of these items DO NOT exist??","What's the name of the vegetable store owner in Showa Town?","Which of these items DO exist?","What is the name of the strongest boss in the Mushroom Shrine?","Which one of these items has a mis-matched class or level description?","Which of these noodles are NOT being sold by Robo at the Mushroom Shrine?","Which of these NPCs do NOT stand in front of Showa Movie Theater?");;
-var answers  = new Array(new Array("Raccoon Firewood","Solid Horn","Red Brick"),new Array("Peli","Spinel","Poli"),new Array("Takoyaki","Yakisoba","Tempura"),new Array("Extra A's Badge","Extra B's Corset","Extra C's Necklace"),new Array("Frozen Tuna","Fan","Fly Swatter"),new Array("Sami","Kami","Umi"),new Array("Cloud Fox's Tooth","Ghost's Bouquet","Dark Cloud Fox's Tail"),new Array("Black Crow","Blue Mushmom","Himegami"),new Array("Bamboo Spear - Warrior-only Weapon","Pico-Pico Hammer - One-handed Sword","Mystic Cane - Level 51 equip"),new Array("Kinoko Ramen (Pig Skull)","Kinoko Ramen (Salt)","Mushroom Miso Ramen"),new Array("Skye","Furano","Shinta"));;
-var correctAnswer = new Array(1,1,0,1,2,2,2,0,0,2,2);
-var questionNum;
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	status--;
-    }
-    if (status == 0) {
-	if (cm.getQuestStatus(8012) == 1 && !cm.haveItem(4031064)){ //quest in progress
-	    cm.sendYesNo("Did you get them all? Are you going to try to answer all of my questions?");
-	} else { //quest not started or already completed
-	    cm.sendOk("Meeeoooowww!");
-	    cm.safeDispose();
-	}
-    } else if (status == 1) {
-	var hasChicken = cm.haveItem(2020001, 300);
-
-	if (!hasChicken) {
-	    cm.sendOk("What? No! 300! THREE. HUNDRED. No less. Hand over more if you want, but I need at least 300. Not all of us can be as big and as fed as you...");
-	    cm.safeDispose();
-	} else {
-	    cm.gainItem(2020001, -300)
-	    cm.sendNext("Good job! Now hold on a sec... Hey look! I got some food here! Help yourselves. Okay, now it's time for me to ask you some questions. I'm sure you're aware of this, but remember, if you're wrong, it's over. It's all or nothing!");
-	}
-    } else if (status == 7) { //2-6 are the questions
-	if (selection != correctAnswer.pop()){
-	    cm.sendNext("Hmmm...all humans make mistakes anyway! If you want to take another crack at it, then bring me 300 Fried Chicken.")
-	    cm.safeDispose();
-	}
-	else {
-	    cm.sendNext("Dang, you answered all the questions right. I may not like humans in general, but I HATE breaking a promise, so, as promised, here's the Orange Marble.")
-	}
-    } else if (status == 8) { //gain marble
-	cm.gainItem(4031064, 1);
-	cm.sendOk("Our business is concluded, thank you very much! You can leave now!");
-	cm.safeDispose();
-    } else if (status >= 2 && status <= 6 && mode == 1) {//questions
-	var cont = true;
-	if (status > 2) {
-	    if (selection != correctAnswer.pop()){
-		cm.sendNext("Hmmm...all humans make mistakes anyway! If you want to take another crack at it, then bring me 300 Fried Chicken.")
-		cm.safeDispose();
-		cont = false;
-	    }
-	}
-			
-	if (cont) {
-	    questionNum = Math.floor(Math.random() * questions.length);
-	    if (questionNum != (questions.length - 1)){
-		var temp;
-		temp = questions[questionNum];
-		questions[questionNum] = questions[questions.length - 1];
-		questions[questions.length - 1] = temp;
-		temp = answers[questionNum];
-		answers[questionNum] = answers[questions.length - 1];
-		answers[questions.length - 1] = temp;
-		temp = correctAnswer[questionNum];
-		correctAnswer[questionNum] = correctAnswer[questions.length - 1];
-		correctAnswer[questions.length - 1] = temp;
-	    }
-				
-	    var question = questions.pop();
-	    var answer = answers.pop();
-	    var prompt = "Question no." + (status - 1) + ": " + question;
-				
-	    for (var i = 0; i < answer.length; i++) {
-		prompt += "\r\n#b#L" + i + "#" + answer[i] + "#l#k"
-	    }
-				
-	    cm.sendSimple(prompt);
-	}
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.sendNext("You don't have the courage to face these questions. I knew it...out of my sight!");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(8012)).getStatus() != 1) {
+			cm.sendOk("Haha... you dare attempt to anwer my wickedly hard questions? Well, they aren't free--but the prize is worth it!");
+			cm.dispose();
+			return;
+			}
+		if (cm.getPlayer().itemQuantity(4031064)) {
+			cm.sendOk("Meeeoooowww!");
+			cm.dispose();
+			return;
+			}
+		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+			cm.sendOk("Please make sure you have at least 1 empty slot in your Etc tab.");
+			cm.dispose();
+			return;
+			}
+			cm.sendYesNo("Did you get them all? Are you going to try to answer all of my questions?");
+			break;
+	case 1:
+		if (cm.getPlayer().itemQuantity(2020001) < 300) {
+			cm.sendNext("Hey, are you sure you brought the 300 Fried Chickens I asked for? Check again and see if you brought enough.");
+			cm.dispose();
+			return;
+			}
+			cm.gainItem(2020001, -300)
+			cm.sendNext("Good job! The alley cats are gonna feast tonight! Now, on to my questions. I'm sure you're aware of this, but remember, if you get a single one wrong, it's over. This is all or nothing!");
+			break;
+	case 2:
+		cm.sendSimple("Question no.1: What's the name of the vegetable store owner in Showa Town? \r\n#L0##bSami#l\r\n#L1#Kami#l\r\n#L2#Umi#l");
+		break;
+	case 3:
+		if (selection != 2) {
+			cm.sendOk("Hmmm...all humans make mistakes! If you want to take another crack at it, then bring me 300 Fried Chickens.");
+			cm.dispose();
+			return;
+			}
+			cm.sendSimple("Question no.2: Which of these NPCs does NOT stand in front of the movie theater at Showa Town? \r\n#L0##bSky#l\r\n#L1#Furano#l\r\n#L2#Shinta#l");
+			break;
+	case 4:
+		if (selection != 2) {
+			cm.sendOk("Hmmm...all humans make mistakes! If you want to take another crack at it, then bring me 300 Fried Chickens.");
+			cm.dispose();
+			return;
+			}
+			cm.sendSimple("Question no.3: What is the name of NPC that transfers travelers from Showa Town to the Mushroom Shrine? \r\n#L0##bPerry#l\r\n#L1#Spinel#l\r\n#L2#Transporter#l");
+			break;
+	case 5:
+		if (selection != 0) {
+			cm.sendOk("Hmmm...all humans make mistakes! If you want to take another crack at it, then bring me 300 Fried Chickens.");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Wow, you answered all the questions correctly! I may not be the most fond of humans, but I HATE breaking a promise! So, as promised, here's the Orange Marble. You earned it!");
+			break;
+	case 6:
+		cm.gainItem(4031064, 1);
+		cm.sendOk("Our business is concluded, thank you very much! You can leave now!");
+		break;
+	case 7:
+		cm.dispose();
+}
 }

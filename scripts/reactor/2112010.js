@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112010.js: Zakum Party Quest Rock - drops an item (power elixir)
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	2-1區域
+	描述:	280010020
 */
 
-function act(){
+function act() {
 	rm.dropItems();
 }
+
+
+//2000005		超級藥水

@@ -1,44 +1,45 @@
-/* ===========================================================
-			Resonance
-	NPC Name: 		SELF
-	Map(s): 		Mushroom Castle: Deep inside Mushroom Forest(106020300)
-	Description: 	Upon reaching the magic barrier.
-=============================================================
-Version 1.0 - Script Done.(18/7/2010)
-=============================================================
+/*
+	名字:	安全！
+	地圖:	菇菇森林深處
+	描述:	106020300
 */
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	if (cm.getPlayer().getMap().getId() == 106020300) {
+	if (cm.getPlayer().itemQuantity(2430014)) {
+		qm.sendOkS("It seems as if the barrier could be broken using a Killer Mushroom Spore.", 3);
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2314)).getStatus() == 1) {
+		cm.sendNextS("This looks to be a type of 'Mushroom Spore' that has been transformed by magic into a strong defense barrier. It doesn't appear penetrable through physical force. Return to the #b#p1300003##k and report this matter.", 3);
+		}
+		}
+	if (cm.getPlayer().getMap().getId() == 106020500) {
+	if (cm.getPlayer().itemQuantity(2430015)) {
+		cm.sendNextS("It looks like the #bThorn Remover#k should be used right around here.", 3);
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2322)).getStatus() == 1 && cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2322)).getCustomData() < 1) {
+		cm.sendNextS("The colossal castle wall is covered with thorny vines. It's going to be difficult getting into the castle. For now, go report this to the #bSecretary of Domestic Affairs#k.", 3);
+}
+}
 }
 
 function action(mode, type, selection) {
-    if (mode == -1) {
-        cm.dispose();
-    } else {
-		if (mode == 1)
-            status++;
-        else
-            status--;
-		}
-	if(status == 0){
-		if(cm.isQuestActive(2314))
-			cm.PlayerToNpc("This... is a powerful magical barrier that converted #bmushroom spores#k into a powerful form of magic. This cannot be penetrated with brute force. I better report this to #bMinister of Home Affairs#k.");
-		else if(cm.isQuestActive(2322))
-			cm.PlayerToNpc("Right on the surface of the colossal castle wall is a daunting scene of spine vines tangled up on the wall. How in the world am I going to enter the castle? Oh well, I better report this to #b#p1300003##k first.");
-		else {
-			cm.PlayerToNpc("I think I may be able to break the barrier using #t2430014#.");
+	if (mode > 0) {
+		if (cm.getPlayer().getMap().getId() == 106020300) {
+			cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2314)).setCustomData(1);
+			cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2314)), true);
+			cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/normalEffect/mushroomcastle/chatBalloon1"));
+			}
+		if (cm.getPlayer().getMap().getId() == 106020500) {
+			cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2322)).setCustomData(1);
+			cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2322)), true);
+			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("Castle Wall Investigation Completed 1/1"));
+			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Go report this to the Secretary of Domestic Affairs."));
+			}
+			}
 			cm.dispose();
-		}
-	}if(status == 1){
-		if(cm.isQuestActive(2314)){
-			cm.ShowWZEffect("Effect/OnUserEff.img/normalEffect/mushroomcastle/chatBalloon1");
-			cm.forceCompleteQuest(2314);
-			cm.dispose();
-		} else {
-			cm.playerMessage("Please return to the Minister of Home Affairs and report results.");
-		}
-	}
 }
-			

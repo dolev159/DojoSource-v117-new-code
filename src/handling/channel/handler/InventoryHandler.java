@@ -108,21 +108,31 @@ public class InventoryHandler {
         if (c.getPlayer().hasBlockedInventory()) { // Hack
             return;
         }
-        c.getPlayer().setScrolledPosition((short) 0);
-        c.getPlayer().updateTick(slea.readInt());
-        final MapleInventoryType type = MapleInventoryType.getByType(slea.readByte()); // 04
-        final short src = slea.readShort();                                            // 01 00
-        final short dst = slea.readShort();                                            // 00 00
-        final short quantity = slea.readShort();                                       // 53 01
+        final java.util.concurrent.locks.Lock lock = c.getPlayer().getInventoryLock();
+        if (!lock.tryLock()) {
+            System.err.println("[Anti-Dupe] Potential Dupe Exploit caught for " + c.getPlayer().getName() + " on ItemMove.");
+            c.getSession().write(CWvsContext.enableActions());
+            return;
+        }
+        try {
+            c.getPlayer().setScrolledPosition((short) 0);
+            c.getPlayer().updateTick(slea.readInt());
+            final MapleInventoryType type = MapleInventoryType.getByType(slea.readByte()); // 04
+            final short src = slea.readShort();                                            // 01 00
+            final short dst = slea.readShort();                                            // 00 00
+            final short quantity = slea.readShort();                                       // 53 01
 
-        if (src < 0 && dst > 0) {
-            MapleInventoryManipulator.unequip(c, src, dst);
-        } else if (dst < 0) {
-            MapleInventoryManipulator.equip(c, src, dst);
-        } else if (dst == 0) {
-            MapleInventoryManipulator.drop(c, type, src, quantity);
-        } else {
-            MapleInventoryManipulator.move(c, type, src, dst);
+            if (src < 0 && dst > 0) {
+                MapleInventoryManipulator.unequip(c, src, dst);
+            } else if (dst < 0) {
+                MapleInventoryManipulator.equip(c, src, dst);
+            } else if (dst == 0) {
+                MapleInventoryManipulator.drop(c, type, src, quantity);
+            } else {
+                MapleInventoryManipulator.move(c, type, src, dst);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -308,6 +318,8 @@ public class InventoryHandler {
                 MapleInventoryManipulator.removeFromSlot(c, MapleInventoryType.USE, slot, (short) 1, false);
                 if (chr.getMap().getConsumeItemCoolTime() > 0) {
                     chr.setNextConsume(time + (chr.getMap().getConsumeItemCoolTime() * 1000));
+                } else {
+                    chr.setNextConsume(time + GameConstants.POTION_DELAY);
                 }
             }
 

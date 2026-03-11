@@ -1,13 +1,24 @@
+/*
+	名字:	隱藏地圖
+	地圖:	研究室103號
+	描述:	926110303
+*/
+
 function enter(pi) {
-    var em = pi.getEventManager("Juliet");
-    if (em !=  null && em.getProperty("stage6_" + (((pi.getMapId() % 10) | 0) - 1) + "_" + (pi.getPortal().getName().substring(2, 3)) + "_" + (pi.getPortal().getName().substring(3, 4)) + "").equals("1")) {
-	pi.warpS(pi.getMapId(),(pi.getPortal().getId() >= 31 ? (pi.isGMS() ? 35 : 13) : (pi.getPortal().getId() + 4)));
-	pi.playerMessage(-1, "Correct combination!");
-	if (pi.isGMS()) { //TODO JUMP
-		pi.getMap().changeEnvironment("an" + pi.getPortal().getName().substring(2, 4), 2);
-	}
-    } else {
-	pi.warpS(pi.getMapId(), (pi.getPortal().getId() <= 4 ? (pi.isGMS() ? 13 : 0) : (pi.getPortal().getId() - 4)));
-	pi.playerMessage(-1, "Incorrect combination.");
-    }
+	x = pi.getPortal().getName();
+	eim = pi.getPlayer().getEventInstance();
+	for (var i = 0; i < 5; i++) {
+	if (eim.getProperty(i + "st") == null) {
+		eim.setProperty(i + "st", ("pt"+ i) + Math.floor(Math.random() * 4));
+		}
+	if (eim.getProperty(i + "st") == x) {
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.instantMapWarp(pi.getPlayer().getMap().getPortal(eim.getProperty("4st") == x ? "np09" : "np0" + pi.getPortal().getName().substring(2, 3)).getId()));
+		pi.getPlayer().getMap().movePlayer(pi.getPlayer(), new java.awt.Point(pi.getPlayer().getMap().getPortal(eim.getProperty("4st") == x ? "np09" : "np0" + pi.getPortal().getName().substring(2, 3)).getPosition()));
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("an" + pi.getPortal().getName().substring(2, 4), 2));
+		return true;
+		}
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.instantMapWarp(pi.getPlayer().getMap().getPortal("npFail").getId()));
+		pi.getPlayer().getMap().movePlayer(pi.getPlayer(), new java.awt.Point(pi.getPlayer().getMap().getPortal("npFail").getPosition()));
+		return true;
 }

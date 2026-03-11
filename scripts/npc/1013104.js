@@ -1,36 +1,26 @@
-/* ===========================================================
-			Resonance
-	NPC Name: 		Hen
-	Map(s): 		Utah's House: Front Porch(100030102)
-	Description: 	Obtain Egg
-=============================================================
-Version 1.0 - Script Done.(4/6/2010)
-=============================================================
+/*
+	名字:	雞蛋桶
+	地圖:	前院
+	描述:	100030102
 */
 
-var status = 0;
-
 function start() {
-	status = -1;
-	action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-	if (mode == -1) {
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(22007)).getStatus() != 1) {
+		cm.sendOk("#b(You don't need to take an egg now.)");
 		cm.dispose();
-	} else {
-		if (mode == 1)
-			status++;
-		else
-			status--;
-		if(status == 0){
-			if(cm.isQuestActive(22007)){
-				cm.sendNext("#b(You have obtained an Egg. Deliver it to Utah.)#k");
-				cm.gainItem(4032451, 1);
-			}else{
-				cm.sendOk("#bYou don't need to take an egg now.#k");
-			}
-			cm.dispose();
+		return;
 		}
-	}
+	if (cm.getPlayer().itemQuantity(4032451)) {
+		cm.sendNext("#b(You have already obtained an Egg. Take the Egg you have and give it to Utah.)");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.sendNext("(You cannot carry any more items because your Inventory is full. Empty a slot in your Etc window and try again.)");
+		cm.dispose();
+		return;
+		}
+		cm.sendNext("#b(You have obtained an Egg. Deliver it to Utah.)");
+		cm.gainItem(4032451, 1);
+		cm.dispose();
 }

@@ -1,35 +1,38 @@
-var status = -1;
+/*
+	名字:	競技場
+	地圖:	進入競技場內部
+	描述:	200101400
+*/
 
-function action(mode, type, selection) {
-	    if (cm.getPlayer().getParty() == null || !cm.isLeader()) {
-		cm.playerMessage("The leader of the party must be here.");
-	    } else {
-		var party = cm.getPlayer().getParty().getMembers();
-		var mapId = cm.getPlayer().getMapId();
-		var next = true;
-		var size = 0;
-		var it = party.iterator();
-		while (it.hasNext()) {
-			var cPlayer = it.next();
-			var ccPlayer = cm.getPlayer().getMap().getCharacterById(cPlayer.getId());
-			if (ccPlayer == null) {
-				next = false;
-				break;
+function start() {
+	cm.sendSimple("You are about to enter the danger zone! Xerxes is waiting inside. Are you ready to go in? \r\n\r\n#L0##bYes#l\r\n#L1#No#l \r\n\r\nRequirement: Lv. 50 or higher");
+}
+
+function action(mode,type,selection) {
+	switch(selection) {
+	case 0:
+		if (cm.getPlayer().getParty() == null) {
+			cm.sendNext("You must be in a party to enter.");
+			cm.dispose();
+			return;
 			}
-			size += (ccPlayer.isGM() ? 4 : 1);
-		}	
-		if (next && (cm.getPlayer().isGM() || size >= 2)) {
-	    	    for(var i = 0; i < 10; i++) {
-			if (cm.getMap(200101500 + i) != null && cm.getMap(200101500 + i).getCharactersSize() == 0) {
-		    		cm.warpParty(200101500 + i);
-				cm.dispose();
-		    		return;
+		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+			cm.sendNext("Please try again through your party leader.");
+			cm.dispose();
+			return;
 			}
-	    	    }
-			cm.playerMessage("Another party quest has already entered this channel.");
-		} else {
-			cm.playerMessage("All 2+ members of your party must be here.");
+			var em = cm.getEventManager("Xerxes");
+			var prop = em.getProperty("state");
+		if (prop == null || prop == 0) {
+			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Another party is already inside.");
+			cm.dispose();
+			break;
+	case 1:
+		cm.sendOk("Please come back if you change your mind. Remember that you can only enter while doing the #b<Eliminate Xerxes>#k quest or when it's completed.");
 		}
-	    }
-	cm.dispose();
+		cm.dispose();
 }

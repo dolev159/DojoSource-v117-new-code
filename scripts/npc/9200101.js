@@ -1,64 +1,94 @@
-/* Dr. Rhomes
-	Orbis Random/VIP Eye Color Change.
+/*
+	名字:	Dr.Rhomes
+	地圖:	天空之城整形手術
+	描述:	200000201
 */
-var status = -1;
-var beauty = 0;
-var hair_Colo_new;
+
+var status;
 
 function start() {
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("Why hello there! I'm Dr. Lenu, in charge of the cosmetic lenses here at the Henesys Plastic Surgery Shop! With #b#t5152010##k or #b#t5152013##k, you can have the kind of look you've always wanted! All you have to do is find the cosmetic lens that most fits you, then let us take care of the rest. Now, what would you like to use? \r\n#L0##bCosmetic Lenses at Henesys (Reg coupon)#l\r\n#L1#Cosmetic Lenses at Henesys (VIP coupon)#l");
+		break;
+	default:
+		if (status == 1) select = selection;
+		reactor = 'action' + select;
+		eval(reactor)(mode, type, selection);
+}
+}
 
-    if (status == 0) {
-	cm.sendSimple("Hello, I'm Dr. Rhomes, head of the cosmetic lens department here at the Orbis Plastic Surgery Shop.\r\nMy goal here is to add personality to everyone's eyes through the wonders of cosmetic lenses, and with #b#t5152011##k or #b#t5152014##k, I can do the same for you, too! Now, what would you like to use?\r\n#L0#Cosmetic Lenses: #i5152011##t5152011##l\r\n#L1#Cosmetic Lenses: #i5152014##t5152014##l");
-    } else if (status == 1) {
-	hair_Colo_new = [];
+function action0(mode, type, selection) {
+	switch (status) {
+	case 1:
+		color = [100, 200, 300, 400, 500, 600, 700];
 
-	var teye = cm.getPlayerStat("FACE") % 100;
+		teye = cm.getPlayer().getFace() % 100;
 
-	if (cm.getPlayerStat("GENDER") == 0) {
-	    teye += 20000;
-	} else {
-	    teye += 21000;
-	}
-	hair_Colo_new[0] = teye + 100;
-	hair_Colo_new[1] = teye + 200;
-	hair_Colo_new[2] = teye + 300;
-	hair_Colo_new[3] = teye + 400;
-	hair_Colo_new[4] = teye + 500;
-	hair_Colo_new[5] = teye + 600;
-	hair_Colo_new[6] = teye + 700;
+		teye += cm.getPlayer().getGender() < 1 ? 20000 : 21000;
 
-	if (selection == 0) {
-	    beauty = 1;
-	    cm.sendYesNo("If you use the regular coupon, you'll be awarded a random pair of cosmetic lenses. Are you going to use a #b#t5152011##k and really make the change to your eyes?");
-	} else if (selection == 1) {
-	    beauty = 2;
-	    
-	    cm.askAvatar("With our new computer program, you can see yourself after the treatment in advance. What kind of lens would you like to wear? Please choose the style of your liking.", hair_Colo_new);
-	}
-    } else if (status == 2){
-	if (beauty == 1){
-	    if (cm.setRandomAvatar(5152011, hair_Colo_new) == 1) {
-		cm.sendOk("Enjoy your new and improved cosmetic lenses!");
-	    } else {
-		cm.sendOk("I'm sorry, but I don't think you have our cosmetic lens coupon with you right now. Without the coupon, I'm afraid I can't do it for you..");
-	    }
-	} else {
-	    if (cm.setAvatar(5152014, hair_Colo_new[selection]) == 1) {
-		cm.sendOk("Enjoy your new and improved cosmetic lenses!");
-	    } else {
-		cm.sendOk("I'm sorry, but I don't think you have our cosmetic lens coupon with you right now. Without the coupon, I'm afraid I can't do it for you..");
-	    }
-	}
-	cm.dispose();
-    }
+		color = color[Math.floor(Math.random() * color.length)] + teye;
+
+		cm.sendYesNo("If you use the regular coupon, you'll be awarded a random pair of cosmetic lenses. Are you going to use #b#t5152010##k and really make the change to your eyes?");
+		break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5152011)) {
+			cm.gainItem(5152011, -1);
+			cm.getPlayer().setFace(color);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.FACE, color);
+			cm.sendNext("Here's the mirror. What do you think? I think they look tailor-made for you. I have to say, you look faaabulous. Please come again.");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("I'm sorry, but I don't think you have our cosmetic lens coupon with you right now. Without the coupon, I'm afraid I can't do it for you..");
+			cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 1:
+		color = [100, 200, 300, 400, 500, 600, 700];
+
+		teye = cm.getPlayer().getFace() % 100;
+
+		teye += cm.getPlayer().getGender() < 1 ? 20000 : 21000;
+
+		for (var i = 0; i < color.length; i++)
+		color[i] = teye + color[i];
+
+		cm.sendStyle("With our specialized machine, you can see the results of your potential treatment in advance. What kind of lens would you like to wear? Choose the style of your liking...", color);
+		break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5152014)) {
+			cm.gainItem(5152014, -1);
+			cm.getPlayer().setFace(color[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.FACE, color[selection]);
+			cm.sendNext("Here's the mirror. What do you think? I think they look tailor-made for you. I have to say, you look faaabulous. Please come again.");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("I'm sorry, but I don't think you have our cosmetic lens coupon with you right now. Without the coupon, I'm afraid I can't do it for you..");
+			cm.dispose();
+}
 }

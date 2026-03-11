@@ -1,26 +1,26 @@
+/*
+	名字:	隱藏地圖
+	地圖:	隱藏之塔
+	描述:	921160100
+*/
+
 function enter(pi) {
-        if (pi.getPlayer().getParty() != null) {
-				var cleared = false;
-				switch(pi.getMapId() / 100) {
-					case 9211601:
-					case 9211605:
-						cleared = true;
-						break;
-					case 9211602:
-					case 9211604:
-						cleared = pi.getMap().getAllMonstersThreadsafe().size() == 0;
-						break;
-					case 9211606:
-						cleared = pi.getPlayer().getEventInstance() != null && pi.getPlayer().getEventInstance().getProperty("kentaSaving") != null && pi.getPlayer().getEventInstance().getProperty("kentaSaving").equals("0");
-						break;
-				}
-				if (cleared) {
-					pi.warpParty(pi.getMapId() + 100);
-					pi.playPortalSE();
-				} else {
-					pi.playerMessage(5,"This portal is not available yet.");
-				}
-        } else {
-                pi.playerMessage(5,"This portal is not available.");
-        }
+	if (pi.getPlayer().getMap().getId() == 921160100 || pi.getPlayer().getMap().getId() == 921160500) {
+		pi.getPlayer().getMap().broadcastMessage(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "One team member has entered the next area, leaving only " + (pi.getPlayer().getMap().getCharacters().size() - 1) + " Several team members are trapped in the tower prison."));
+		}
+	if ((pi.getPlayer().getMap().getId() == 921160200 || pi.getPlayer().getMap().getId() == 921160400) && pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
+		return false;
+		}
+	if (pi.getPlayer().getMap().getId() == 921160350) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "This channel has been compromised."));
+		return false;
+		}
+	if (pi.getPlayer().getMap().getId() == 921160600 && pi.getPlayer().getEventInstance().getProperty("kentaSaving") != 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's raid, the channel has been blocked."));
+		return false;
+		}
+		map = pi.getPlayer().getMap().getId() + 100;
+		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal("out00"));
+		return false;
 }

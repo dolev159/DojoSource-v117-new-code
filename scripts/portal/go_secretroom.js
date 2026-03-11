@@ -1,41 +1,24 @@
 /*
-	This file is part of the ZeroFusion MapleStory Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-                       Matthias Butz <matze@odinms.de>
-                       Jan Christian Meyer <vimes@odinms.de>
-    ZeroFusion organized by "RMZero213" <RMZero213@hotmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License version 3
-    as published by the Free Software Foundation. You may not use, modify
-    or distribute this program under any other version of the
-    GNU Affero General Public License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	名字:	菇菇王國
+	地圖:	瑪天路3
+	描述:	106021000
 */
 
-var baseid = 106021000;
-var dungeonid = 106021001;
-var dungeons = 10;
+var map = 106021001; //安全室
+var num = 10;
 
 function enter(pi) {
-	if (pi.getPlayer().getMapId() == baseid) {
-	    for(var i = 0; i < dungeons; i++) {
-		if (pi.getMap(dungeonid + i).getCharactersSize() == 0) {
-		    		pi.warp(dungeonid + i, 0);
-		    return true;
-		}
-	    }
-	    pi.playerMessage(5, "All of the Mini-Dungeons are in use right now, please try again later.");
+	if (!pi.getPlayer().itemQuantity(4032405)) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The room seems to be locked tight. You can acquire the Secret Key by rescuing Princess Violetta."));
 		return false;
-	} else {
-			pi.warp(baseid, "in00");
-	}
-	return true;
+		}
+		for (var i = 0; i < num; i++)
+	if (pi.getMap(map + i).getCharacters().size() < 1) {
+		Packages.server.quest.MapleQuest.getInstance(2347).forceStart(pi.getPlayer(), 0, 1);
+		pi.getPlayer().changeMap(pi.getMap(map + i), pi.getMap(map + i).getPortal(1));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You are using the Secret Kay to enter."));
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "All of the Mini-Dungeons are in use right now, please try again later."));
+		return false;
 }

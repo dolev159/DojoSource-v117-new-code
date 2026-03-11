@@ -1,7 +1,16 @@
-/* @Author Lerk
- * 2302003.js: Aqua Road Reactor - Cauldron for Resurrection Quest (4th job Bishop)
+/*
+	名字:	隱藏地圖
+	地圖:	冰冷的洞穴
+	描述:	923000100
 */
 
-function act(){
-    rm.dropItems();
+function act() {
+	rm.dropItems();
 }
+
+
+//4001108		冰冷的火種
+//4001107		黑色書本
+
+
+//4161017		卡倫的記事本

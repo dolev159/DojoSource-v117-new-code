@@ -1,42 +1,57 @@
 /*
-	Second Eos Rock - Ludibrium : Eos Tower 71st Floor (221022900)
+	名字:	愛奧斯之石II
+	地圖:	愛奧斯塔70樓
+	描述:	221022100
 */
 
-var status = 0;
-var map;
+var map = [221020000, 221021200, 221023200];
+
+var status;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (status >= 0 && mode == 0) {
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-    if (status == 0) {
-	if (cm.haveItem(4001020)) {
-	    cm.sendSimple("You can use #bEos Rock Scroll#k to activate #bSecond Eos Rock#k. Which of these rocks would you like to teleport to?#b\r\n#L0#First Eos Rock (100th Floor)#l\r\n#L1#Third Eos Rock (41st Floor)#l");
-	} else {
-	    cm.sendOk("There's a rock that will enable you to teleport to #bFirst Eos Rock or Third Eos Rock#k, but it cannot be activated without the scroll.");
-	    cm.dispose();
-	}
-    } else if (status == 1) {
-	if (selection == 0) {
-	    cm.sendYesNo("You can use #bEos Rock Scroll#k to activate #bSecond Eos Rock#k. Will you teleport to #bFirst Eos Rock#k at the 100th Floor?");
-	    map = 221023200;
-	} else {
-	    cm.sendYesNo("You can use #bEos Rock Scroll#k to activate #bSecond Eos Rock#k. Will you teleport to #bThird Eos Rock#k at the 32nd Floor?");
-	    map = 221021200;
-	}
-    } else if (status == 2) {
-	cm.gainItem(4001020, -1);
-	cm.warp(map, 0);
-	cm.dispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		if (status < 2) {
+		cm.sendNext("Please try again later.");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		var chat = "It's a magic stone for Eos Tower tourists. It will take you to your desired location for a small fee. \r\n(You can use a #bEos Rock Scroll#k in lieu of mesos.)";
+		for (var i = 0; i < map.length; i++)
+		chat += "\r\n#L" + i + "##b#m" + map[i] + "# (15000 Mesos)#l";
+		cm.sendSimple(chat);
+	case 1:
+		select = selection;
+		cm.sendYesNo("Would you like to move to #b#m" + map[select] + "##k? The price is #b15000 mesos#k.");
+		break;
+	case 2:
+		if (cm.getPlayer().getMeso() < 15000) {
+			cm.sendNext("You don't have enough mesos. Sorry, but you can't use this service if you can't pay the fee.");
+			cm.dispose();
+			return;
+			}
+			cm.dispose();
+			cm.gainMeso(-15000);
+			cm.getPlayer().changeMap(cm.getMap(map[select]), cm.getMap(map[select]).getPortal(0));
+}
 }

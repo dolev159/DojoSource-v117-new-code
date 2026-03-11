@@ -1,13 +1,10 @@
+/*
+	名字:	倉庫管理員朴先生
+	地圖:	魔法森林
+	描述:	101000000
+*/
+
 function start() {
- 
-	if (cm.getLevel() >= 40) {
-   cm.sendStorage();
-
-    cm.dispose();
-
-
-	} else {
-	cm.sendOk("You must be level 40 for using me.");
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1032006);
 	cm.dispose();
-	 	}
 }

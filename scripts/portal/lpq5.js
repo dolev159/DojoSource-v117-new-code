@@ -1,7 +1,10 @@
 function enter(pi) {
-    if (server.MaplePQManager.isStageCleared(pi.getMap(), 5)) {
-        pi.warp(pi.getMapId() + 100, "st00");
+    var eim = pi.getEventManager("LudiPQ").getInstance("LudiPQ");
+    
+    // only let people through if the eim is ready
+    if (eim.getProperty("stage5status") == null) { // do nothing; send message to player
+	pi.playerMessage(5, "The portal is blocked.");
     } else {
-        pi.playerMessage(5, "The portal is blocked.");
+	pi.warp(pi.getMapId() + 100, "st00");
     }
 }

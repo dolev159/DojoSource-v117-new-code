@@ -1,10 +1,10 @@
-/* Author: aaroncsn(MapleSea Like)
-	NPC Name: 		Kidan
-	Map(s): 		Queens Road: Temple of the Knight (130000100)
-	Description: 		Welcoming
+/*
+	名字:	奇丹
+	地圖:	騎士之殿
+	描述:	130000101
 */
 
-function start(){
-	cm.sendOk("Welcome to the Hall of Knights.");
+function start() {
+	cm.sendOk("This is the Knights Chamber.");
 	cm.dispose();
 }

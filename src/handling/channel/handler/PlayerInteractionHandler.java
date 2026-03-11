@@ -112,7 +112,14 @@ public class PlayerInteractionHandler {
         if (chr == null || action ==  null) {
             return;
         }
-        c.getPlayer().setScrolledPosition((short) 0);
+        final java.util.concurrent.locks.Lock lock = chr.getInventoryLock();
+        if (!lock.tryLock()) {
+            System.err.println("[Anti-Dupe] Potential Dupe Exploit caught for " + chr.getName() + " on PlayerInteraction.");
+            c.getSession().write(CWvsContext.enableActions());
+            return;
+        }
+        try {
+            c.getPlayer().setScrolledPosition((short) 0);
         
         switch (action) { // Mode
             case CREATE: {
@@ -776,6 +783,9 @@ public class PlayerInteractionHandler {
                 // 19 (0x13) - 00 OR 01 -> itemid(maple leaf) ? who knows what this is
                 break;
             }
+        }
+        } finally {
+            lock.unlock();
         }
     }
 }

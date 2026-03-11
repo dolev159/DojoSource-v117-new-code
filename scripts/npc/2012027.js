@@ -1,14 +1,29 @@
-var status = -1;
+/*
+	名字:	豎琴弦&amp;lt;Do&gt;
+	地圖:	艾利傑的庭園
+	描述:	920020000
+*/
 
-function action(mode, type, selection) {
-    if (cm.isQuestActive(3114)) {
-	cm.forceCompleteQuest(3114);
-	cm.playerMessage(5, "The song was played. +20 Fame");
-	if ((cm.getPlayer().getFame() + 20) <= 30000) {
-	    cm.getPlayer().addFame(20);
-	    cm.getPlayer().updateFame();
-	}
-    }
-    cm.playSound(false, "orbis/do");
-    cm.dispose();
+chen = ["", "1", "13", "28", "29", "41"];
+
+hui = ["1", "2", "14", "29", "30", "42"];
+
+function start() {
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3114)).getStatus() == 1) {
+		for (var i = 0; i < chen.length; i++)
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3114)).getCustomData() == chen[i]) {
+		cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3114)).setCustomData(hui[i]);
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3114)).getCustomData() == 42) {
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The performance was a success. Elliza breathed a sigh of relief."));
+		cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3114)), true);
+		}
+		cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("orbis/do", 4));
+		cm.dispose();
+		return;
+		}
+		cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3114)).setCustomData("");
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The performance was a failure. Elliza seems very displeased."));
+		}
+		cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("orbis/do", 4));
+		cm.dispose();
 }

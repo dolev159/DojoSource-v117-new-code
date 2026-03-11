@@ -1,7 +1,11 @@
 /*
-Summons alternate Toy Trojans (no drops except for the Maintenance Manual quest item)
+	名字:	隱藏地圖
+	地圖:	玩偶之家
+	描述:	922000020
 */
 
-function act(){
-	rm.spawnMonster(9300011, 10);
+function act() {
+	for (var i = 0; i < 10; i++)
+	rm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9300011), new java.awt.Point(rm.getReactor().getPosition()));
+	rm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The monster has appeared."));
 }

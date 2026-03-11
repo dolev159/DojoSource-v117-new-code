@@ -1,33 +1,44 @@
 /*
-	NPC Name: 		Kyrin
-	Map(s): 		Maple Road : Spilt road of choice
-	Description: 		Job tutorial, movie clip
+	名字:	卡伊琳
+	地圖:	選擇岔道
+	描述:	1020000
 */
 
-var status = -1;
+var status;
 
 function start() {
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 1) {
-	    cm.sendNext("If you wish to experience what it's like to be a Pirate, come see me again.");
-	    cm.dispose();
-	    return;
-	}
-	status--;
-    }
-    if (status == 0) {
-	cm.sendNext("Pirates are blessed with outstanding dexterity and power, utilizing their guns for long-range attacks while using their power on melee combat situations. Gunslingers use elemental-based bullets for added damage, while Infighters transform to a different being for maximum effect.");
-    } else if (status == 1) {
-	cm.sendYesNo("Would you like to experience what it's like to be a Pirate?");
-    } else if (status == 2) {
-	cm.MovieClipIntroUI(true);
-	cm.warp(1020500, 0); // Effect/Direction3.img/pirate/Scene00
-	cm.dispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status > 0) {
+		cm.sendNext("If you wish to experience what it's like to be a Pirate, come see me again.");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendNext("Pirates never miss their targets, as they fire based on their excellent dexterity and strength or use physical skills to instantly suppress enemies. The Gunslinger rains down rapid-fire shots and calls forth various summons. The Brawler displays physical fighting skills, and can also call on the fearsome Sea Serpent.");
+		break;
+	case 1:
+		cm.sendYesNo("Do you want to preview the Pirate?");
+		break;
+	case 2:
+		cm.dispose();
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroLock(1));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroDisableUI(true));
+		cm.getPlayer().changeMap(cm.getMap(1020500), cm.getMap(1020500).getPortal(0)); //Effect/Direction3.img/pirate/Scene00
+}
 }

@@ -1,12 +1,10 @@
 /*
-	NPC Name: 		Mr. Kim
-	Map(s): 		Victoria Road : Lith Harbor (104000000)
-	Description: 		Storage
+	名字:	倉庫老闆 金先生
+	地圖:	維多利亞港
+	描述:	104000000
 */
-function action(mode, type, selection) {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+
+function start() {
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1002005);
+	cm.dispose();
 }

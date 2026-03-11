@@ -1,67 +1,81 @@
-/**
--- Odin JavaScript --------------------------------------------------------------------------------
-	Alcaster - El Nath Market (211000100)
--- By ---------------------------------------------------------------------------------------------
-	Unknown/Information/xQuasar
--- Version Info -----------------------------------------------------------------------------------
-	1.3 - Fixed up completely [xQuasar]
-	1.2 - Add a missing text part [Information]
-	1.1 - Recoded to official [Information]
-	1.0 - First Version by Unknown
----------------------------------------------------------------------------------------------------
-**/
+/*
+	名字:	亞凱斯特
+	地圖:	冰原雪域市集
+	描述:	211000100
+*/
 
-var selected;
-var amount;
-var totalcost;
-var item = new Array(2050003,2050004,4006000,4006001);
-var cost = new Array(300,400,5000,5000);
-var msg = new Array("that cures the state of being sealed and cursed","that cures all",", possessing magical power, that is used for high-quality skills",", possessing the power of summoning that is used for high-quality skills");
-var status = -1;
+var item = [2050003, 2050004, 4006000, 4006001];
+var cost = [300, 400, 5000, 5000];
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 2) {
-	    cm.sendNext("I see. Understand that I have many different items here. Take a look around. I'm only selling these items to you, so I won't be ripping you off in any way shape or form.");
-	    cm.safeDispose();
-	    return;
-	}
-	status--;
-    }
-
-    if (status == 0) {
-	if (cm.getQuestStatus(3035) == 2) {
-	    var selStr;
-	    for (var i = 0; i < item.length; i++){
-		selStr += "\r\n#L" + i + "# #b#t" + item[i] + "# (Price: "+cost[i]+" mesos)#k#l";
-	    }
-	    cm.sendSimple("Thanks to you #b#t4031056##k is safely sealed. Of course, also as a result, I used up about half of the power I have accumulated over the last 800 years or so...but now I can die in peace. Oh, by the way... are you looking for rare items by any chance? As a sign of appreciation for your hard work, I'll sell some items I have to you, and ONLY you. Pick out the one you want!"+selStr);
-	}
-	else {
-	    cm.sendNext("If you decide to help me out, then in return, I'll make the item available for sale.");
-	    cm.safeDispose();
-	}
-    } else if (status == 1) {
-	selected = selection;
-	cm.sendGetNumber("Is #b#t"+item[selected]+"##k really the item that you need? It's the item "+msg[selected]+". It may not be the easiest item to acquire, but I'll give you a good deal on it. It'll cost you #b"+cost[selected]+" mesos#k per item. How many would you like to purchase?", 0, 1, 100);
-    } else if (status == 2) {
-	amount = selection;
-	totalcost = cost[selected] * amount;
-	if (amount == 0) {
-	    cm.sendOk("If you're not going to buy anything, then I've got nothing to sell neither.");
-	    cm.dispose();
-	}
-	cm.sendYesNo("Are you sure you want to buy #r"+amount+" #t"+item[selected]+"(s)##k? It'll cost you "+cost[selected]+" mesos per #t"+item[selected]+"#, which will cost you #r"+totalcost+" mesos#k in total.");
-    } else if(status == 3) {
-	if(cm.getMeso() < totalcost || !cm.canHold(item[selected])) {
-	    cm.sendNext("Are you sure you have enough mesos? Please check and see if your etc. or use inventory is full, or if you have at least #r"+totalcost+"#k mesos.");
-	    cm.dispose();
-	}
-	cm.sendNext("Thank you. If you ever find yourself needing items down the road, make sure to drop by here. I may have gotten old over the years, but I can still make magic items with ease.");
-	cm.gainMeso(-totalcost);
-	cm.gainItem(item[selected], amount);
-	cm.safeDispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 3) {
+		cm.dispose();
+		return;
+		}
+		if (status < 4) {
+		cm.sendNext("I see. Well, please understand that I carry many different items here. I'm only selling these items to you, so I won't be ripping you off in any way shape or form.");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("What is it? \r\n#L0##bI want to buy something really rare.");
+		break;
+	case 1:
+		if (cm.getPlayer().getLevel() < 30) {
+			cm.sendNext("I am Alcaster the Magician. I have been studying all kinds of magic for over 300 years.");
+			cm.dispose();
+			return;
+			}
+		if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3035)).getStatus() < 2) {
+			cm.sendNext("If you decide to help me out, then in return, I'll make the item available for sale.");
+			cm.dispose();
+			return;
+			}
+			var chat = "Thanks to you, #bThe Book of Ancient#k is safely sealed. As a result, I used up about half of the power I have accumulated over the last 800 years...but can now die in peace. Would you happen to be looking for rare items by any chance? As a sign of appreciation for your hard work, I'll sell some items in my possession to you and ONLY you. Pick out the one you want! #b";
+			for (var i = 0; i < item.length; i++)
+			chat += "\r\n#L" + i + "##t" + item[i] + "#(Price : " + cost[i] + " mesos)#l";
+			cm.sendSimple(chat);
+			break;
+	case 2:
+		text1 = [["So the item you need is #bHoly Water#k, right? That's The item that cures the state of being sealed and cursed. It's not an easy item to get, but for you, I'll sell it for cheap. It'll cost you #b300 mesos#k per. How many would you like to buy?"],
+		["So the item you need is #bAll Cure Potion#k, right? That's The item that cures all. It's not an easy item to get, but for you, I'll sell it for cheap. It'll cost you #b400 mesos#k per. How many would you like to buy?"],
+		["So the item you need is #bThe Magic Rock#k, right? That's The item that possesses magical power and is used for high-quality skills. It's not an easy item to get, but for you, I'II sell it for cheap. It'll cost you #b5000 mesos#k per. How many would you like to buy?"],
+		["So the item you need is #bThe Summoning Rock#k, right? That's The item that possesses summoning power and is used for high-quality skills. It's not an easy item to get, but for you, I'll sell it for cheap. It'll cost you #b5000 mesos#k per. How many would you like to buy?"]];
+		cm.sendGetNumber(text1[selection], 1, 1, 100);
+		select = selection;
+		break;
+	case 3:
+		cm.sendYesNo("Are you sure you want to buy #r" + selection + " #t" + item[select] + "#(s)#k? It'll cost you " + cost[select] + " mesos per #t" + item[select] + "#, which will cost you #r" + (cost[select] * selection) + "#k mesos total.");
+		num = selection;
+		break;
+	case 4:
+		if (cm.getPlayer().getMeso() < cost[select] * num || cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.USE).getNumFreeSlot() < 1 || cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+			cm.sendNext("Are you sure you have enough mesos? Please check if the Etc or Use windows of your Item Inventory is full, or if you have at least #r" + (cost[select] * num) + "#k mesos.");
+			cm.dispose();
+			return;
+			}
+			cm.gainMeso(-cost[select] * num);
+			cm.gainItem(item[select], num);
+			cm.sendNext("Thank you. If you need anything else, come see me anytime. I may have lost a lot of power, but I can still make magical items!");
+			cm.dispose();
+}
 }

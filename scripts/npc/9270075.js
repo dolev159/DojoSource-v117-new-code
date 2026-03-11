@@ -1,23 +1,17 @@
-/* 
-	NPC Name: 		Maple Administrator
+/*
+	名字:	小嘴
+	地圖:	墮落城市
+	描述:	103000000
 */
 
-var status = -1;
+function start() {
+	cm.sendYesNo("Do you want to go to White Christmas HilI?");
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (status == 0) {
-	cm.sendYesNo("Would you like to head to White Christmas Hill?");
-    } else if (status == 1) {
-	cm.saveLocation("CHRISTMAS");
-	cm.warp(555000000);
-	cm.dispose();
-    }
+	if (mode > 0) {
+		cm.getPlayer().saveLocation(Packages.server.maps.SavedLocationType.fromString("CHRISTMAS"));
+		cm.getPlayer().changeMap(cm.getMap(555000000), cm.getMap(555000000).getPortal(0));
+		}
+		cm.dispose();
 }

@@ -1,65 +1,47 @@
-/* Arec
-	Thief 3rd job advancement
-	El Nath: Chief's Residence (211000001)
-
-	Custom Quest 100100, 100102
+/*
+	名字:	阿里可
+	地圖:	长老公馆
+	描述:	211000001
 */
 
-var status = -1;
-var job;
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 1) {
-	    cm.sendOk("Make up your mind and visit me again.");
-	    cm.safeDispose();
-	    return;
-	}
-	status--;
-    }
-
-    if (status == 0) {
-	if (!(cm.getJob() == 410 || cm.getJob() == 420 || cm.getJob() == 432)) {
-	    cm.sendOk("May the Gods be with you!");
-	    cm.safeDispose();
-	    return;
-	}
-	if ((cm.getJob() == 410 || cm.getJob() == 420 || cm.getJob() == 432) && cm.getPlayerStat("LVL") >= 70) {
-	    if (cm.getJob() != 432 && cm.getPlayerStat("RSP") > (cm.getPlayerStat("LVL") - 70) * 3) {
-	        if (cm.getPlayer().getAllSkillLevels() > cm.getPlayerStat("LVL") * 3) { //player used too much SP means they have assigned to their skills.. conflict
-		    cm.sendOk("It appears that you have a great number of SP yet you have used enough SP on your skills already. Your SP has been reset. #ePlease talk to me again to make the job advancement.#n");
-		    cm.getPlayer().resetSP((cm.getPlayerStat("LVL") - 70) * 3);
-	        } else {
-	    	    cm.sendOk("Hmm...You have too many #bSP#k. You can't make the job advancement with too many SP left.");
-	        }
-		cm.safeDispose();
-	    } else {
-	        cm.sendNext("You are indeed a strong one.");
-	    }
-	} else {
-	    cm.sendOk("Please make sure that you are eligible for the job advancement. (level 70+)");
-	    cm.safeDispose();
-	}
-    } else if (status == 1) {
-	    if (cm.getPlayerStat("LVL") >= 70 && (cm.getJob() == 432 || cm.getPlayerStat("RSP") <= (cm.getPlayerStat("LVL") - 70) * 3)) {
-	    	if (cm.getJob() == 410) { // ASSASIN
-			cm.changeJob(411); // HERMIT
-			cm.sendOk("You are now a #bHermit#k.");
-			cm.safeDispose();
-	    	} else if (cm.getJob() == 420) { // BANDIT
-			cm.changeJob(421); // CDIT
-			cm.sendOk("You are now a #bChief Bandit#.");
-			cm.safeDispose();
-		} else if (cm.getJob() == 432) { // 
-			cm.changeJob(433); // 
-			cm.sendOk("You are now a #bBlade Lord#k.");
-			cm.safeDispose();
-	    	}
-	    } else {
-		cm.sendOk("Come back when you are level 70 and used all your SP accordingly.");
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	    }
-    }
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		if (cm.getPlayer().getLevel() < 50) {
+			cm.sendOk("You're nowhere near ready to fight Zakum. I wouldn't suggest going in there until you're at least level 50.");
+			cm.dispose();
+			return;
+			}
+		if (Math.floor(cm.getPlayer().getJob() / 100 % 10) != 4) {
+			cm.sendNext("You're no thief. I am not qualified to judge you. If you want to explore Zakum, you will need to find a master of your job class to be your guide.");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("You should be able to stand against Zakum. Find #b#p2030008##k deep within the Dead Mine. I will allow it.");
+			break;
+	case 1:
+		cm.sendNextPrev("Then I will send you to #bThe Door to Zakum#k, where #b#p2030008##k is.");
+		break;
+	case 2:
+		cm.getPlayer().changeMap(cm.getMap(211042300), cm.getMap(211042300).getPortal(0));
+		cm.dispose();
+}
 }

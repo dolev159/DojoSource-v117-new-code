@@ -1,29 +1,23 @@
-/* Konpei
-	Showa - Nightmarish Last Days
+/*
+	名字:	鈴木
+	地圖:	基地內部
+	描述:	801040100
 */
 
-var flash;
-
 function start() {
-    flash = cm.haveItem(4000141);
-
-    if (!flash) {
-	cm.sendNext("Once you eliminate the boss, you'll have to show me the boss's flashlight as evidence. I won't believe it until you show me the flashlight! What? You want to leave this room?");
-    } else {
-	cm.sendNext("Hey, hey! It's dangerous to carry around a flashlight like that! It's going to cause a fire! I'll take care of it. cant' be too careful around here...")
-    }
+	if (cm.getPlayer().itemQuantity(4000141))
+		cm.sendNext("Th-that lantern! You really defeated the boss...? You...! Wow, I don't know what to say... Let's just get the heck out of here!");
+	else
+		cm.sendYesNo("Once you take down the Yakuza Boss, I'll want his lantern as proof. I can't believe you without proof, right? What...? You want to leave this room?");
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	if (!flash) {
-	    cm.warp(801040000, 0);
-	    cm.dispose();
-	} else {
-	    cm.warp(801040101, 0);
-	    cm.dispose();
-	}
-    } else {
-	cm.sendOk("I really admire your toughness! Well, if you decide to return to Showa Town, let me know~!");
-    }
+	switch (mode) {
+	case 0:
+		cm.sendOk("I'm in awe of your resilience. Well, talk to me again if you want to return to Showa Town.");
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(cm.getPlayer().itemQuantity(4000138) ? 801040101 : 801040000), cm.getMap(cm.getPlayer().itemQuantity(4000138) ? 801040101 : 801040000).getPortal(0));
+		}
+		cm.dispose();
 }

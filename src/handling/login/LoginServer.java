@@ -38,6 +38,17 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketAcceptor;
 import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
 import server.ServerProperties;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+import client.MapleCharacter;
+import database.DatabaseConnection;
+import handling.cashshop.CashShopServer;
+import handling.channel.ChannelServer;
+import server.Timer.EtcTimer;
+import tools.FileoutputUtil;
 import tools.Triple;
 
 public class LoginServer {
@@ -98,6 +109,55 @@ public class LoginServer {
 
         acceptor = new NettyServerAcceptor(PORT);
         acceptor.run();
+        
+        // Cosmic-Standard: Ghost Session Reaper. 
+        // Automatically clears stale 'Logged In' status from database for disconnected players every 60 seconds.
+        EtcTimer.getInstance().register(new Runnable() {
+            @Override
+            public void run() {
+                Set<Integer> onlineAccounts = new HashSet<>();
+                
+                // 1. Gather active account IDs from all Channel Servers
+                for (ChannelServer cs : ChannelServer.getAllInstances()) {
+                    if (cs.getPlayerStorage() != null) {
+                        for (MapleCharacter chr : cs.getPlayerStorage().getAllCharacters()) {
+                            onlineAccounts.add(chr.getAccountID());
+                        }
+                    }
+                }
+                
+                // 2. Gather active account IDs from Cash Shop Server
+                if (CashShopServer.getPlayerStorage() != null) {
+                    for (MapleCharacter chr : CashShopServer.getPlayerStorage().getAllCharacters()) {
+                        onlineAccounts.add(chr.getAccountID());
+                    }
+                }
+                
+                // 3. Clear 'Logged In' status in database for accounts NOT in our active list
+                try (Connection con = DatabaseConnection.getConnection()) {
+                    StringBuilder query = new StringBuilder("UPDATE accounts SET loggedin = 0 WHERE loggedin > 0");
+                    if (!onlineAccounts.isEmpty()) {
+                        query.append(" AND id NOT IN (");
+                        for (int i = 0; i < onlineAccounts.size(); i++) {
+                            query.append("?");
+                            if (i < onlineAccounts.size() - 1) {
+                                query.append(",");
+                            }
+                        }
+                        query.append(")");
+                    }
+                    try (PreparedStatement ps = con.prepareStatement(query.toString())) {
+                        int i = 1;
+                        for (int accId : onlineAccounts) {
+                            ps.setInt(i++, accId);
+                        }
+                        ps.executeUpdate();
+                    }
+                } catch (SQLException e) {
+                    FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
+                }
+            }
+        }, 60000); // Run every 60 seconds
     }
 
     public static final void shutdown() {
@@ -120,7 +180,7 @@ public class LoginServer {
     }
 
     public static final String getEventMessage() {
-        return eventMessage;
+        return eventMessage == null ? "" : eventMessage;
     }
 
     public static final byte getFlag(int world) {
@@ -146,12 +206,8 @@ public class LoginServer {
         usersOn.set(usersOn_);
     }
 
-    public static final String getEventMessage(int world) { // TODO: Finish this
-        switch (world) {
-            case 0:
-                return null;
-        }
-        return null;
+    public static final String getEventMessage(int world) {
+        return eventMessage == null ? "" : eventMessage;
     }
 
     public static final void setFlag(final byte newflag) {

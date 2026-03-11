@@ -21,7 +21,7 @@ echo ============================================================
 echo.
 
 :: Set classpath and JVM options
-set CLASSPATH=.;dist\*
+set CLASSPATH=.;dist\*;dist\asm-util-9.7.jar
 
 :: Run server with:
 ::   -Xmx2g              = max 2GB RAM

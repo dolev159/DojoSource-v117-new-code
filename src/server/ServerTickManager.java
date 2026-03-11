@@ -60,6 +60,11 @@ public class ServerTickManager {
                 map.updateMapItems(now);
             }
 
+            // 2. Update Character States (Regeneration, Timers)
+            for (MapleCharacter chr : channelServer.getPlayerStorage().getAllCharacters()) {
+                chr.updateStats(now);
+            }
+
             // 2. Update Character States (Buffs, etc)
             for (MapleCharacter chr : channelServer.getPlayerStorage().getAllCharacters()) {
                 chr.updateBuffs(now);

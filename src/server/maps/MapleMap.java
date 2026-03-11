@@ -305,6 +305,10 @@ public final class MapleMap {
         return town;
     }
 
+    public final boolean isBossMap() {
+        return GameConstants.isBossMap(mapid);
+    }
+
     public final void setTown(final boolean town) {
         this.town = town;
     }
@@ -1436,7 +1440,7 @@ public final class MapleMap {
             charactersLock.readLock().unlock();
         }
         if (newController != null) {
-            if (monster.isFirstAttack()) {
+            if (monster.isFirstAttack() || (newController.getTruePosition().distanceSq(monster.getTruePosition()) <= 62500.0 && !monster.getStats().Friendly() && (monster.getStats().getPADamage() > 0 || monster.getStats().getMADamage() > 0))) {
                 newController.controlMonster(monster, true);
                 monster.setControllerHasAggro(true);
             } else {

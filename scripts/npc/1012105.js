@@ -1,32 +1,51 @@
-/* Ms. Tan 
-	Henesys Skin Change.
+/*
+	名字:	沃美妮
+	地圖:	弓箭手村護膚中心
+	描述:	100000105
 */
-var status = 0;
-var skin = Array(0, 1, 2, 3, 4);
+
+var status;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendNext("Welcome to Henesys Skin-Care! For just one teeny-weeny #b#t5153015##k, I can make your skin supple and glow-y, like mine! Trust me, you don't want to miss my facials.");
+		break;
+	case 1:
+		skin = [0, 1, 2, 3, 4, 5, 9, 10, 11];
 
-    if (status == 0) {
-	cm.sendNext("Well, hello! Welcome to the Henesys Skin-Care! Would you like to have a firm, tight, healthy looking skin like mine?  With a #b#t5153000##k, you can let us take care of the rest and have the kind of skin you've always wanted~!");
-    } else if (status == 1) {
-	cm.sendStyle("With our specialized machine, you can see yourself after the treatment in advance. What kind of skin-treatment would you like to do? Choose the style of your liking.", skin);
-    } else if (status == 2){
-	if (cm.setAvatar(5153000, skin[selection]) == 1) {
-	    cm.sendOk("Enjoy your new and improved skin!");
-	} else {
-	    cm.sendOk("Um...you don't have the skin-care coupon you need to receive the treatment. Sorry, but I am afraid we can't do it for you...");
-	}
-	cm.dispose();
-    }
+		cm.sendStyle("We have the latest in beauty equipment. With our technology, you can preview what your skin will look like in advance! Which treatment would you like?", skin);
+		break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5153015)) {
+			cm.gainItem(5153015, -1);
+			cm.getPlayer().setSkinColor(skin[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.SKIN, skin[selection]);
+			cm.sendNext("Here's the mirror, check it out! Doesn't your skin look beautiful and glowing like mine? Hehe, it's wonderful. Please come again!");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("It looks like you don't have the coupon you need to receive the treatment. I'm sorry but it looks like we cannot do it for you.");
+			cm.dispose();
+}
 }

@@ -90,21 +90,15 @@ public class HiredMerchantHandler {
     }
 
     private static final byte checkExistance(final int accid, final int cid) {
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("SELECT * from hiredmerch where accountid = ? OR characterid = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * from hiredmerch where accountid = ? OR characterid = ?")) {
             ps.setInt(1, accid);
             ps.setInt(2, cid);
-            ResultSet rs = ps.executeQuery();
-
-
-            if (rs.next()) {
-                ps.close();
-                rs.close();
-                return 1;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return 1;
+                }
             }
-            rs.close();
-            ps.close();
             return 0;
         } catch (SQLException se) {
             return -1;
@@ -248,15 +242,12 @@ public class HiredMerchantHandler {
     }
 
     private static final boolean deletePackage(final int accid, final int packageid, final int chrId) {
-        final Connection con = DatabaseConnection.getConnection();
-
-        try {
-            PreparedStatement ps = con.prepareStatement("DELETE from hiredmerch where accountid = ? OR packageid = ? OR characterid = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("DELETE from hiredmerch where accountid = ? OR packageid = ? OR characterid = ?")) {
             ps.setInt(1, accid);
             ps.setInt(2, packageid);
             ps.setInt(3, chrId);
             ps.executeUpdate();
-            ps.close();
             ItemLoader.HIRED_MERCHANT.saveItems(null, packageid);
             return true;
         } catch (SQLException e) {
@@ -270,40 +261,29 @@ public class HiredMerchantHandler {
     }
 
     private static final MerchItemPackage loadItemFromDatabase(final int accountid) {
-        final Connection con = DatabaseConnection.getConnection();
-
-        try {
-            PreparedStatement ps = con.prepareStatement("SELECT * from hiredmerch where accountid = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT * from hiredmerch where accountid = ?")) {
             ps.setInt(1, accountid);
-
-            ResultSet rs = ps.executeQuery();
-
-            if (!rs.next()) {
-                ps.close();
-                rs.close();
-                return null;
-            }
-            final int packageid = rs.getInt("PackageId");
-
-            final MerchItemPackage pack = new MerchItemPackage();
-            pack.setPackageid(packageid);
-            pack.setMesos(rs.getInt("Mesos"));
-            pack.setSavedTime(rs.getLong("time"));
-
-            ps.close();
-            rs.close();
-
-            Map<Long, Pair<Item, MapleInventoryType>> items = ItemLoader.HIRED_MERCHANT.loadItems(false, packageid);
-            if (items != null) {
-                List<Item> iters = new ArrayList<Item>();
-                for (Pair<Item, MapleInventoryType> z : items.values()) {
-                    iters.add(z.left);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
                 }
-                pack.setItems(iters);
+                final int packageid = rs.getInt("PackageId");
+                final MerchItemPackage pack = new MerchItemPackage();
+                pack.setPackageid(packageid);
+                pack.setMesos(rs.getInt("Mesos"));
+                pack.setSavedTime(rs.getLong("time"));
+
+                Map<Long, Pair<Item, MapleInventoryType>> items = ItemLoader.HIRED_MERCHANT.loadItems(false, packageid);
+                if (items != null) {
+                    List<Item> iters = new ArrayList<Item>();
+                    for (Pair<Item, MapleInventoryType> z : items.values()) {
+                        iters.add(z.left);
+                    }
+                    pack.setItems(iters);
+                }
+                return pack;
             }
-
-
-            return pack;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

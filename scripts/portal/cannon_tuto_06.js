@@ -1,7 +1,13 @@
+/*
+	名字:	可可島
+	地圖:	淺海地帶
+	描述:	3000100
+*/
+
 function enter(pi) {
-	pi.EnableUI(1);
-	pi.DisableUI(1);
-    pi.sendDirectionStatus(4, 1096003);
-	pi.sendDirectionStatus(3, 4);
+	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction4.img/cannonshooter/face00"));
+	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(1));
+	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 4));
 	pi.openNpc(1096003);
+	return true;
 }

@@ -1,33 +1,49 @@
 /*
-	Konpei - Showa Town(801000000)
+	名字:	鈴木
+	地圖:	昭和村
+	描述:	801000000
 */
 
+var status;
+
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-    } else {
-	if (mode == 1)
-	    status++;
-	if (status == 0) {
-	    cm.sendSimple ("What do you want from me?\r #L0##bGather up some information on the hideout.#l\r\n#L1#Take me to the hideout#l\r\n#L2#Nothing#l#k");
-	} else if (status == 1) {
-	    if (selection == 0) {
-		cm.sendNext("I can take you to the hideout, but the place is infested with thugs looking for trouble. You'll need to be both incredibly strong and brave to enter the premise. At the hideaway, you'll find the Boss that controls all the other bosses around this area. It's easy to get to the hideout, but the room on the top floor of the place can only be entered ONCE a day. The Boss's Room is not a place to mess around. I suggest you don't stay there for too long; you'll need to swiftly take care of the business once inside. The boss himself is a difficult foe, but you'll run into some incredibly powerful enemies on you way to meeting the boss! It ain't going to be easy.");
-	    } if (selection == 1) {
-		cm.sendNext("Oh, the brave one. I've been awaiting your arrival. If these\r\nthugs are left unchecked, there's no telling what going to\r\nhappen in this neighborhood. Before that happens, I hope\r\nyou take care of all them and beat the boss, who resides\r\non the 5th floor. You'll need to be on alert at all times, since\r\nthe boss is too tough for even wisemen to handle.\r\nLooking at your eyes, however, I can see that eye of the\r\ntiger, the eyes that tell me you can do this. Let's go!");
-	    } if (selection == 2) {
-		cm.sendOk("I'm a busy person! Leave me alone if that's all you need!");
-	    } if(selection != 1) {
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	    }
-	} else if (status == 2) {
-	    cm.warp(801040000, 0);
-	    cm.dispose();
-	}
-    }
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("What do you want? \r\n#L0##bTell me about the hideout.#l\r\n#L1#Take me to the hideout.#l\r\n#L2#End conversation.#l");
+		break;
+	case 1:
+		if (selection == 0)
+			cm.sendOk("I can take you to the hideout, but the place is crawling with thugs looking for trouble. Inside you'll also find the Yakuza Boss, who commands the underboss and all the lieutenants in the area. Getting into the hideout is the easy part, but you can only enter the room at the top floor ONCE a day. The boss's room is a no place to mess around. It's best you don't outstay your welcome. The big boss is a difficult foe, but the path to even reaching him will be filled with powerful enemies. You sure you can handle it?!");
+		if (selection == 1)
+			cm.sendNext("Oh, I've been waiting for you, hero. There's no turning back if we leave them alone. Before that happens, I would like you to use your power and teach the Yakuza Boss on the 5th floor a lesson. Don't let your guard down. Many strong people couldn't beat the Yakuza Boss, but l'm certain you can do it when I look into your eyes. Now go.");
+		if (selection == 2)
+			cm.sendOk("I don't have free time. Go back if you have no business.");
+		if (selection != 1) {
+			cm.dispose();
+			}
+			break;
+	case 2:
+		cm.getPlayer().changeMap(cm.getMap(801040000), cm.getMap(801040000).getPortal(0));
+		cm.dispose();
+}
 }

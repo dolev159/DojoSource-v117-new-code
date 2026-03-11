@@ -1,12 +1,13 @@
 /*
-Leave the Cave of Life - Entrance Map and go back to the Peak of the Big Nest (240040600) should probably cancel the HT morph buff
+	名字:	神木村
+	地圖:	生命之穴入口
+	描述:	240040700
 */
 
 function enter(pi) {
-    var morph = pi.getMorphState();
-    if (morph == 2210003) {
-	pi.cancelItem(2210003);
-    }
-    pi.playPortalSE();
-    pi.warp(240040600, "east00");
+	if (pi.getMorphState() == 2210003) { //判斷BUFF狀態
+		pi.cancelItem(2210003);
+		}
+		pi.getPlayer().changeMap(pi.getMap(240040600), pi.getMap(240040600).getPortal(4)); //主巢穴山峰
+		return true;
 }

@@ -15,14 +15,17 @@ import tools.Triple;
 import tools.StringUtil;
 
 public class SpeedRunner {
-    private static final Map<ExpeditionType, Triple<String, Map<Integer, String>, Long>> speedRunData = new EnumMap<ExpeditionType, Triple<String, Map<Integer, String>, Long>>(ExpeditionType.class);
+    private static final Map<ExpeditionType, Triple<String, Map<Integer, String>, Long>> speedRunData = new EnumMap<ExpeditionType, Triple<String, Map<Integer, String>, Long>>(
+            ExpeditionType.class);
 
     public final static Triple<String, Map<Integer, String>, Long> getSpeedRunData(ExpeditionType type) {
         return speedRunData.get(type);
     }
 
-    public final static void addSpeedRunData(ExpeditionType type, Pair<StringBuilder, Map<Integer, String>> mib, long tmp) {
-        speedRunData.put(type, new Triple<String, Map<Integer, String>, Long>(mib.getLeft().toString(), mib.getRight(), tmp));
+    public final static void addSpeedRunData(ExpeditionType type, Pair<StringBuilder, Map<Integer, String>> mib,
+            long tmp) {
+        speedRunData.put(type,
+                new Triple<String, Map<Integer, String>, Long>(mib.getLeft().toString(), mib.getRight(), tmp));
     }
 
     public final static void removeSpeedRunData(ExpeditionType type) {
@@ -39,32 +42,34 @@ public class SpeedRunner {
     }
 
     public final static String getPreamble(ExpeditionType type) {
-	return "#rThese are the speedrun times for " + StringUtil.makeEnumHumanReadable(type.name()).toUpperCase() + ".#k\r\n\r\n";
+        return "#rThese are the speedrun times for " + StringUtil.makeEnumHumanReadable(type.name()).toUpperCase()
+                + ".#k\r\n\r\n";
     }
 
     public final static void loadSpeedRunData(ExpeditionType type) {
         try (java.sql.Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM speedruns WHERE type = ? ORDER BY time LIMIT 25")) {
+                PreparedStatement ps = con
+                        .prepareStatement("SELECT * FROM speedruns WHERE type = ? ORDER BY time LIMIT 25")) {
             ps.setString(1, type.name());
             StringBuilder ret = new StringBuilder(getPreamble(type));
             Map<Integer, String> rett = new LinkedHashMap<Integer, String>();
             try (ResultSet rs = ps.executeQuery()) {
                 int rank = 1;
-                Set<String> leaders = new HashSet<String>();
-                boolean cont = rs.first();
-                boolean changed = cont;
+                Set<String> leaders = new HashSet<>();
                 long tmp = 0;
-                while (cont) {
+                boolean hasData = false;
+                while (rs.next() && rank < 25) {
+                    hasData = true;
                     if (!leaders.contains(rs.getString("leader"))) {
-                        addSpeedRunData(ret, rett, rs.getString("members"), rs.getString("leader"), rank, rs.getString("timestring"));
+                        addSpeedRunData(ret, rett, rs.getString("members"), rs.getString("leader"), rank,
+                                rs.getString("timestring"));
                         rank++;
                         leaders.add(rs.getString("leader"));
                         tmp = rs.getLong("time");
                     }
-                    cont = rs.next() && rank < 25;
                 }
-                if (changed) {
-                    speedRunData.put(type, new Triple<String, Map<Integer, String>, Long>(ret.toString(), rett, tmp));
+                if (hasData) {
+                    speedRunData.put(type, new Triple<>(ret.toString(), rett, tmp));
                 }
             }
         } catch (SQLException e) {
@@ -72,7 +77,8 @@ public class SpeedRunner {
         }
     }
 
-    public final static Pair<StringBuilder, Map<Integer, String>> addSpeedRunData(StringBuilder ret, Map<Integer, String> rett, String members, String leader, int rank, String timestring) {
+    public final static Pair<StringBuilder, Map<Integer, String>> addSpeedRunData(StringBuilder ret,
+            Map<Integer, String> rett, String members, String leader, int rank, String timestring) {
         StringBuilder rettt = new StringBuilder();
 
         String[] membrz = members.split(",");
@@ -85,7 +91,8 @@ public class SpeedRunner {
             rettt.append("#k\r\n");
         }
         rett.put(rank, rettt.toString());
-        ret.append("#b#L").append(rank).append("#Rank #e").append(rank).append("#n#k : ").append(leader).append(", in ").append(timestring);
+        ret.append("#b#L").append(rank).append("#Rank #e").append(rank).append("#n#k : ").append(leader).append(", in ")
+                .append(timestring);
         if (membrz.length > 1) {
             ret.append("#l");
         }

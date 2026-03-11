@@ -1,3 +1,9 @@
+/*
+	名字:	怪物擂臺賽 2
+	地圖:	休菲凱曼的辦公室
+	描述:	980030000
+*/
+
 var exitMap = 0;
 var waitingMap = 1;
 var reviveMap = 2;
@@ -5,211 +11,159 @@ var fieldMap = 3;
 var winnerMap = 4;
 var loserMap = 5;
 
-function init() {
+function setup(mapid) {//開始事件，時間
+	var map = parseInt(mapid);
+
+	eim = em.newInstance("cpq" + mapid);
+
+	eim.setProperty("started", "false");//需要設置為"false"，否则無法讀取玩家入場後的房間。
+	eim.setProperty("red", 0);//房主
+	eim.setProperty("blue", 0);//挑戰者
+
+	eim.setInstanceMap(980030000); // <exit>
+	eim.setInstanceMap(map).resetFully();
+
+	eim.setInstanceMap((map - 30000) + 2).resetFully();
+	eim.setInstanceMap((map - 30000) + 1).resetFully();
+
+	eim.setInstanceMap(map + 300).resetFully();
+	eim.setInstanceMap(map + 400).resetFully();
+
+	return eim;
 }
 
-function monsterValue(eim, mobId) {
-    return 1;
+function playerEntry(eim, player) {//傳送進事件地圖
+	if (player.getCarnivalParty() != null) {//判斷是否有未清除的積分
+		player.getCarnivalParty().removeMember(player);
+		}
+		player.disposeClones();
+		player.changeMap(eim.getMapInstance(waitingMap), eim.getMapInstance(waitingMap).getPortal(0));
+		player.tryPartyQuest(1302);
 }
 
-function setup(mapid) {
-    var map = parseInt(mapid);
-    var eim = em.newInstance("cpq" + mapid);
-    eim.setInstanceMap(980030000); // <exit>
-    eim.setInstanceMap(map);
-    eim.setInstanceMap(map+200);
-    eim.setInstanceMap(map+100).resetFully();
-    eim.setInstanceMap(map+300);
-    eim.setInstanceMap(map+400);
-    eim.setProperty("forfeit", "false");
-    eim.setProperty("blue", "-1");
-    eim.setProperty("red", "-1");
-    var portal = eim.getMapInstance(reviveMap).getPortal("pt00");
-    portal.setScriptName("MCrevive2");
-    //em.schedule("timeOut", 30 * 60000);
-    eim.setProperty("started", "false");
-    return eim;
-}
-
-function playerEntry(eim, player) {
-    player.disposeClones();
-    player.changeMap(eim.getMapInstance(waitingMap), eim.getMapInstance(waitingMap).getPortal(0));
-    player.tryPartyQuest(1302);
-}
-
-function registerCarnivalParty(eim, carnivalParty) {
-    if (eim.getProperty("red").equals("-1")) {
-        eim.setProperty("red", carnivalParty.getLeader().getId() + "");
-        // display message about recieving invites for next 3 minutes;
-	//eim.restartEventTimer(180000);
-        eim.schedule("end", 3 * 60 * 1000); // 3 minutes
-    } else {
-        eim.setProperty("blue", carnivalParty.getLeader().getId() + "");
-	//eim.restartEventTimer(10000);
-        eim.schedule("start", 10000);
-    }
-}
-
-function playerDead(eim, player) {
-}
-
-function leftParty(eim, player) {
-    disbandParty(eim);
-}
-
-function disbandParty(eim) {
-    //if (eim.getProperty("started").equals("true")) {
-    //    warpOut(eim);
-    //} else {
-	disposeAll(eim);
-    //}
-}
-
-function disposeAll(eim) {
-    	var iter = eim.getPlayers().iterator();
-    	while (iter.hasNext()) {
-	    var player = iter.next();
-            eim.unregisterPlayer(player);
-            player.changeMap(eim.getMapInstance(exitMap), eim.getMapInstance(exitMap).getPortal(0));
-	    if (player.getCarnivalParty() != null) {
-            	player.getCarnivalParty().removeMember(player);
-	    }
-        }
-        eim.dispose();
-}
-
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
-    player.getCarnivalParty().removeMember(player);
-    player.changeMap(eim.getMapInstance(exitMap), eim.getMapInstance(exitMap).getPortal(0));
-    eim.disposeIfPlayerBelow(0, 0);
-}
-
-//for offline players
-function removePlayer(eim, player) {
-    eim.unregisterPlayer(player);
-    player.getCarnivalParty().removeMember(player);
-    player.getMap().removePlayer(player);
-    player.setMap(eim.getMapInstance(exitMap));
-    eim.disposeIfPlayerBelow(0, 0);
-}
-
-function getParty(eim, property) {
-    var chr = em.getChannelServer().getPlayerStorage().getCharacterById(parseInt(eim.getProperty(property)));
-    if (chr == null) {
-	eim.broadcastPlayerMsg(5, "The leader of the party " + property + " was not found.");
-	disposeAll(eim);
-	return null;
-    } else {
-	return chr.getCarnivalParty();
-    }
-}
-
-function start(eim) {
-    eim.setProperty("started", "true");
-    eim.startEventTimer(10 * 60 * 1000);
-    getParty(eim, "blue").warp(eim.getMapInstance(fieldMap), "blue00");
-    getParty(eim, "red").warp(eim.getMapInstance(fieldMap), "red00");
-}
-
-function monsterKilled(eim, chr, cp) {
-    chr.getCarnivalParty().addCP(chr, cp);
-    chr.CPUpdate(false, chr.getAvailableCP(), chr.getTotalCP(), 0);
-    var iter = eim.getPlayers().iterator();
-    while (iter.hasNext()) {
-        iter.next().CPUpdate(true, chr.getCarnivalParty().getAvailableCP(), chr.getCarnivalParty().getTotalCP(), chr.getCarnivalParty().getTeam());
-    }
-}
-
-function monsterValue(eim, mobId) {
-    return 0;
-}
-
-
-function end(eim) {
-    if (!eim.getProperty("started").equals("true")) {
-        disposeAll(eim);
-    }
-}
-
-function warpOut(eim) {
-    if (!eim.getProperty("started").equals("true")) {
-	if (eim.getProperty("blue").equals("-1")) {
-            disposeAll(eim);
-	}
-    } else {
-	var blueParty = getParty(eim, "blue");
-	var redParty = getParty(eim, "red");
-    	if (blueParty.isWinner()) {
-    	    blueParty.warp(eim.getMapInstance(winnerMap), 0);
-    	    redParty.warp(eim.getMapInstance(loserMap), 0);
-    	} else {
-    	    redParty.warp(eim.getMapInstance(winnerMap), 0);
-    	    blueParty.warp(eim.getMapInstance(loserMap), 0);
-    	}
-    	eim.disposeIfPlayerBelow(100,0);
-    }
-}
-
-function scheduledTimeout(eim) {
-    eim.stopEventTimer();
-    if (!eim.getProperty("started").equals("true")) {
-	if (eim.getProperty("blue").equals("-1")) {
-            disposeAll(eim);
-	}
-    } else {
-	var blueParty = getParty(eim, "blue");
-	var redParty = getParty(eim, "red");
-    	if (blueParty.getTotalCP() > redParty.getTotalCP()) {
-        	blueParty.setWinner(true);
-    	} else if (redParty.getTotalCP() > blueParty.getTotalCP()) {
-        	redParty.setWinner(true);
-    	}
-    	blueParty.displayMatchResult();
-    	redParty.displayMatchResult();
-    	eim.schedule("warpOut", 10000);
-    }
-}
-
-
-function playerRevive(eim, player) {
-    player.getCarnivalParty().useCP(player, 10);
-    var iter = eim.getPlayers().iterator();
-    while (iter.hasNext()) {
-        iter.next().CPUpdate(true, player.getCarnivalParty().getAvailableCP(), player.getCarnivalParty().getTotalCP(), player.getCarnivalParty().getTeam());
-    }
-	player.addHP(50);
-player.changeMap(eim.getMapInstance(reviveMap), eim.getMapInstance(reviveMap).getPortal(0));
-	return true;
-}
-function playerDisconnected(eim, player) {
-    player.setMap(eim.getMapInstance(exitMap));
-    eim.unregisterPlayer(player);
-    player.getCarnivalParty().removeMember(player);
-    eim.broadcastPlayerMsg(5, player.getName() + " has quit the Monster Carnival.");
-    disposeAll(eim);
+function registerCarnivalParty(eim, carnivalParty) {//等待區設置
+	if (eim.getProperty("red") == 0) {
+		eim.getMapInstance(waitingMap).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Please be patient. If there are no other teams challenging within 3 minutes, the room will automatically close."));
+		eim.setProperty("red", carnivalParty.getLeader().getId() + "");
+		eim.startEventTimer(3 * 60000);
+		return;
+		}
+		eim.getMapInstance(waitingMap).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "The event is about to begin."));
+		eim.setProperty("blue", carnivalParty.getLeader().getId() + "");
+		eim.stopEventTimer();
+		eim.startEventTimer(1 * 10000);
+		eim.setProperty("started", 0);
 }
 
 function onMapLoad(eim, chr) {
-    if (!eim.getProperty("started").equals("true")) {
-        disposeAll(eim);
-    } else if (chr.getCarnivalParty().getTeam() == 0) {
-	var blueParty = getParty(eim, "blue");
-        chr.startMonsterCarnival(blueParty.getAvailableCP(), blueParty.getTotalCP());
-    } else {
-	var redParty = getParty(eim, "red");
-        chr.startMonsterCarnival(redParty.getAvailableCP(), redParty.getTotalCP());
-    }
+	if (chr.getCarnivalParty().getTeam() == 0) {
+		var blueParty = getParty(eim, "blue");
+		chr.startMonsterCarnival(blueParty.getAvailableCP(), blueParty.getTotalCP());
+		return;
+		}
+		var redParty = getParty(eim, "red");
+		chr.startMonsterCarnival(redParty.getAvailableCP(), redParty.getTotalCP());
 }
 
-function cancelSchedule() {
+function changedMap(eim, player, mapid) {//進入地圖觸發
+	if ((mapid < 980031000 || mapid > 980033400) && mapid != 980001001 && mapid != 980001002 && mapid != 980002001 && mapid != 980002002) {
+		playerExit(eim, player);
+}
 }
 
-function clearPQ(eim) {
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	return 1;
 }
 
-function allMonstersDead(eim) {
+function monsterKilled(eim, chr, cp) {//怪物死亡時觸發統計
+	chr.getCarnivalParty().addCP(chr, cp);
+	chr.CPUpdate(false, chr.getAvailableCP(), chr.getTotalCP(), 0);
+	chr.CPUpdate(true, chr.getAvailableCP(), chr.getTotalCP(), 0);
 }
 
-function changedMap(eim, chr, mapid) {
+function scheduledTimeout(eim) {//規定時間結束
+	if (eim.getProperty("started") == "false") {//等待挑戰者
+		eim.disposeIfPlayerBelow(100, 980030000);
+		return;
+		}
+	if (eim.getProperty("started") == 0) {//等待遊戲開始
+		eim.setProperty("started", 1);
+		eim.startEventTimer(10 * 60 * 1000);
+		getParty(eim, "red").warp(eim.getMapInstance(fieldMap), "red00");
+		getParty(eim, "blue").warp(eim.getMapInstance(fieldMap), "blue00");
+		return;
+		}
+	if (eim.getProperty("started") == 1) {//活動時間結束
+		var blueParty = getParty(eim, "blue");
+		var redParty = getParty(eim, "red");
+	if (blueParty.getTotalCP() > redParty.getTotalCP()) {
+		blueParty.setWinner(true);
+		}
+	if (redParty.getTotalCP() > blueParty.getTotalCP()) {
+		redParty.setWinner(true);
+		}
+		blueParty.displayMatchResult();
+		redParty.displayMatchResult();
+		eim.stopEventTimer();
+		eim.startEventTimer(5 * 1000);
+		eim.setProperty("started", 2);
+		return;
+		}
+	if (eim.getProperty("started") == 2) {//勝負方設置
+		var blueParty = getParty(eim, "blue");
+		var redParty = getParty(eim, "red");
+		eim.stopEventTimer();
+		eim.startEventTimer(1 * 60 * 1000);
+		eim.setProperty("started", 3);
+	if (blueParty.isWinner()) {
+		blueParty.warp(eim.getMapInstance(winnerMap), 0);
+		redParty.warp(eim.getMapInstance(loserMap), 0);
+		return;
+		}
+		redParty.warp(eim.getMapInstance(winnerMap), 0);
+		blueParty.warp(eim.getMapInstance(loserMap), 0);
+		return;
+		}
+		eim.disposeIfPlayerBelow(100, 980030000);
 }
+
+function getParty(eim, property) {//入場檢測
+	var chr = em.getChannelServer().getPlayerStorage().getCharacterById(parseInt(eim.getProperty(property)));
+	if (chr == null) {
+		eim.broadcastPlayerMsg(5, "The leader of the party " + property + " was not found.");
+		playerExit(eim);
+		return;
+		}
+		return chr.getCarnivalParty();
+}
+
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
+}
+
+function leftParty(eim, player) {//離開小組觸發
+	playerExit(eim, player);
+}
+
+function disbandParty(eim) {//小組退出時觸發
+	playerExit(eim, player);
+}
+
+function playerExit(eim, player) {//角色退出時觸發
+	eim.unregisterPlayer(player);
+	eim.disposeIfPlayerBelow(0, 0);
+	if (eim.getProperty("started") != 3) {
+		player.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, player.getName() + "Leaving the field, this competition has been cancelled."));
+		eim.disposeIfPlayerBelow(100, 980030000);
+}
+}
+
+function init() {}//服務端讀取
+
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
+
+function playerRevive(eim, player) {}//玩家角色復活時觸發
+
+function playerDead(eim, player) {}//玩家死亡時觸發
+
+function cancelSchedule() {}//清除事件

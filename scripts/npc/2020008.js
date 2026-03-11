@@ -1,109 +1,47 @@
-/** 
-	Tylus: Warrior 3rd job advancement
-	El Nath: Chief's Residence (211000001)
-
-	Custom Quest 100100, 100102
+/*
+	名字:	泰勒斯
+	地圖:	長老公館
+	描述:	211000001
 */
 
-var status = 0;
-var job;
+var status;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0 && status == 1) {
-	cm.sendOk("Make up your mind and visit me again.");
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-    if (status == 0) {
-	if (!(cm.getJob() == 110 || cm.getJob() == 120 || cm.getJob() == 130 || cm.getJob() == 2110)) {
-	    if (cm.getQuestStatus(6192) == 1) {
-		if (cm.getParty() != null) {
-		    var ddz = cm.getEventManager("ProtectTylus");
-		    if (ddz == null) {
-			cm.sendOk("Unknown error occured");
-		    } else {
-			var prop = ddz.getProperty("state");
-			if (prop == null || prop.equals("0")) {
-			    ddz.startInstance(cm.getParty(), cm.getMap());
-			} else {
-			    cm.sendOk("Someone else is already trying to protect Tylus, please try again in a bit.");
-			}
-		    }
-		} else {
-		    cm.sendOk("Please form a party in order to protect Tylus!");
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
 		}
-	    } else if (cm.getQuestStatus(6192) == 2) {
-		cm.sendOk("You have protected me. Thank you. I will teach you stance skill.");
-		if (cm.getJob() == 112) {
-			if (cm.getPlayer().getMasterLevel(1121002) <= 0) {
-				cm.teachSkill(1121002, 0, 10);
+	switch (status) {
+	case 0:
+		if (cm.getPlayer().getLevel() < 50) {
+			cm.sendOk("You're nowhere near ready to fight Zakum. I wouldn't suggest going in there until you're at least level 50.");
+			cm.dispose();
+			return;
 			}
-		} else if (cm.getJob() == 122) {
-			if (cm.getPlayer().getMasterLevel(1221002) <= 0) {
-				cm.teachSkill(1221002, 0, 10);
+		if (Math.floor(cm.getPlayer().getJob() / 100 % 10) != 1) {
+			cm.sendNext("I am not qualified to judge you. If you want to explore Zakum, you will need to find a master of your job class to be your guide.");
+			cm.dispose();
+			return;
 			}
-		} else if (cm.getJob() == 132) {
-			if (cm.getPlayer().getMasterLevel(1321002) <= 0) {
-				cm.teachSkill(1321002, 0, 10);
-			}
-		}
-	    } else {
-		cm.sendOk("May the Gods be with you!");
-	    }
-	    cm.dispose();
-	    return;
-	}
-	if ((cm.getJob() == 110 || cm.getJob() == 120 || cm.getJob() == 130 || cm.getJob() == 2110 ) && cm.getPlayerStat("LVL") >= 70) {
-	    if (cm.getPlayerStat("RSP") > (cm.getPlayerStat("LVL") - 70) * 3) {
-	        if (cm.getPlayer().getAllSkillLevels() > cm.getPlayerStat("LVL") * 3) { //player used too much SP means they have assigned to their skills.. conflict
-		    cm.sendOk("It appears that you have a great number of SP yet you have used enough SP on your skills already. Your SP has been reset. #ePlease talk to me again to make the job advancement.#n");
-		    cm.getPlayer().resetSP((cm.getPlayerStat("LVL") - 70) * 3);
-	        } else {
-	    	    cm.sendOk("Hmm...You have too many #bSP#k. You can't make the job advancement with too many SP left.");
-	        }
-		cm.safeDispose();
-	    } else {
-	        cm.sendNext("You are indeed a strong one.");
-	    }
-	} else {
-	    cm.sendOk("Please make sure that you are eligible for the job advancement. (level 70+)");
-	    cm.safeDispose();
-	}
-    } else if (status == 1) {
-	    if (cm.getPlayerStat("LVL") >= 70 && cm.getPlayerStat("RSP") <= (cm.getPlayerStat("LVL") - 70) * 3) {
-	    if (cm.getJob() == 110) { // FIGHTER
-		cm.changeJob(111); // CRUSADER
-		cm.sendOk("You are now a #bCrusader#k.");
+			cm.sendNext("You should be able to stand against Zakum. Find #b#p2030008##k deep within the Dead Mine. I will allow it.");
+			break;
+	case 1:
+		cm.sendNextPrev("Then I will send you to #bThe Door to Zakum#k, where #b#p2030008##k is.");
+		break;
+	case 2:
+		cm.getPlayer().changeMap(cm.getMap(211042300), cm.getMap(211042300).getPortal(0));
 		cm.dispose();
-	    } else if (cm.getJob() == 120) { // PAGE
-		cm.changeJob(121); // WHITEKNIHT
-		cm.sendOk("You are now a #bWhite Knight#k.");
-		cm.dispose();
-	    } else if (cm.getJob() == 130) { // SPEARMAN
-		cm.changeJob(131); // DRAGONKNIGHT
-		cm.sendOk("You are now a #bDragon Knight#k");
-		cm.dispose();
-	    } else if (cm.getJob() == 2110) { // ARAN
-		cm.changeJob(2111); // ARAN
-		if (cm.canHold(1142131,1)) {
-		    cm.forceCompleteQuest(29926);
-		    cm.gainItem(1142131,1); //temp fix
-		}
-		cm.sendOk("You are now a #bAran#k.");
-		cm.dispose();
-	    }
-	    } else {
-		cm.sendOk("Come back when you are level 70 and used SP.");
-		cm.dispose();
-	    }
-    }
+}
 }

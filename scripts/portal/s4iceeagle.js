@@ -1,26 +1,19 @@
+/*
+	名字:	艾納斯島
+	地圖:	危險的絕壁
+	描述:	211040700
+*/
+
 function enter(pi) {
-    if (pi.getQuestStatus(6242) == 1 || pi.getQuestStatus(6243) == 1) {
-	if (!pi.haveItem(4001114)) {
-	    if (pi.getPlayerCount(921100200) == 0) {
-		pi.playPortalSE();
-		pi.warp(921100210, 0);
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(6242)).getStatus() != 1) {
+		return false;
+		}
+	if (pi.getMap(921100210).getCharacters().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		return false;
+		}
+		pi.getMap(921100210).resetFully();
+		pi.getPlayer().changeMap(pi.getMap(921100210), pi.getMap(921100210).getPortal(1));
+		pi.getPlayer().startMapTimeLimitTask(300, pi.getMap(211040700));
 		return true;
-	    } else {
-		pi.playerMessage("Other characters are on request. You can't enter.");
-	    }
-	} else {
-	    pi.playerMessage("You don't have Freezer's Egg. You can't enter.");
-	}
-    } else if (pi.getQuestStatus(6242) == 2 && pi.getQuestStatus(6243) == 0) {
-	if (!pi.haveItem(4001114)) {
-	    pi.playPortalSE();
-	    pi.warp(921100210, 0);
-	    return true;
-	} else {
-	    pi.playerMessage("You don't have Freezer's Egg. You can't enter." );
-	}
-    } else {
-	pi.playerMessage("You can't enter sealed place.");
-    }
-    return false;
 }

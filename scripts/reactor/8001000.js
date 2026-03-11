@@ -1,10 +1,10 @@
 /*
- * 8001000.js: Zipangu: The Nightmarish Last Days
- * Summons BodyGuard A
+	名字:	昭和村
+	地圖:	基地內部
+	描述:	801040100
 */
 
-function act(){
-    rm.changeMusic("Bgm06/FinalFight");
-	rm.spawnMonster(9400112, 830, 160);
-    rm.mapMessage("Bodyguard A is summoned.")
+function act() {
+	rm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9400112), new java.awt.Point(458, 160));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Bodyguard A appeared."));
 }

@@ -1,14 +1,14 @@
-var status = -1;
-//TEMPORARY QUEST NOW SKIPPING
-//this quest is AFTER SHEDDING 1
+/*
+	名字:	意想不到的禮物I
+	地圖:	寶貝龍
+	描述:	寶貝龍
+*/
+
 function start(mode, type, selection) {
-	qm.gainItem(1142157,1);
-	qm.removeAll(4032503);
-	qm.forceCompleteQuest();
+	Packages.server.quest.MapleQuest.getInstance(22607).forceComplete(qm.getPlayer(), qm.getNpc());
 	qm.dispose();
 }
 
 function end(mode, type, selection) {
-	qm.forceCompleteQuest();
 	qm.dispose();
 }

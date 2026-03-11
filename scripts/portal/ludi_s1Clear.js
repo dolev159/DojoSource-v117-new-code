@@ -1,12 +1,15 @@
-function enter(pi) {
-    var eim = pi.getPlayer().getEventInstance();
-    var target = eim.getMapInstance(922010200);
+/*
+	名字:	隱藏地圖
+	地圖:	玩偶之家
+	描述:	922010100
+*/
 
-    if (eim.getProperty("1stageclear") != null) {
-        pi.getPlayer().changeMap(target, target.getPortal("st00"));
-        return true;
-    } else {
-        pi.playerMessage("The Portal is still closed");
-        return false;
-    }
+function enter(pi) {
+	var eim = pi.getPlayer().getEventInstance();
+	if (eim.getProperty("stage1") == null) {
+		return false;
+		}
+		map = pi.getPlayer().getMap().getId() + 300; //遺棄之塔&amp;lt;第2階段&gt;
+		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(0));
+		return true;
 }

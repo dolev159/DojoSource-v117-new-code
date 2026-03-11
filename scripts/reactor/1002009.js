@@ -1,7 +1,13 @@
 /*
-Maple Island Box - drops various items, notably quest items Old Wooden Board and Rusty Screw
+	名字:	彩虹之地
+	地圖:	楓葉村
+	描述:	1000000
 */
 
 function act() {
-	rm.dropItems(true, 2, 8, 15);
+	rm.dropItems();
 }
+
+
+//4031162		老舊木板
+//4031161		老舊螺絲

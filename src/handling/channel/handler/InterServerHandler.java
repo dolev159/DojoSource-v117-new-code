@@ -61,13 +61,19 @@ import tools.packet.MTSCSPacket;
 public class InterServerHandler {
 
     public static final void EnterCS(final MapleClient c, final MapleCharacter chr, final boolean mts) {
-        if (chr.hasBlockedInventory() || chr.getMap() == null || chr.getEventInstance() != null || c.getChannelServer() == null) {
+        if (chr.hasBlockedInventory() || chr.getMap() == null || chr.getEventInstance() != null
+                || c.getChannelServer() == null) {
             c.getSession().write(CField.serverBlocked(2));
             c.getSession().write(CWvsContext.enableActions());
             return;
         }
         if (ServerConstants.BLOCK_CS == true) {
             chr.dropMessage(1, "Cash Shop has been blocked.");
+            c.getSession().write(CWvsContext.enableActions());
+            return;
+        }
+        if (CashShopServer.isShutdown() || CashShopServer.getIP() == null || CashShopServer.getIP().isEmpty()) {
+            chr.dropMessage(1, "Cash Shop is currently unavailable.");
             c.getSession().write(CWvsContext.enableActions());
             return;
         }
@@ -86,11 +92,12 @@ public class InterServerHandler {
             c.getSession().write(CWvsContext.enableActions());
             return;
         }
-        //if (c.getChannel() == 1 && !c.getPlayer().isGM()) {
-        //    c.getPlayer().dropMessage(5, "You may not enter on this channel. Please change channels and try again.");
-        //    c.getSession().write(CWvsContext.enableActions());
-        //    return;
-        //}
+        // if (c.getChannel() == 1 && !c.getPlayer().isGM()) {
+        // c.getPlayer().dropMessage(5, "You may not enter on this channel. Please
+        // change channels and try again.");
+        // c.getSession().write(CWvsContext.enableActions());
+        // return;
+        // }
         final ChannelServer ch = ChannelServer.getInstance(c.getChannel());
 
         chr.changeRemoval();
@@ -113,7 +120,8 @@ public class InterServerHandler {
     }
 
     public static final void EnterMTS(final MapleClient c, final MapleCharacter chr) {
-        if (chr.hasBlockedInventory() || chr.getMap() == null || chr.getEventInstance() != null || c.getChannelServer() == null) {
+        if (chr.hasBlockedInventory() || chr.getMap() == null || chr.getEventInstance() != null
+                || c.getChannelServer() == null) {
             chr.dropMessage(1, "Please try again later.");
             c.getSession().write(CWvsContext.enableActions());
             return;
@@ -155,10 +163,14 @@ public class InterServerHandler {
             }
         }
 
+        System.out.println("[DEBUG] InterServerHandler.Loggedin called for PlayerID: " + playerid);
         if (transfer == null) { // Player isn't in storage, probably isn't CC
             Triple<String, String, Integer> ip = LoginServer.getLoginAuth(playerid);
             String s = c.getSessionIPAddress();
-            if (ip == null || !s.substring(s.indexOf('/') + 1, s.length()).equals(ip.left)) {
+            String resolvedS = s.substring(s.indexOf('/') + 1, s.length());
+            if (ip == null || !resolvedS.equals(ip.left)) {
+                System.out.println("[InterServerHandler] REJECTED PLAYER! ip == null? " + (ip == null)
+                        + " | resolvedS: " + resolvedS + " | ip.left: " + (ip != null ? ip.left : "NULL"));
                 if (ip != null) {
                     LoginServer.putLoginAuth(playerid, ip.left, ip.mid, ip.right);
                 }
@@ -184,7 +196,8 @@ public class InterServerHandler {
         final int state = c.getLoginState();
         boolean allowLogin = false;
 
-        if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL || state == MapleClient.LOGIN_NOTLOGGEDIN) {
+        if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL
+                || state == MapleClient.LOGIN_NOTLOGGEDIN) {
             allowLogin = !World.isCharacterListConnected(c.loadCharacterNames(c.getWorld()));
         }
         if (!allowLogin) {
@@ -203,9 +216,9 @@ public class InterServerHandler {
         c.getSession().write(MTSCSPacket.enableCSUse());
 
         /*
-         if (player.isGM()) { 
-         SkillFactory.getSkill(9101004).getEffect(1).applyTo(player);
-         }
+         * if (player.isGM()) {
+         * SkillFactory.getSkill(9101004).getEffect(1).applyTo(player);
+         * }
          */
         c.getSession().write(CWvsContext.temporaryStats_Reset()); // .
         player.getMap().addPlayer(player);
@@ -286,17 +299,21 @@ public class InterServerHandler {
             SkillFactory.getSkill(player.getStat().equippedSummon).getEffect(1).applyTo(player);
         }
         MapleQuestStatus stat = player.getQuestNoAdd(MapleQuest.getInstance(GameConstants.PENDANT_SLOT));
-        c.getSession().write(CWvsContext.pendantSlot(stat != null && stat.getCustomData() != null && Long.parseLong(stat.getCustomData()) > System.currentTimeMillis()));
+        c.getSession().write(CWvsContext.pendantSlot(stat != null && stat.getCustomData() != null
+                && Long.parseLong(stat.getCustomData()) > System.currentTimeMillis()));
         stat = player.getQuestNoAdd(MapleQuest.getInstance(GameConstants.QUICK_SLOT));
-        c.getSession().write(CField.quickSlot(stat != null && stat.getCustomData() != null ? stat.getCustomData() : null));
+        c.getSession()
+                .write(CField.quickSlot(stat != null && stat.getCustomData() != null ? stat.getCustomData() : null));
         c.getSession().write(CWvsContext.getFamiliarInfo(player));
         List<Pair<Integer, String>> npcs = new ArrayList<>();
         npcs.add(new Pair<>(9070006, "Why...why has this happened to me? My knightly honor... My knightly pride..."));
-        //c.getSession().write(NPCPacket.setNpcScriptable());
+        // c.getSession().write(NPCPacket.setNpcScriptable());
     }
 
-    public static final void ChangeChannel(final LittleEndianAccessor slea, final MapleClient c, final MapleCharacter chr, final boolean room) {
-        if (chr == null || chr.hasBlockedInventory() || chr.getEventInstance() != null || chr.getMap() == null || chr.isInBlockedMap() || FieldLimitType.ChannelSwitch.check(chr.getMap().getFieldLimit())) {
+    public static final void ChangeChannel(final LittleEndianAccessor slea, final MapleClient c,
+            final MapleCharacter chr, final boolean room) {
+        if (chr == null || chr.hasBlockedInventory() || chr.getEventInstance() != null || chr.getMap() == null
+                || chr.isInBlockedMap() || FieldLimitType.ChannelSwitch.check(chr.getMap().getFieldLimit())) {
             c.getSession().write(CWvsContext.enableActions());
             return;
         }

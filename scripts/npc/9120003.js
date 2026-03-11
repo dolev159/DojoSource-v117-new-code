@@ -1,34 +1,26 @@
 /*
-	Hikari - Showa Town(801000000)
+	名字:	光夫人
+	地圖:	昭和村
+	描述:	801000000
 */
 
-var status = -1;
-
 function start() {
-    action(1,0,0);
+	cm.sendYesNo("Would you like to enter the bathhouse? That'll be 300 mesos for you. And don't take the towels!");
 }
 
 function action(mode, type, selection) {
-    if (mode == 1)
-	status++;
-    else {
-	cm.sendOk("Please come back some other time.");
-	cm.dispose();
-	return;
-    }
-    if (status == 0) {
-	cm.sendYesNo("Would you like to enter the bathhouse? That'll be "+300+" mesos for you");
-    } else if (status == 1) {
-	if (cm.getMeso() < 300) {
-	    cm.sendOk("Please check and see if you have "+300+" mesos to enter this place.");
-	} else {
-	    cm.gainMeso(-300);
-	    if (cm.getPlayerStat("GENDER") == 0) {
-		cm.warp(801000100);
-	    } else {
-		cm.warp(801000200);
-	    }
-	}
-	cm.dispose();
-    }
+	switch (mode) {
+	case 0:
+		cm.sendOk("Please come back some other time.");
+		break;
+	case 1:
+		if (cm.getPlayer().getMeso() < 300) {
+		cm.sendOk("Please check your wallet or purse and see if you have 300 mesos to enter this place. We have to keep the water hot, you know...");
+		cm.dispose();
+		return;
+		}
+		cm.getPlayer().changeMap(cm.getMap(801000100 + 100 * cm.getPlayer().getGender()), cm.getMap(801000100 + 100 * cm.getPlayer().getGender()).getPortal(2));
+		cm.gainMeso(-300);
+		}
+		cm.dispose();
 }

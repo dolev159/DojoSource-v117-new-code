@@ -1,59 +1,26 @@
-/**
--- Odin JavaScript --------------------------------------------------------------------------------
-	Treasure Chest - Line 3 Construction Site: B1 <Subway Depot> (103000902)
--- By ---------------------------------------------------------------------------------------------
-	Unknown
--- Version Info -----------------------------------------------------------------------------------
-	1.1 - Statement fix [Information]
-	1.0 - First Version by Unknown
----------------------------------------------------------------------------------------------------
-**/
+/*
+	名字:	寶箱
+	地圖:	地鐵車庫
+	描述:	910360002
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	if (cm.getPlayer().getPosition().x < -50 || cm.getPlayer().getPosition().x > 250 || cm.getPlayer().getPosition().y > 600) {
+		cm.sendOk("You cannot see very well because you're too far. Go a little closer.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.sendNext("Looking carefully into #p1052008#, there seems to be a shiny object inside but since your etc. inventory is full, that item is unattainable.");
+		cm.dispose();
+		return;
+		}
+		cm.gainItem(4031039, cm.getPlayer().itemQuantity(4031039) ? 0 : 1);
+		cm.sendNext("Looking carefully into #p1052008#, there seems to be a shiny object inside. Reached out with a hand and was able to attain a small coin.");
 }
 
 function action(mode, type, selection) {
-    if (status >= 2 && mode == 0) {
-	cm.sendOk("Alright, see you next time.");
-	cm.dispose();
-	return;
-    }
-    if (mode == 1) {
-	status++;
-    }
-    else {
-	status--;
-    }
-    if (status == 0) {
-	if (cm.getQuestStatus(2055) == 1 && !cm.haveItem(4031039)) {
-	    cm.gainItem(4031039, 1); // Shumi's Coin
-	    cm.warp(103000000, 0);
-	}
-	else {
-	    var rand = 1 + Math.floor(Math.random() * 6);
-	    if (rand == 1) {
-		cm.gainItem(4010003, 2); // Adamantium Ore
-	    }
-	    else if (rand == 2) {
-		cm.gainItem(4010000, 2); // Bronze Ore
-	    }
-	    else if (rand == 3) {
-		cm.gainItem(4010002, 2); // Mithril Ore
-	    }
-	    else if (rand == 4) {
-		cm.gainItem(4010005, 2); // Orihalcon Ore
-	    }
-	    else if (rand == 5) {
-		cm.gainItem(4010004, 2); // Silver Ore
-	    }
-	    else if (rand == 6) {
-		cm.gainItem(4010001, 2); // Steel Ore
-	    }
-	    cm.warp(103000000, 0);
-	}
-	cm.dispose();
-    }
-}	
-
+	if (mode > 0)
+		cm.getPlayer().changeMap(cm.getMap(103020000), cm.getMap(103020000).getPortal(0));
+		cm.dispose();
+}

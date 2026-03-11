@@ -1,23 +1,20 @@
-var status = -1;
+/*
+	名字:	萬人迷
+	地圖:	訓練場
+	描述:	120000104
+*/
 
-function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (cm.getQuestStatus(6410) != 1) {
-	cm.sendNext("...");
-	cm.dispose();
-	return;
-    }
-    if (status == 0) {
-	cm.sendYesNo("Would you like to protect Deli?");
-    } else if (status == 1) {
-	cm.warp(925010000,0);
-	cm.dispose();
-    }
+function start() {
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2915)).getStatus() == 1) {
+		cm.getPlayer().changeMap(cm.getMap(912040100), cm.getMap(912040100).getPortal(1));
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2916)).getStatus() == 1) {
+		cm.getPlayer().changeMap(cm.getMap(912040200), cm.getMap(912040200).getPortal(1));
+		cm.dispose();
+		return;
+		}
+		cm.sendOk("The Training Room is off-limits unless you are scheduled.");
+		cm.dispose();
 }

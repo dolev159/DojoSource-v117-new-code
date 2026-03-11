@@ -1,9 +1,12 @@
-/* @Author Lerk
- * 
- * 2212003.js: Dogon's HQ reactor - Dogon's Report, Meso
- * 
+/*
+	名字:	地球防御本部
+	地圖:	都滚斯本部
+	描述:	221040402
 */
 
-function act(){
-	rm.dropItems(true, 2, 80, 100);
+function act() {
+	rm.dropItems();
 }
+
+
+//4031107		督困斯報告書

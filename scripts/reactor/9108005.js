@@ -1,17 +1,16 @@
+/*
+	名字:	隱藏地圖
+	地圖:	迎月花山丘
+	描述:	910010000
+*/
 
 function act() {
-	rm.mapMessage(6, "One of the seeds has been placed.");
-	var em = rm.getEventManager("HenesysPQ");
-	if (em != null) {
-		var react = rm.getMap().getReactorByName("fullmoon");
-		em.setProperty("stage", parseInt(em.getProperty("stage")) + 1);
-		react.forceHitReactor(react.getState() + 1);
-		if (em.getProperty("stage").equals("6")) {
-			rm.mapMessage(6, "Protect the Moon Bunny!!!");
-			rm.getMap().setSpawns(true);
-			rm.getMap().respawn(true);
-			rm.getMap().spawnMonsterOnGroundBelow(em.getMonster(9300061), new java.awt.Point(-183, -433));
-			rm.achievement(50);
-		}
-	}
+	rm.getPlayer().getMap().getReactorByName("fullmoon").forceHitReactor(rm.getPlayer().getMap().getReactorByName("fullmoon").getState() + 1);
+	if (rm.getPlayer().getMap().getReactorByName("fullmoon").getState() > 5) {
+		rm.getPlayer().getMap().startMapEffect("Protect the Moon Bunny, and gather 10 Moon Bunny's Rice Cakes for me!", 5120016);
+		rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Protect the Moon Bunny!!!"));
+		rm.getPlayer().getMap().setSpawns(true);
+		rm.getPlayer().getMap().respawn(true);
+		rm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9300061), new java.awt.Point(-183, -433));
+}
 }

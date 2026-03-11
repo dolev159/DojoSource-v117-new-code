@@ -1,7 +1,10 @@
-function action(mode, type, selection) {
-    if (cm.isQuestActive(2166)) {
-	cm.forceCompleteQuest(2166);
-	cm.sendOk("You felt the power of the stone.");
-    }
-    cm.dispose();
+/*
+	名字:	發光石
+	地圖:	動力機房
+	描述:	120000301
+*/
+
+function start() {
+	cm.sendNext("It's a beautiful, shiny rock. You can feel the mysterious power surrounding it.");
+	cm.dispose();
 }

@@ -1,64 +1,61 @@
-var status = -1;
+/*
+	名字:	道拉比斯
+	地圖:	結婚禮堂
+	描述:	680000110
+*/
 
-function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (cm.getMapId() != 680000100) {
+function start() {
+	cm.sendOk("...");
 	cm.dispose();
-	return;
-    }
-    if (status == 0) {
-	cm.sendYesNo("Do you want to enter the Wedding Hall?");
-    } else if (status == 1) {
-
-	    var marr = cm.getQuestRecord(160001);
-	    var data = marr.getCustomData();
-	    if (data == null) {
-		marr.setCustomData("0");
-	        data = "0";
-	    }
-	    if (data.equals("1")) {
-		if (cm.getPlayer().getMarriageId() <= 0) {
-		    cm.sendOk("Something wrong has happened: you aren't engaged with anybody.");
-		    cm.dispose();
-		    return;
-		}
-	    	var chr = cm.getMap().getCharacterById(cm.getPlayer().getMarriageId());
-	    	if (chr == null) {
-		    cm.sendOk("Make sure your partner is in the map.");
-		    cm.dispose();
-		    return;
-	    	}
-		var maps = Array(680000110, 680000300, 680000401);
-		for (var i = 0; i < maps.length; i++) {
-		    if (cm.getMap(maps[i]).getCharactersSize() > 0) {
-			cm.sendNext("Someone is already having a wedding, please come later.");
-			cm.dispose();
-			return;
-		    }
-		}
-		var map = cm.getMap(680000110);
-		cm.getPlayer().changeMap(map, map.getPortal(0));
-		chr.changeMap(map, map.getPortal(0));
-		cm.worldMessage(5, "<Channel " + cm.getClient().getChannel() + "> " + cm.getPlayer().getName() + " and " + chr.getName() + "'s wedding is about to be started.");
-	    } else {
-		if (cm.getMap(680000110).getCharactersSize() == 0) {
-		    cm.sendNext("No one is already having a wedding, please come later.");
-		    cm.dispose();
-		    return;
-		}
-		if (cm.haveItem(4150000)) {
-		    cm.warp(680000110,0);
-		} else {
-		    cm.sendOk("You do not have a wedding invitation.");
-		}
-	    }
-	cm.dispose();
-    }
 }
+
+
+
+/*
+//Wedding Asistant Travis
+script "waitingChapel" {
+  field = self.field;
+  if (field.id == 680000100 ) {
+    nRet = self.askYesNo( "Salutations! Would you like to get into the Wedding Hall? ");
+    if ( nRet == 0 ) self.say( "Ok, please let me know when you're ready to go in." );
+	  else {
+	   self.say( "Feel free to head inside now. Give my regards to the newlyweds!");
+ 	   if (field.id == 680000100 ) registerTransferField( 680000110, "" );
+	  }
+  }
+  else if (field.id == 680000110 ) {
+	if( target.isWeddingCouple == 1 and target.isInParty == 1 and getCurrentWeddingState == 2){
+    		nRet = self.askYesNo( "You both look fantastic! Are you ready to go to the Photo Map? ");
+    		if ( nRet == 0 ) self.say( "Ok, please remember that the Photo time will automatically start after the clock stops." );
+	  	else {
+	   		self.say( "Tubular! Snap some nice shots for the Wedding book!");
+	   		set = FieldSet( "Wedding30" );
+		     	result = set.enter( target.nCharacterID, 0 );
+ 		      
+			if ( result == 7) self.say ("I apologize, but the Wedding hasn't started yet. When it does, I'll be sure to let you in. ");
+ 		      	else if ( result == 8) self.say ("Sorry, but without an invitation, I can't let you in.");
+ 		      	else if ( result == 9) self.say ("Oh dear, looks like I can't find that information right now...I'm having a bit of trouble with my logbook, please try again later");
+
+	  	}
+ 		
+	}    
+	else if (target.isWeddingCouple == 1 and target.isInParty == 1 and getCurrentWeddingState == 1) self.say("You both look fantastic! Please, wait the ceremony to end.");
+
+	else if (target.isWeddingCouple == 0) {
+    nRet = self.askYesNo( "Hi! Would you like to leave the Chapel? ");
+    if ( nRet == 0 ) self.say( "Ok, please let me know when you're ready to go out." );
+	  else {
+		self.say( "Ok, I'll show you the way out...");
+ 		if (field.id == 680000110 ){ 
+			set = FieldSet( "Wedding1" );
+			registerTransferField( 680000500, "" ); 
+		}
+		
+	  }
+	}
+  }
+  else if (field.id == 680000300 ) 
+	self.say("Welcome to Cherished Visage Photo Section! On here, we are taking a picture of you and your guests that will allow you to remember your very own Wedding day forever! The picture will be automatically taken after 1 minute timer runs out. So you need to be ready and try out some new poses before it's taken~ To see the picture that was taken, please visit WWW.NEXON.NET for more details.");
+}
+
+*/

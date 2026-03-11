@@ -193,6 +193,7 @@ C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\scriptin
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\scripting\PortalScriptManager.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\scripting\ReactorActionManager.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\scripting\ReactorScriptManager.java
+C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\server\AIOmniGuide.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\server\AutobanManager.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\server\CacheManager.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\server\CashItemFactory.java
@@ -334,6 +335,7 @@ C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\Co
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\ConcurrentEnumMap.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\ConvertOpcodes.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\CPUSampler.java
+C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\DBCheck.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\FileoutputUtil.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\getShopItemData.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\HexTool.java
@@ -343,6 +345,7 @@ C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\Ma
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\MapleCustomEncryption.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\MaplePacketCreator.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\MockIOSession.java
+C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\NativeIntMap.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\PacketDecodeTool.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\Pair.java
 C:\Users\barac\.gemini\antigravity\scratch\DojoSource-v117-new-code\src\tools\ShopCreator.java

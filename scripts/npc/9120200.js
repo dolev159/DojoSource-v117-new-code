@@ -1,16 +1,20 @@
-/**
-	Konpei - Near the Hideout(801040000)
+/*
+	名字:	鈴木
+	地圖:	基地前
+	描述:	801040000
 */
 
 function start() {
-    cm.sendYesNo("Here you are, right in front of the hideout! What? You want to return to #m801000000#?");
+	cm.sendYesNo("Well, here we are. The Yakuza hideout. Huh? You wanna go back to Showa Town?");
 }
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.sendOk("If you want to return to #m801000000#, then talk to me");
-    } else {
-	cm.warp(801000000,0);
-    }
-    cm.dispose();
+	switch (mode) {
+	case 0:
+		cm.sendOk("Talk to me again if you want to return to Showa Town.");
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(801000000), cm.getMap(801000000).getPortal(0));
+		}
+		cm.dispose();
 }

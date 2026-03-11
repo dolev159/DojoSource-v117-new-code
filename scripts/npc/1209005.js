@@ -1,12 +1,9 @@
-
-var status = 0;
+/*
+	名字:	難民
+	地圖:	避難準備中
+	描述:	914000100
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-    cm.sendOk(":(");
-    cm.dispose();
+	cm.dispose();
 }

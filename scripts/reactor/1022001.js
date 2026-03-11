@@ -1,7 +1,12 @@
 /*
-Relic - Aran Find the Puppet quest
+	名字:	北部岩山
+	地圖:	暴風地帶
+	描述:	102020500
 */
 
 function act() {
-    rm.dropItems();
+	rm.dropItems();
 }
+
+
+//4032319		奸笑的發芽木妖人偶

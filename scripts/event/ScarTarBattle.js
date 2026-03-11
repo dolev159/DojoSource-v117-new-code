@@ -1,77 +1,75 @@
-function init() {
-	em.setProperty("leader", "true");
-    em.setProperty("state", "0");
+/*
+	名字:	馬來西亞
+	地圖:	夢幻公園入口
+	描述:	551030100
+*/
+
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function setup(eim, leaderid) {
-	em.setProperty("leader", "true");
-    var eim = em.newInstance("ScarTarBattle");
-    var map = eim.setInstanceMap(551030200);
-    map.resetFully();
-    em.setProperty("state", "1");
+function setup(level, lobbyid) {//開始事件，時間
+	em.setProperty("state", 1);
 
-    eim.startEventTimer(3600000); // 1 hr
-    return eim;
+	eim = em.newInstance("ScarTarBattle");
+
+	eim.setProperty("stage", 0);
+
+	eim.setInstanceMap(551030200).resetFully();
+
+	eim.startEventTimer(60 * 60000);
+
+	return eim;
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapFactory().getMap(551030200);
-    player.changeMap(map, map.getPortal(0));
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(551030200), eim.getMapInstance(551030200).getPortal(0));
 }
 
-function playerRevive(eim, player) {
-    return false;
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 551030100);
 }
 
-function scheduledTimeout(eim) {
-    eim.disposeIfPlayerBelow(100, 551030100);
-    em.setProperty("state", "0");
-		em.setProperty("leader", "true");
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 9420544 || mob.getId() == 9420549) {
+		var stage = parseInt(eim.getProperty("stage")) + 1;//設置後 數值添加為 1, 2 ,3 遞增
+
+		eim.setProperty("stage", stage);
+		}
+	if (eim.getProperty("stage") == 2) {
+		eim.startEventTimer(3 * 60000);//60000 = 1分鐘
+
+		eim.getMapInstance(551030200).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(551030200).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+		}
+		return 1;
 }
 
-function changedMap(eim, player, mapid) {
-    if (mapid != 551030200) {
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
+}
+
+function changedMap(eim, chr, mapid) {//不在此地圖中事件結束
+	if (mapid != 551030200) {
+		playerExit(eim, chr);
+}
+}
+
+function playerExit(eim, player) {//角色退出時觸發
 	eim.unregisterPlayer(player);
-
 	if (eim.disposeIfPlayerBelow(0, 0)) {
-	    em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
-    }
+		em.setProperty("state", 0);
+}
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function monsterValue(eim, mobId) {
-    return 1;
-}
+function leftParty(eim, player) {}//離開小組觸發
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
+function disbandParty(eim) {}//小組退出時觸發
 
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-    }
-}
+function playerDead(eim, player) {}//玩家死亡時觸發
 
-function end(eim) {
-    if (eim.disposeIfPlayerBelow(100, 551030100)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-    }
-}
+function playerRevive(eim, player) {}//玩家角色复時觸發
 
-function clearPQ(eim) {
-    end(eim);
-}
-
-function allMonstersDead(eim) {
-}
-
-function leftParty (eim, player) {}
-function disbandParty (eim) {}
-function playerDead(eim, player) {}
-function cancelSchedule() {}
+function cancelSchedule() {}//清除事件

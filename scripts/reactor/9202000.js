@@ -1,8 +1,12 @@
 /*
-Guild Quest - Protector Rock 
-Drops the Protector Rock earrings necessary (normally) to stay alive in the Guild Quest
+	名字:	威廉的古堡
+	地圖:	守護之峽谷
+	描述:	990000100
 */
 
 function act() {
 	rm.dropItems();
 }
+
+
+//1032033		守護石耳環

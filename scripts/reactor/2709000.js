@@ -1,18 +1,10 @@
 /*
-	Reactor: 		PinkBeenPower
-	Map(s): 		Twilight of the gods
-	Description:		Summons Pink Bean
+	名字:	神殿深處
+	地圖:	神祇的黃昏
+	描述:	270050100
 */
 
 function act() {
- /*   rm.killMob(8820020);
-    rm.killMob(8820021);
-    rm.killMob(8820022);
-    rm.killMob(8820023);*/
-	//rm.scheduleWarp(3600, 270050300);
-    rm.killAllMob();
-    rm.spawnMonster(8820008);
-	if (!rm.getPlayer().isGM()) {
-		rm.getMap().startSpeedRun();
-	}
+	rm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(8820008), new java.awt.Point(rm.getReactor().getPosition()));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Pink Bean has appeared."));
 }

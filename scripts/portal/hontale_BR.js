@@ -1,21 +1,15 @@
-function enter(pi) {
-    var em = pi.getEventManager("HorntailBattle");
+/*
+	名字:	生命之穴
+	地圖:	試煉之穴Ⅰ
+	描述:	240060000
+*/
 
-    if (em != null) {
-	var map = pi.getMapId();
-    
-	if (map == 240060000) {
-	    if (em.getProperty("state").equals("2")) {
-		em.warpAllPlayer(240060000, 240060100);
-	    } else {
-		pi.playerMessage("The portal is blocked.");
-	    }
-	} else if (map == 240060100) {
-	    if (em.getProperty("state").equals("3")) {
-		em.warpAllPlayer(240060100, 240060200);
-	    } else {
-		pi.playerMessage("The portal is blocked.");
-	    }
-	}
-    }
+function enter(pi) {
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() < 1) {
+		map = pi.getPlayer().getMap().getId() + 100; //試煉之穴Ⅱ
+		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(0));
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Horntail\'s Seal is Blocking this Door."));
+		return false;
 }

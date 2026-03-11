@@ -1,10 +1,12 @@
-/* @Author Lerk
- * 
- * 9202004.js: Guild Quest - Pantry Box
- * Drops the Jr. Necki Wine (4001030)
- * 
+/*
+	名字:	威廉的古堡
+	地圖:	酒窖
+	描述:	990000502
 */
 
 function act() {
 	rm.dropItems();
 }
+
+
+//4001030		700年青蛇酒

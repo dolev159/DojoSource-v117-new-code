@@ -1,9 +1,14 @@
 /*
-	Reactor: 		Blue Alchemy Pillar
-	Map(s): 		Magatia
-	Description: 	Drops 'regular tree branch'
+	名字:	瑪迦提亞城
+	地圖:	蒙特鳩協會
+	描述:	261000010
 */
 
 function act() {
 	rm.dropItems();
 }
+
+
+//4031703		平凡的樹枝
+
+//4031705		奇怪的水瓶

@@ -114,13 +114,10 @@ public abstract class Timer {
         if (ses != null && !ses.isShutdown() && !ses.isTerminated()) {
             return;
         }
-	file = "Log_" + name + "_Except.rtf";
-        ses = new ScheduledThreadPoolExecutor(5, new RejectedThreadFactory());
-        ses.setKeepAliveTime(10, TimeUnit.MINUTES);
-        ses.allowCoreThreadTimeOut(true);
-        ses.setMaximumPoolSize(8);
+        file = "Log_" + name + "_Except.rtf";
+        // Cosmic-Standard: Fixed-size pool (8 threads) ensures zero performance jitter and no thread leaks.
+        ses = new ScheduledThreadPoolExecutor(8, new RejectedThreadFactory());
         ses.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-        //ses.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     }
 
     public ScheduledThreadPoolExecutor getSES() {

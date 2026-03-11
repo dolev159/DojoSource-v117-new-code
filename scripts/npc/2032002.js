@@ -1,77 +1,70 @@
-/* 
- * 
- * Adobis's Mission I: Unknown Dead Mine (280010000)
- * 
- * Zakum PQ NPC (the one and only)
- */
+/*
+	名字:	奧拉
+	地圖:	未知廢礦區I
+	描述:	280010000
+*/
 
-var status = -1;
-var selectedType;
-var scrolls;
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	status--;
-    }
-
-    if (status == 0) {
-	cm.sendSimple("...#b\r\n#L0#What am I supposed to do here?#l\r\n#L1#I brought items!#l\r\n#L2#I want to get out!#l");
-    } else if (status == 1) {
-	selectedType = selection;
-	if (selection == 0) {
-	    cm.sendNext("To reveal the power of Zakum, you'll have to recreate its core. Hidden somewhere in this dungeon is a \"Fire Ore\" which is one of the necessary materials for that core. Find it, and bring it to me.\r\n\r\nOh, and could you do me a favour? There's also a number of Paper Documents lying under rocks around here. If you can get 30 of them, I can reward you for your efforts.")
-	    cm.safeDispose();
-	} else if (selection == 1) {
-	    if (!cm.haveItem(4001018)) { //documents
-		cm.sendNext("Please bring the Fire Ore with you.")
-		cm.safeDispose();
-	    } else {
-		if (!cm.haveItem(4001015, 30)) { //documents
-		    cm.sendYesNo("So, you brought the fire ore with you? In that case, I can give you and your party a piece of it that should be more than enough to make the core of Zakum. Make sure your whole party has room in their inventory before proceeding.");
-		    scrolls = false;
-		} else {
-		    cm.sendYesNo("So, you brought the fire ore and the documents with you? In that case, I can give you and your party a piece of it that should be more than enough to make the core of Zakum. As well, since you brought the documents with you, I can also give you a special item which will bring you to the mine's entrance at any time. Make sure your whole party has room in their inventory before proceeding.");
-		    scrolls = true;
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
 		}
-	    }
-	} else if (selection == 2) {
-	    cm.sendYesNo("Are you sure you want to exit? If you're the party leader, your party will also be removed from the mines.")
-	}
-    } else if (status == 2) {
-	var eim = cm.getEventInstance();
-	if (selectedType == 1) {
-				
-	    cm.gainItem(4001018, -1);
-	    if (scrolls) {
-		cm.gainItem(4001015, -30);
-	    }
-	    //give items/exp
-	    cm.givePartyItems(4031061, 1);
-	    if (scrolls) {
-		cm.givePartyItems(2030007, 5);
-		cm.givePartyExp(20000);
-	    } else {
-		cm.givePartyExp(12000);
-	    }
-				
-	    //clear PQ
+		reactor = 'action' + (cm.getPlayer().itemQuantity(4001018) ? 2 : cm.getPlayer().itemQuantity(4001015) ? 1 : 0);
+		eval(reactor)(mode, type, selection);
+}
 
-	    if (eim != null) {
-	    	eim.finishPQ();
-	    }
-	    cm.dispose();
-	} else if (selectedType == 2) {
-	if (eim != null) {
-	    if (cm.isLeader())
-		eim.disbandParty();
-	    else
-		eim.leftParty(cm.getChar());
-	} else {
-		cm.warp(280090000, 0);
-	}
-	    cm.dispose();
-	}
-    }
+function action0(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("You must be the people who came to investigate dead mines.");
+		break;
+	case 1:
+		cm.sendNextPrev("This path has the entrances to numerous caves. There are boxes inside of caves. #bDestroy the boxes#k to #bacquire various items#k.");
+		break;
+	case 2:
+		cm.sendNextPrev("Please note that you cannot break boxes by using your skills. You can only damage them with your normal attacks.");
+		break;
+	case 3:
+		cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("You got #bPaper Document#k!");
+		break;
+	case 1:
+		cm.sendNextPrev("I don't really need it. Maybe you can just take it.");
+		break;
+	case 2:
+		cm.dispose();
+}
+}
+
+function action2(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("You got #bFire Ore#k!");
+		break;
+	case 1:
+		cm.sendNextPrev("Good work! That item was used to refine #bEye of Fire#k before, but not anymore. You can keep it.");
+		break;
+	case 2:
+		cm.dispose();
+}
 }

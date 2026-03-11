@@ -1,26 +1,51 @@
-/* Gina
-	Ludibrium Skin Change.
+/*
+	名字:	吉納
+	地圖:	玩具城護膚中心
+	描述:	220000005
 */
-var status = -1;
-var skin = Array(0, 1, 2, 3, 4);
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
-    if (status == 0) {
-	cm.sendNext("Oh, hello! Welcome to the Ludibrium Skin-Care! Are you interested in getting tanned and looking sexy? How about a beautiful, snow-white skin? If you have #b#t5153002##k, you can let us take care of the rest and have the kind of skin you've always dreamed of!");
-    } else if (status == 1) {
-	cm.askAvatar("With our specialized machine, you can see the way you'll look after the treatment PRIOR to the procedure. What kind of a look are you looking for? Go ahead and choose the style of your liking~!", skin);
-    } else if (status == 2){
-	if (cm.setAvatar(5153002, skin[selection]) == 1) {
-	    cm.sendOk("Enjoy your new and improved skin!");
-	} else {
-	    cm.sendOk("Um...you don't have the skin-care coupon you need to receive the treatment. Sorry, but I am afraid we can't do it for you...");
-	}
-	cm.safeDispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendNext("Oh, hello! Welcome to the Ludibrium Skin-Care! Are you interested in getting tanned and looking sexy? How about a beautiful, snow-white skin? If you have #b#t5153015##k, you can let us take care of the rest and have the kind of skin you've always dreamed of!");
+		break;
+	case 1:
+		skin = [0, 1, 2, 3, 4, 5, 9, 10, 11];
+
+		cm.sendStyle("With our specialized machine, you can see yourself after the treatment in advance. What kind of skin-treatment would you like to do? Choose the style of your liking...", skin);
+		break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(5153015)) {
+			cm.gainItem(5153015, -1);
+			cm.getPlayer().setSkinColor(skin[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.SKIN, skin[selection]);
+			cm.sendNext("Here's the mirror, check it out! Doesn't your skin look beautiful and glowing like mine? Hehe, it's wonderful. Please come again!");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("It looks like you don't have the coupon you need to receive the treatment. I'm sorry but it looks like we cannot do it for you.");
+			cm.dispose();
+}
 }

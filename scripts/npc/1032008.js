@@ -1,38 +1,84 @@
-/* 
-	NPC Name: 		Cherry
-	Map(s): 		Victoria Road : Ellinia Station (101000300)
-	Description: 		Ellinia Ticketing Usher
+/*
+	名字:	檢票員
+	地圖:	前往天空之城月臺
+	描述:	104020110
 */
-var status = 0;
+
+var status;
 
 function start() {
-    status = -1;
-    boat = cm.getEventManager("Boats");
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    status++;
-    if(mode == 0) {
-	cm.sendNext("You must have some business to take care of here, right?");
-	cm.dispose();
-	return;
-    }
-    if (status == 0) {
-	if(boat == null) {
-	    cm.sendNext("The boats are currently down.");
-	    cm.dispose();
-	} else if(boat.getProperty("entry").equals("true")) {
-	    cm.sendYesNo("It looks like there's plenty of room for this ride. Please have your ticket ready so I can let you in, The ride will be long, but you'll get to your destination just fine. What do you think? Do you want to get on this ride?");
-	} else if(boat.getProperty("entry").equals("false") && boat.getProperty("docked").equals("true")) {
-	    cm.sendNext("The boat is getting ready for takeoff. I'm sorry, but you'll have to get on the next ride. The ride schedule is available through the usher at the ticketing booth.");
-	    cm.dispose();
-	} else {
-	    cm.sendNext("We will begin boarding 1 minutes before the takeoff. Please be patient and wait for a few minutes. Be aware that the subway will take off on time, and we stop receiving tickets 1 minute before that, so please make sure to be here on time.");
-	    cm.dispose();
-	}
-    } else if(status == 1) {
-	cm.warp(101000301, 0);
-	cm.dispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (type < 3) {
+		cm.sendNext("Do you have some business you need to take care of here?");
+		cm.dispose();
+		return;
+		}
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+		reactor = 'action' + (cm.getPlayer().getSkillLevel(80001027) == 1 || cm.getPlayer().getSkillLevel(80001028) == 1 ? 1 : 0);
+		eval(reactor)(mode, type, selection);
+}
+
+function action0(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendYesNo("Would you like to board the ship for #bOrbis#k now? It'll take about 30 seconds to get there.");
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(200090010), cm.getMap(200090010).getPortal(0));
+		cm.getPlayer().startMapTimeLimitTask(30, cm.getMap(200000111));
+		cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendSimple("If you have an airplane, you can fly to stations all over the world. Would you rather take an airplane than wait for a ship? It'll cost you 5000 mesos. \r\n\r\n#b#L0#Use the airplane. #r(5000 mesos)#l\r\n#L1##bBoard a ship.#l");
+		break;
+	case 1:
+		if (selection == 0) {
+			cm.sendSimple("Which airplane would you like to use? #b" + (cm.getPlayer().getSkillLevel(80001027) == 1 ? "\r\n#L0#Wooden Airplane#l" : "") + "" + (cm.getPlayer().getSkillLevel(80001028) == 1 ? "\r\n#L1#Rad Airplane#l" : "") + "");
+			}
+		if (selection == 1) {
+			cm.sendYesNo("Would you like to board the ship for #bOrbis#k now? It'll take about 30 seconds to get there.");
+			}
+			select = selection;
+			break;
+	case 2:
+		if (select == 1) {
+			cm.getPlayer().changeMap(cm.getMap(200090010), cm.getMap(200090010).getPortal(0));
+			cm.getPlayer().startMapTimeLimitTask(30, cm.getMap(200000111));
+			cm.dispose();
+			return;
+			}
+		if (cm.getPlayer().getMeso() > 5000) {
+			cm.gainMeso(-5000);
+			cm.giveBuff(selection < 1 ? 80001027 : 80001028, 1);
+			cm.getMap(200110000).setTimeLimit(selection < 1 ? 20 : 10);
+			cm.getMap(200110000).setForcedReturnMap(200000111);
+			cm.getPlayer().changeMap(cm.getMap(200110000), cm.getMap(200110000).getPortal(0));
+			cm.dispose();
+			return;
+			}
+			cm.sendOk("You don't have enough money for the Station fee.");
+			cm.dispose();
+}
 }

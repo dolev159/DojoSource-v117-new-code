@@ -69,7 +69,7 @@ public class DatabaseConnection {
                     + "&allowPublicKeyRetrieval=true"
                     + "&zeroDateTimeBehavior=convertToNull");
 
-            config.setDriverClassName("com.mysql.jdbc.Driver");
+            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
             config.setUsername(user);
             config.setPassword(pass);
             config.setPoolName("DojoSource-DB-Pool");
@@ -77,7 +77,8 @@ public class DatabaseConnection {
             // =============================================
             // [Phase B] Pool Sizing & Response Tuning
             // =============================================
-            // maximumPoolSize: 30 is ideal for 100-500 players, preventing MySQL saturation.
+            // maximumPoolSize: 30 is ideal for 100-500 players, preventing MySQL
+            // saturation.
             config.setMaximumPoolSize(30);
             // minimumIdle: Maintains 10 ready-to-use connections for instant response.
             config.setMinimumIdle(10);
@@ -85,10 +86,11 @@ public class DatabaseConnection {
             // =============================================
             // [Phase B] Monitoring & Leak Prevention
             // =============================================
-            // leakDetectionThreshold: Logs a warning if a thread holds a connection for > 30s.
+            // leakDetectionThreshold: Logs a warning if a thread holds a connection for >
+            // 30s.
             // This is the #1 tool to find unclosed Statements/ResultSets.
             config.setLeakDetectionThreshold(30000);
-            
+
             // =============================================
             // Timeouts & Life Cycle
             // =============================================

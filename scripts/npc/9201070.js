@@ -1,43 +1,53 @@
-/* Nerbit
-	NLC Random Eye Change.
+/*
+	名字:	杰克
+	地圖:	新葉城 購物中心
+	描述:	600000001
 */
-var status = -1;
-var beauty = 0;
-var facetype;
+
+var status;
 
 function start() {
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendYesNo("If you use the regular coupon, your face may transform into a random new look...do you still want to do it using #b#t5152056##k?");
+		break;
+	case 1:
+		if (cm.getPlayer().getGender() < 1)
+			face = [20001, 20008, 20011, 20013, 20024, 20029, 20032];
+		else
+			face = [21000, 21007, 21011, 21012, 21017, 21020, 21022];
 
-    if (status == 0) {
-	cm.sendNext("Hi, I pretty much shouldn't be doing this, but with a #b#t5152033##k, I will do it anyways for you. But don't forget, it will be random!");
-    } else if (status == 1) {
-	cm.sendYesNo("If you use the regular coupon, your face may transform into a random new look...do you still want to do it using #b#t5152033##k?");
-    } else if (status == 2){
-	var face = cm.getPlayerStat("FACE");
+			face = face[Math.floor(Math.random() * face.length)] + parseInt(cm.getPlayer().getFace() / 100 % 10) * 100;
 
-	if (cm.getPlayerStat("GENDER") == 0) {
-	    facetype = [20000, 20001, 20002, 20003, 20004, 20005, 20006, 20007, 20008, 20012];
-	} else {
-	    facetype = [21001, 21002, 21003, 21004, 21005, 21006, 21008, 21012, 21014, 21016];
-	}
-	for (var i = 0; i < facetype.length; i++) {
-	    facetype[i] = facetype[i] + face % 1000 - (face % 100);
-	}
-	
-	if (cm.setRandomAvatar(5152033, facetype) == 1) {
-	    cm.sendOk("Enjoy your new and improved face!");
-	} else {
-	    cm.sendOk("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
-	}
-	cm.dispose();
-    }
+		if (cm.getPlayer().itemQuantity(5152056)) {
+			cm.gainItem(5152056, -1);
+			cm.getPlayer().setFace(face);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.FACE, face);
+			cm.sendNext("Ok, the surgery's over. See for it yourself, here's the mirror... what do you think? l think this looks like a masterpiece... hahahaha, please come again when you get bored free to that new look, ok?");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
+			cm.dispose();
+}
 }

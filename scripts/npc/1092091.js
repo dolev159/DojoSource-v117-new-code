@@ -1,12 +1,16 @@
-/**
-	Tangyoon - Nautilus Cook
-**/
+/*
+	名字:	乳牛
+	地圖:	鯨魚號牛舍
+	描述:	912000100
+*/
 
 function start() {
-    cm.removeAll(4031847);
-    cm.removeAll(4031848);
-    cm.removeAll(4031849);
-    cm.gainItem(4031850, 1);
-    cm.warp(120000100, 0);
-    cm.dispose();
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2905)).getCustomData() == "11") {
+		cm.sendNext("After you gave food to the Baby Cows, Mama Cow gave you Milk.");
+		cm.gainItem(4033048, cm.getPlayer().itemQuantity(4033048) ? 0 : 1);
+		cm.dispose();
+		return;
+		}
+		cm.sendOk("Mama Cow is not hungry. Give Hay to the Baby Cow.");
+		cm.dispose();
 }

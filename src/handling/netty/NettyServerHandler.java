@@ -17,12 +17,15 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        // Start IP checking (simplified for now, mimicking MapleServerHandler.sessionOpened)
+        // Start IP checking (simplified for now, mimicking
+        // MapleServerHandler.sessionOpened)
         String address = ctx.channel().remoteAddress().toString().split(":")[0];
         // In a real implementation, you'd integrate the tracker/BlockedIP logic here.
 
-        final byte ivRecv[] = new byte[]{(byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255)};
-        final byte ivSend[] = new byte[]{(byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255)};
+        final byte ivRecv[] = new byte[] { (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255),
+                (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255) };
+        final byte ivSend[] = new byte[] { (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255),
+                (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255) };
 
         final MapleClient client = new MapleClient(
                 new MapleAESOFB(ivSend, (short) (0xFFFF - ServerConstants.MAPLE_VERSION)),
@@ -36,7 +39,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         // Send Hello packet
         byte[] hello = LoginPacket.getHello(ServerConstants.MAPLE_VERSION, ivSend, ivRecv);
         ctx.writeAndFlush(hello);
-        
+
         System.out.println("[Netty] Session opened: " + address);
     }
 
@@ -44,8 +47,18 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
         if (client != null) {
-            client.disconnect(true, true);
-            ctx.channel().attr(MapleClient.CLIENT_KEY).set(null);
+            byte state = MapleClient.CHANGE_CHANNEL;
+            boolean loggedIn = client.isLoggedIn();
+            if (loggedIn) {
+                state = client.getLoginState();
+            }
+            try {
+                if (state != MapleClient.CHANGE_CHANNEL && state != MapleClient.LOGIN_SERVER_TRANSITION) {
+                    client.disconnect(true, false);
+                }
+            } finally {
+                ctx.channel().attr(MapleClient.CLIENT_KEY).set(null);
+            }
         }
         System.out.println("[Netty] Session closed: " + ctx.channel().remoteAddress());
         super.channelInactive(ctx);
@@ -55,11 +68,11 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         byte[] packet = (byte[]) msg;
         MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
-        
+
         if (client != null) {
             // Processing packet using the existing logic in MapleServerHandler
             // We might need to refactor handlePacket slightly or just call it
-            MapleServerHandler.handlePacket(packet, client); 
+            MapleServerHandler.handlePacket(packet, client);
         }
     }
 
@@ -75,8 +88,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        // Log error
-        // cause.printStackTrace();
+        System.err.println("[Netty] SILENT EXCEPTION CAUGHT:");
+        cause.printStackTrace();
         ctx.close();
     }
 }

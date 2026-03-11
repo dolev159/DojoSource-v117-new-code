@@ -52,55 +52,57 @@ public class CWvsContext {
         for (final Entry<MapleStat, Integer> statupdate : mystats.entrySet()) {
             switch (statupdate.getKey()) {
                 case SKIN:
-                case LEVEL:
                 case FATIGUE:
                 case BATTLE_RANK:
-                case ICE_GAGE: // not sure..
- mplew.write(((Integer) statupdate.getValue()).byteValue());
-                     break;
+                case ICE_GAGE:
+                    mplew.write(((Integer) statupdate.getValue()).byteValue());
+                    break;
                 case JOB:
                 case STR:
                 case DEX:
                 case INT:
                 case LUK:
+                case LEVEL:
+                    mplew.writeShort(((Integer) statupdate.getValue()).shortValue());
+                    break;
                 case AVAILABLEAP:
-                     mplew.writeShort(((Integer) statupdate.getValue()).shortValue());
-                     break;
+                    mplew.writeShort(chr.getRemainingAp());
+                    break;
                 case AVAILABLESP:
-                     if (GameConstants.isSeparatedSp(chr.getJob())) {
-                         mplew.write(chr.getRemainingSpSize());
-                         for (int i = 0; i < chr.getRemainingSps().length; i++)  {
+                    if (GameConstants.isSeparatedSp(chr.getJob())) {
+                        mplew.write(chr.getRemainingSpSize());
+                        for (int i = 0; i < chr.getRemainingSps().length; i++) {
                             if (chr.getRemainingSp(i) > 0) {
-                                 mplew.write(i + 1);
-                                 mplew.write(chr.getRemainingSp(i));
-                                                            }
+                                mplew.write(i + 1);
+                                mplew.write(chr.getRemainingSp(i));
+                            }
                         }
                     } else {
-                         mplew.writeShort(chr.getRemainingSp());
-                                            }
-                     break;
+                        mplew.writeShort(chr.getRemainingSp());
+                    }
+                    break;
                 case TRAIT_LIMIT:
-                     mplew.writeInt(((Integer) statupdate.getValue()).intValue());
-                     mplew.writeInt(((Integer) statupdate.getValue()).intValue());
-                     mplew.writeInt(((Integer) statupdate.getValue()).intValue());
-                     break;
+                    mplew.writeInt(((Integer) statupdate.getValue()).intValue());
+                    mplew.writeInt(((Integer) statupdate.getValue()).intValue());
+                    mplew.writeInt(((Integer) statupdate.getValue()).intValue());
+                    break;
                 case PET:
-                     mplew.writeLong(((Integer) statupdate.getValue()).intValue());
-                     mplew.writeLong(((Integer) statupdate.getValue()).intValue());
-                     mplew.writeLong(((Integer) statupdate.getValue()).intValue());
-                     break;
+                    mplew.writeLong(((Integer) statupdate.getValue()).intValue());
+                    mplew.writeLong(((Integer) statupdate.getValue()).intValue());
+                    mplew.writeLong(((Integer) statupdate.getValue()).intValue());
+                    break;
                 default:
-                     mplew.writeInt(((Integer) statupdate.getValue()).intValue());
+                    mplew.writeInt(((Integer) statupdate.getValue()).intValue());
             }
         }
         if ((updateMask == 0L) && (!itemReaction)) {
-             mplew.write(1);
+            mplew.write(1);
         }
-         mplew.write(0);
-         mplew.write(0);
-        
-         return mplew.getPacket();
-            }
+        mplew.write(0);
+        mplew.write(0);
+
+        return mplew.getPacket();
+    }
 
     public static byte[] temporaryStats_Aran() {
          Map stats = new EnumMap(MapleStat.Temp.class);
@@ -3299,7 +3301,7 @@ public static byte[] saveInformation(final boolean fail) {
             return mplew.getPacket();
         }
 
-        public static byte[] giveArcane(Map<Integer, Integer> statups, int duration) {
+        public static byte[] giveArcane(tools.NativeIntMap statups, int duration) {
             MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
 
             mplew.writeShort(SendPacketOpcode.GIVE_BUFF.getValue());
@@ -3308,9 +3310,9 @@ public static byte[] saveInformation(final boolean fail) {
             mplew.writeShort(0);
             mplew.write(0);
             mplew.writeInt(statups.size());
-            for (Entry<Integer, Integer> stat : statups.entrySet()) {
-                mplew.writeInt(stat.getKey());
-                mplew.writeLong(stat.getValue());
+            for (tools.Pair<Integer, Integer> stat : statups.getEntries()) {
+                mplew.writeInt(stat.left);
+                mplew.writeLong(stat.right);
                 mplew.writeInt(duration);
             }
             mplew.writeShort(0);

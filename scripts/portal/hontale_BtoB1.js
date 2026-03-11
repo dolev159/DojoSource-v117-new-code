@@ -1,26 +1,18 @@
-/* 
- * This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-                       Matthias Butz <matze@odinms.de>
-                       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License version 3
-    as published by the Free Software Foundation. You may not use, modify
-    or distribute this program under any other version of the
-    GNU Affero General Public License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+/*
+	名字:	生命之穴
+	地圖:	迷宮室
+	描述:	240050100
+*/
 
 function enter(pi) {
-	pi.playPortalSE();
-	pi.warp(240050101, "st00");
-	return true;
+	if (pi.getMap(240050100).getCharacters().size() == 1) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "As the last player on this map, you are compelled to wait for the incoming keys."));
+		return false;
+		}
+	if (pi.getPlayer().itemQuantity(4001087)) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You cannot pass to the next map holding the 1st Crystal Key in your inventory."));
+		return false;
+		}
+		pi.getPlayer().changeMap(pi.getMap(240050101), pi.getMap(240050101).getPortal(0)); //第一個迷宮室
+		return true;
 }

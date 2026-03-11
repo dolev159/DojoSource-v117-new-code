@@ -262,19 +262,17 @@ public class MTSCSPacket {
         mplew.write(Operation_Code + 3); // 5 = Failed + transfer
         CashShop mci = c.getPlayer().getCashInventory();
         mplew.writeShort(mci.getItemsSize());
-        if (mci.getItemsSize() > 0) {
-            int size = 0;
-            for (Item itemz : mci.getInventory()) {
-                addCashItemInfo(mplew, itemz, c.getAccID(), 0);
-                if (GameConstants.isPet(itemz.getItemId()) || GameConstants.getInventoryType(itemz.getItemId()) == MapleInventoryType.EQUIP) {
-                    size++;
-                }
+        int size = 0;
+        for (Item itemz : mci.getInventory()) {
+            addCashItemInfo(mplew, itemz, c.getAccID(), 0);
+            if (GameConstants.isPet(itemz.getItemId()) || GameConstants.getInventoryType(itemz.getItemId()) == MapleInventoryType.EQUIP) {
+                size++;
             }
-            mplew.writeInt(size);
-            for (Item itemz : mci.getInventory()) {
-                if (GameConstants.isPet(itemz.getItemId()) || GameConstants.getInventoryType(itemz.getItemId()) == MapleInventoryType.EQUIP) {
-                    PacketHelper.addItemInfo(mplew, itemz);
-                }
+        }
+        mplew.writeInt(size);
+        for (Item itemz : mci.getInventory()) {
+            if (GameConstants.isPet(itemz.getItemId()) || GameConstants.getInventoryType(itemz.getItemId()) == MapleInventoryType.EQUIP) {
+                PacketHelper.addItemInfo(mplew, itemz);
             }
         }
         mplew.writeShort(c.getPlayer().getStorage().getSlots());
@@ -366,12 +364,10 @@ public class MTSCSPacket {
                 size++;
             }
         }
-        if (ccc.size() > 0) {
-            mplew.writeInt(size);
-            for (Item itemz : ccc.values()) {
-                if (GameConstants.isPet(itemz.getItemId()) || GameConstants.getInventoryType(itemz.getItemId()) == MapleInventoryType.EQUIP) {
-                    PacketHelper.addItemInfo(mplew, itemz);
-                }
+        mplew.writeInt(size);
+        for (Item itemz : ccc.values()) {
+            if (GameConstants.isPet(itemz.getItemId()) || GameConstants.getInventoryType(itemz.getItemId()) == MapleInventoryType.EQUIP) {
+                PacketHelper.addItemInfo(mplew, itemz);
             }
         }
         mplew.writeShort(0);

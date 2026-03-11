@@ -1,10 +1,10 @@
-/* 	Mr. Hwang - Singapore
-	Storage
+/*
+	名字:	倉庫黃老闆
+	地圖:	中心商務區
+	描述:	540000000
 */
+
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 9270042);
+	cm.dispose();
 }

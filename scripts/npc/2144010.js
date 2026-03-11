@@ -1,16 +1,17 @@
-var status = -1;
+/*
+	名字:	阿卡伊農
+	地圖:	阿卡伊農的祭壇
+	描述:	272020200
+*/
 
 function start() {
-    cm.askAcceptDecline("You face me directly, after ruining all I've worked for.\r\n\r\n#rI suppose I should thank you. If you hadn't gone to the trouble of destroying my life's work, I would feel a slight pang of guilt at making you suffer before I demolish you.#k");
+	cm.sendYesNo("I suppose I should thank you for barging in here. If you hadn't gone to the trouble of destroying my life's work, \r\n\r\n#rI would feel a slight pang of guilt at making you suffer.");
 }
 
 function action(mode, type, selection) {
-    if (mode == 1 && cm.getMap().getAllMonstersThreadsafe().size() == 0) {
-        cm.removeNpc(cm.getMapId(), 2144010);
-        cm.spawnMob(8860010, 0, -181);
-        if (!cm.getPlayer().isGM()) {
-            cm.getMap().startSpeedRun();
-        }
-    }
-    cm.dispose();
+	if (mode > 0) {
+		cm.removeNpc(cm.getPlayer().getMap().getId(), cm.getNpc());
+		cm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(8860000), new java.awt.Point(280, -181));
+		}
+		cm.dispose();
 }

@@ -1,20 +1,16 @@
+/*
+	名字:	超級美女
+	地圖:	埃德爾斯坦
+	描述:	310000000
+*/
+
 function start() {
-    cm.sendSimple("Go to school already!\r\n#L0#Go to school#l\r\n#L1#View my friendship status#l");
+	cm.sendNext("What's the hold up!? Go to school already!");
 }
 
 function action(mode, type, selection) {
-    if (mode != 1) {
-        cm.dispose();
-        return;
-    }
-    switch (selection) {
-        case 0:
-            //cm.warp();
-            cm.dispose();
-            break;
-        case 1:
-            cm.sendRedLeaf(10, false);
-            cm.dispose();
-            break;
-    }
+	if (mode > 0)
+		cm.getPlayer().saveLocation(Packages.server.maps.SavedLocationType.fromString("MULUNG_TC"));
+		cm.getPlayer().changeMap(cm.getMap(744000000), cm.getMap(744000000).getPortal(2));
+		cm.dispose();
 }

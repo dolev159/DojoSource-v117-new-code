@@ -1,18 +1,10 @@
-var status = -1;
+/*
+	名字:	財務大臣烏特宛
+	地圖:	阿斯旺避難所
+	描述:	262000000
+*/
 
-function action(mode, type, selection) {
-    if (mode == 1) {
-        status++;
-    } else {
-        if (status == 0) {
-            cm.dispose();
-        }
-        status--;
-    }
-    if (status == 0) {
-        //cm.sendYesNo("Would you like to go to Hilla's Tower Entrance?");
-        //} else if (status == 1) {
-        //cm.warp(262030000);
-        cm.dispose();
-    }
+function start() {
+	cm.sendOk("If only that cursed Hilla had never come here...");
+	cm.dispose();
 }

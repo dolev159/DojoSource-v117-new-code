@@ -1,41 +1,76 @@
-/* Konpei
-	Showa
+/*
+	名字:	鈴木
+	地圖:	基地內部(最終之地)
+	描述:	801040101
 */
 
-var flash;
-var status = 0;
+var prize = true;
+
+var status;
 
 function start() {
-    flash = cm.haveItem(4000141);
-    action(1,0,0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	cm.sendOk("I really admire your toughness! Well, if you decide to return to Showa Town, let me know~!");
-	cm.dispose();
-	return;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (type == 2) {
+		cm.sendOk("I'm in awe of your resilience. Well, talk to me again if you want to return to Showa Town.");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+		reactor = 'action' + (cm.getPlayer().itemQuantity(4000141) || !prize ? 0 : 1);
+		eval(reactor)(mode, type, selection);
+}
 
-    if (status == 1) {
-	if (flash) {
-	    cm.sendNext("Oh wow, you did it! You know, that man sure stood firm. Hopefully this'll lead to some much-needed peace here, but I keep fearing for the worst. In any case, I'm just glad he's gone now.");
-	} else {
-	    cm.sendYesNo("Do you want to return to Showa Town?");
-	}
-    } else if (status == 2) {
-	if (flash) {
-	    cm.sendNext("That's right! The flashlight that the boss drops will be taken care of by me for future purposes. Now that we know who that really is, I feel like the peaceful days may be on its way. I have to admit, finding out the monster is indeed him... that caught me off guard.");
-	} else {
-	    cm.warp(801000000, 0);
-	    cm.dispose();
-	}
-    } else if (status == 3) {
-	cm.gainItem(4000141, -1);
-	cm.gainItem(2000004, 200);
-	cm.warp(801000000, 0);
-	cm.dispose();
-    }
+function action0(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("Wow, you really did it. Thinking about his singular obsession with controlling Showa Town, I still get the creeps. I like to think this means things in town will finally be quiet, but I've got a knot in my stomach that says otherwise. Anyways, for now let's celebrate the fact that the boss is gone.");
+		break;
+	case 1:
+		if (prize) {
+		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.USE).getNumFreeSlot() < 1) {
+			cm.sendOk("Make sure you have a free slot in your Use tab.");
+			cm.dispose();
+			return;
+			}
+			prize = false;
+			cm.gainItem(4000141, -1);
+			cm.gainItem(2000004, 50);
+			}
+			cm.sendNextPrev("Well, cheers.");
+			break;
+	case 2:
+		cm.sendYesNo("All right, do you want to go back to Showa Town?");
+		break;
+	case 3:
+		cm.getPlayer().changeMap(cm.getMap(801000000), cm.getMap(801000000).getPortal(0));
+		cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("Wow, you really did it. Thinking about his singular obsession with controlling Showa Town, I still get the creeps. I like to think this means things in town will finally be quiet, but I've got a knot in my stomach that says otherwise. Anyways, for now let's celebrate the fact that the boss is gone.");
+		break;
+	case 1:
+		cm.sendYesNo("All right, do you want to go back to Showa Town?");
+		break;
+	case 2:
+		cm.getPlayer().changeMap(cm.getMap(801000000), cm.getMap(801000000).getPortal(0));
+		cm.dispose();
+}
 }

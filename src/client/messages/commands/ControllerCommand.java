@@ -1,8 +1,8 @@
 package client.messages.commands;
 
 import client.MapleClient;
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import constants.ServerConstants.PlayerGMRank;
 import database.DatabaseConnection;
 import handling.world.World;

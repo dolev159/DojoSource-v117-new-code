@@ -1,23 +1,28 @@
+/*
+	名字:	毒霧森林
+	地圖:	毒霧森林
+	描述:	930000000
+*/
+
 function enter(pi) {
-    var mapId = pi.getMapId();
-    switch(mapId) {
-        case 930000000:
-            pi.warp(930000100, 0);
-            break;
-        case 930000100:
-            if (Packages.server.MaplePQManager.checkEllinPQStage1(pi.getPlayer())) {
-                pi.warp(930000200, 0);
-            } else {
-                pi.playerMessage(5, "You must eliminate all the monsters first.");
-            }
-            break;
-        case 930000200:
-            if (Packages.server.MaplePQManager.checkEllinPQStage2(pi.getPlayer())) {
-                pi.warp(930000300, 0);
-                pi.getPlayer().finishAchievement(154);
-            } else {
-                pi.playerMessage(5, "The spine blocks the way. Purify it first!");
-            }
-            break;
-    }
+	if (pi.getPlayer().getMap().getId() == 930000000) {
+		pi.getPlayer().changeMap(pi.getMap(930000100), pi.getMap(930000100).getPortal(0)); //初入森林
+		return true;
+		}
+	if (pi.getPlayer().getMap().getId() == 930000100) {
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(930000200), pi.getMap(930000200).getPortal(0)); //變質的森林
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Eliminate all the monsters."));
+		return false;
+		}
+	if (pi.getPlayer().getMap().getId() == 930000200) {
+	if (pi.getPlayer().getMap().getReactorByName("spine").getState() < 4) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The spine blocks the way."));
+		return false;
+		}
+		pi.getPlayer().changeMap(pi.getMap(930000300), pi.getMap(930000300).getPortal(1)); //濃霧森林
+		}
+		return true;
 }

@@ -36,23 +36,18 @@ public class LoginInformationProvider {
 
     public enum JobType {
 
-        UltimateAdventurer(-1, "Ultimate", 0, 109090202),// 100000000
-        Resistance(0, "Resistance", 3000, 109090202),// 931000000
-        Adventurer(1, "", 0, 109090202),
-        Cygnus(2, "Premium", 1000, 109090202),// 130030000
-        Aran(3, "Orient", 2000, 109090202),// 914000000
-        Evan(4, "Evan", 2001, 109090202),// 900090000
-        Mercedes(5, "", 2002, 109090202),// 910150000
-        Demon(6, "", 3001, 109090202),// 931050310
-        Phantom(7, "", 2003, 109090202),// 915000000
-        DualBlade(8, "", 0, 109090202),// 103050900
-        Mihile(9, "", 5000, 109090202),// 913070000
-        //Luminous(10, "", 2004, -1),
-        //Kaiser(11, "", 6000, -1),
-        //AngelicBuster(12, "", 6001, -1),
-        //Demon_Avenger(13, "", 3001, -1),
-        Xenon(14, "", 3002, -1),
-        Jett(15, "", 0, 109090202);// 10000
+        UltimateAdventurer(-1, "Ultimate", 0, 130030000), // Ereve for UA
+        Resistance(0, "Resistance", 3000, 931000000), // Edelstein Tutorial
+        Adventurer(1, "", 0, 0), // Mushroom Town
+        Cygnus(2, "Premium", 1000, 130030000), // Ereve
+        Aran(3, "Orient", 2000, 914000000), // Rien Tutorial
+        Evan(4, "Evan", 2001, 900090000), // Evan's Dream
+        Mercedes(5, "", 2002, 910150000), // Elluel
+        Demon(6, "", 3001, 931050310), // Demon Tutorial
+        Phantom(7, "", 2003, 915000000), // Crystal Garden
+        DualBlade(8, "", 0, 103050900), // Secret Garden
+        Mihile(9, "", 5000, 913070000), // Mihile Tutorial
+        Jett(15, "", 0, 10000); // Spaceship
         public int type, id, map;
         public String job;
 

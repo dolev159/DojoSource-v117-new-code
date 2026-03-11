@@ -1,41 +1,54 @@
-/* 	Kelvin
-	SingaPore VIP Face changer
+/*
+	名字:	凱爾文
+	地圖:	中心商務區
+	描述:	540000000
 */
-var status = -1;
-var beauty = 0;
-var mface = Array(20109, 20110, 20106, 20108, 20112, 20013);
-var fface = Array(21021, 21009, 21010, 21006, 21008, 21012);
-var facenew = Array();
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	status--;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		if (cm.getPlayer().getGender() < 1)
+			face = [20020, 20013, 20021, 20026, 20005, 20012];
+		else
+			face = [21021, 21011, 21009, 21025, 21006, 21012];
 
-    if (status == 0) {
-	cm.sendSimple("Let's see...I can totally transform your face into something new. Don't you want to try it? For #b#t5152038##k, you can get the face of your liking. Take your time in choosing the face of your preference...\r\n\#L2#Let me get my dream face!#l");
-    } else if (selection == 2) {
-	facenew = Array();
-	if (cm.getChar().getGender() == 0) {
-	    for(var i = 0; i < mface.length; i++) {
-		facenew.push(mface[i] + cm.getChar().getFace() % 1000 - (cm.getChar().getFace() % 100));
-	    }
-	}
-	if (cm.getChar().getGender() == 1) {
-	    for(var i = 0; i < fface.length; i++) {
-		facenew.push(fface[i] + cm.getChar().getFace() % 1000 - (cm.getChar().getFace() % 100));
-	    }
-	}
-	cm.sendStyle("Let's see... I can totally transform your face into something new. Don't you want to try it? For #b#t5152038##k, you can get the face of your liking. Take your time in choosing the face of your preference...", facenew);
+			for (var i = 0; i < face.length; i++)
+			face[i] = face[i] + parseInt(cm.getPlayer().getFace() / 100 % 10) * 100;
 
-    } else if (status == 2){
-	    if (cm.setAvatar(5152038, facenew[selection]) == 1){
-	    cm.sendOk("Enjoy your new and improved face!");
-	} else {
-	    cm.sendOk("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
-	}
-	cm.safeDispose();
-    }
+			cm.sendStyle("Let's see...for #b#t5152057##k, you can get a new face. That's right. I can completely transform your face! Wanna give it a shot? Please consider your choice carefully.", face);
+			break;
+	case 1:
+		if (cm.getPlayer().itemQuantity(5152057)) {
+			cm.gainItem(5152057, -1);
+			cm.getPlayer().setFace(face[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.FACE, face[selection]);
+			cm.sendNext("Alright, the procedure's done. Check it out, here's the mirror for you. What do you think? Even l admit this looks like a masterpiece ... hahah, well, give me a call once you get sick of that new look, alright?");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
+			cm.dispose();
+}
 }

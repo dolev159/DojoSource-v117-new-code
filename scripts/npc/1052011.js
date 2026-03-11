@@ -1,33 +1,15 @@
-/**
--- Odin JavaScript --------------------------------------------------------------------------------
-	Exit - All Line 3 Construction Site
--- By ---------------------------------------------------------------------------------------------
-	Xterminator
--- Version Info -----------------------------------------------------------------------------------
-	1.0 - First Version by Xterminator
----------------------------------------------------------------------------------------------------
-**/
-
-var status = 0;
+/*
+	名字:	出口
+	地圖:	第1區域
+	描述:	910360000
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	cm.sendYesNo("This device is connected to outside. Are you going to give up and leave this place? You'll have to start from scratch the next time you come in...");
 }
 
 function action(mode, type, selection) {
-    if (status >= 0 && mode == 0) {
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-    if (status == 0) {
-	cm.sendYesNo("This device is connected to the outside. Are you going to give up and leave this place? You'll have to start from\r\nscratch the next time you come in...");
-    } else if (status == 1) {
-	cm.warp(103000000, 0);
-	cm.dispose();
-    }
+	if (mode > 0)
+		cm.getPlayer().changeMap(cm.getMap(103020000), cm.getMap(103020000).getPortal(2));
+		cm.dispose();
 }

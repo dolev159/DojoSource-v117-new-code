@@ -432,15 +432,18 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
     }
 
     public static void handlePacket(final byte[] message, final MapleClient c) {
+        // [Anti-Flood] 1. Immediately drop the packet and disconnect the violator natively at the pipeline level
+        if (c.checkPacketSpam()) {
+            System.err.println("[Anti-DC] Packet Injection/Flooding detected from " + (c.getAccountName() != null ? c.getAccountName() : "Unknown Account"));
+            c.getSession().close();
+            return;
+        }
+
         final LittleEndianAccessor slea = new LittleEndianAccessor(new ByteArrayByteStream(message));
         if (slea.available() < 2) {
             return;
         }
         final short header_num = slea.readShort();
-
-        // final StringBuilder sb = new StringBuilder("Received data :\n");
-        // sb.append(HexTool.toString((byte[]) message)).append("\n").append(HexTool.toStringFromAscii((byte[]) message));
-        //System.out.println(sb.toString());
 
         for (final RecvPacketOpcode recv : RecvPacketOpcode.values()) {
             if (recv.getValue() == header_num) {
@@ -451,9 +454,13 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                 }
                 try {
                     handlePacket(recv, slea, c);
-                } catch (Exception e) {
-                    FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
+                } catch (Throwable t) { // [Anti-DC] 2. Upgraded to Throwable to trap unhandled critical JVM errors
+                    FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, t);
                     FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Packet: " + header_num + "\n" + slea.toString(true));
+
+                    // [Anti-DC] 3. Disconnect Malicious Clients
+                    System.err.println("[Anti-DC] Malformed packet (DC Hack) caused exception. Disconnecting " + (c.getAccountName() != null ? c.getAccountName() : "Unknown Account"));
+                    c.getSession().close();
                 }
                 return;
             }
@@ -571,7 +578,10 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                 short data_length = slea.readShort();
                 slea.skip(4); // ?B3 86 01 00 00 00 FF 00 00 00 00 00 9E 05 C8 FF 02 00 CD 05 C9 FF 7D 00 00 00 3F 00 00 00 00 00 02 77 01 00 25 06 C9 FF 7D 00 00 00 40 00 00 00 00 00 02 C1 02
                 short opcodeheader = slea.readShort();
-                FileoutputUtil.log("ErrorCodes.txt", "Error Type: " + errortype + "\r\n" + "Data Length: " + data_length + "\r\n" + "Error for player ; " + c.getPlayer().getName() + " - account ; " + c.getAccountName() + "\r\n" + SendPacketOpcode.getOpcodeName(opcodeheader) + " Opcode: " + opcodeheader + "\r\n" + HexTool.toString(slea.read((int) slea.available())) + "\r\n MapID: " + c.getPlayer().getMapId() + "\r\n\r\n");
+                String playerName = c.getPlayer() != null ? c.getPlayer().getName() : "Not Logged In";
+                String accountName = c.getAccountName() != null ? c.getAccountName() : "Unknown Account";
+                int mapId = c.getPlayer() != null ? c.getPlayer().getMapId() : -1;
+                FileoutputUtil.log("ErrorCodes.txt", "Error Type: " + errortype + "\r\n" + "Data Length: " + data_length + "\r\n" + "Error for player ; " + playerName + " - account ; " + accountName + "\r\n" + SendPacketOpcode.getOpcodeName(opcodeheader) + " Opcode: " + opcodeheader + "\r\n" + HexTool.toString(slea.read((int) slea.available())) + "\r\n MapID: " + mapId + "\r\n\r\n");
                 break;
             case ENABLE_SPECIAL_CREATION:
                 c.getSession().write(LoginPacket.enableSpecialCreation(c.getAccID(), true));

@@ -1,20 +1,17 @@
-var status = -1;
+/*
+	名字:	楓之谷管理者
+	地圖:	自由市场快速移動
+	描述:	自由市场村快速移動
+*/
 
 function start() {
-    action(1,0,0);
+	cm.sendYesNoS("Would you like to move to the #bFree Market#k, where you can trade items with other players?", 4);
 }
 
 function action(mode, type, selection) {
-    if (mode != 1) {
-        cm.dispose();
-        return;
-    }
-    status++;
-    if (status == 0)
-        cm.sendYesNo("Would you like to move to the #bFree Market#k, where you can trade items with other players?")
-    else if (status == 1) {
-        cm.warp(910000000);
-        cm.saveReturnLocation("FREE_MARKET");
-        cm.dispose();
-    }
+	if (mode > 0) {
+		cm.getPlayer().saveLocation(Packages.server.maps.SavedLocationType.fromString("FREE_MARKET"));
+		cm.getPlayer().changeMap(cm.getMap(910000000), cm.getMap(910000000).getPortal(6));
+		}
+		cm.dispose();
 }

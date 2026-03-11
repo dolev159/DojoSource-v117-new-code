@@ -1,21 +1,16 @@
+/*
+	名字:	北部森林
+	地圖:	綠樹的藤條
+	描述:	101030100
+*/
+
 function enter(pi) {
-try {
-    if (pi.haveItem(4031346)) {
-	if (pi.getMapId() == 240010100) {
-	    pi.playPortalSE();
-	    pi.warp(101030100, "minar00");
-	} else {
-	    pi.playPortalSE();
-	    pi.warp(240010100, "elli00");
-	}
-	pi.gainItem(4031346, -1);
-	pi.playerMessage("The Magical Seed is spent and you are transferred to somewhere.");
-	return true;
-    } else {
-	pi.playerMessage("Magic Seed is needed to go through the portal.");
-	return false;
-    }
-} catch (e) {
-    pi.playerMessage("Error: " + e);
-}
+	if (pi.getPlayer().itemQuantity(4031346)) {
+		pi.getPlayer().changeMap(pi.getMap(pi.getPlayer().getMap().getId() == 240010100 ? 101030100 : 240010100), pi.getMap(pi.getPlayer().getMap().getId() == 240010100 ? 101030100 : 240010100).getPortal(pi.getPlayer().getMap().getId() == 240010100 ? "minar00" : "elli00"));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "A Magic Seed has been used, and you're now being transported somewhere else."));
+		pi.gainItem(4031346, -1);
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Unable to warp due to the lack of a Magic Seed."));
+		return false;
 }

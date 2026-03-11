@@ -1,39 +1,10 @@
-var status = -1;
+/*
+	名字:	海藍氣球
+	地圖:	遺棄之塔&amp;lt;第3階段&gt;
+	描述:	922010600
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-    if (mode == 1) {
-        status++;
-    } else {
-        cm.dispose();
-        return;
-    }
-
-    if (cm.getMapId() == 922010600) {
-        if (status == 0) {
-            cm.sendNext("I am the officer in charge of the 6th stage. Find your way through the teleport boxes and talk to me to clear the stage.");
-        } else if (status == 1) {
-            if (cm.getParty() == null || !cm.isLeader()) {
-                cm.sendOk("Only your party leader can talk to me.");
-                cm.dispose();
-            } else {
-                if (Packages.server.MaplePQManager.checkLudiPQStage6(cm.getPlayer())) {
-                    Packages.server.MaplePQManager.stageClear(cm.getPlayer(), 6);
-                    cm.gainPartyExp(8000);
-                    cm.sendOk("You've cleared the stage! The portal is now open.");
-                    cm.dispose();
-                } else {
-                    cm.sendOk("You haven't completed the teleport box puzzle yet.");
-                    cm.dispose();
-                }
-            }
-        }
-    } else {
-        cm.sendOk("I am the officer in charge of the 6th stage.");
-        cm.dispose();
-    }
+	cm.sendNext("In the third stage, you'll find boxes with numbers written on them. When you step on the correct box and press the Up Arrow button, you'll be moved to the next box. Do this to proceed.");
+	cm.dispose();
 }

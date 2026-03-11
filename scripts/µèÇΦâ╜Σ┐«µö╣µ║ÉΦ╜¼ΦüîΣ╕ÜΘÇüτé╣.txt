@@ -1,0 +1,32 @@
+    public void changeJob(int newJob) {
+        try {
+            cancelEffectFromBuffStat(MapleBuffStat.SHADOWPARTNER);
+            this.job = (short) newJob;
+            updateSingleStat(MapleStat.JOB, newJob);
+            if (!GameConstants.isBeginnerJob(newJob)) {
+                if (GameConstants.isEvan(newJob) || GameConstants.isResist(newJob) || GameConstants.isMercedes(newJob)) {
+                    int changeSp = (newJob == 2200 || newJob == 2210 || newJob == 2211 || newJob == 2213 ? 3 : 5);
+                    if (GameConstants.isResist(job) && newJob != 3100 && newJob != 3200 && newJob != 3300 && newJob != 3500) {
+                        changeSp = 3;
+                    }
+                    remainingSp[GameConstants.getSkillBook(newJob)] += changeSp;
+                    client.getSession().write(InfoPacket.getSPMsg((byte) changeSp, (short) newJob));
+                } else {
+                    remainingSp[GameConstants.getSkillBook(newJob)]++;
+                    if (newJob % 10 >= 2) {
+                        remainingSp[GameConstants.getSkillBook(newJob)] += 2;
+                    }
+                }
+                if (newJob % 10 >= 1 && level >= 70) { //3rd job or higher. lucky for evans who get 80, 100, 120, 160 ap...
+                    remainingAp += 5;
+                    updateSingleStat(MapleStat.AVAILABLEAP, remainingAp);
+                    //MAKER STILL EXISTS
+                }
+                resetStatsByJob(true);
+                if (!GameConstants.isEvan(newJob)) {
+                    if (getLevel() > (newJob == 200 ? 8 : 10) && newJob % 100 == 0 && (newJob % 1000) / 100 > 0) { //first job
+                        remainingSp[GameConstants.getSkillBook(newJob)] += 3 * (getLevel() - (newJob == 200 ? 8 : 10));
+                    }
+                }
+                updateSingleStat(MapleStat.AVAILABLESP, 0); // we don't care the value here
+            }

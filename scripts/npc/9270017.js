@@ -1,15 +1,20 @@
-// Xinga - Pilot
+/*
+    NPC: 9270017
+    Description: Checks for item 4031731 and warps player to map 5400100000
+*/
+
 function start() {
-    if (cm.getMapId() == 540010101) {
-	cm.dispose();
-    } else {
-	cm.sendYesNo("The plane will be taking off soon, Will you leave now? You will have buy the plane ticket again to come in here.");
-    }
+    cm.sendYesNo("Would you like to proceed?");
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	cm.warp(103000000, 0);
+    if (mode > 0) {
+        if (cm.getPlayer().itemQuantity(4031731)) {
+            cm.gainItem(4031731, -1);
+            cm.getPlayer().changeMap(cm.getMap(5400100000), cm.getMap(5400100000).getPortal(0));
+        } else {
+            cm.sendOk("You don't have the required item.");
+        }
     }
     cm.dispose();
-}
+} 

@@ -1,10 +1,20 @@
-/* Author: aaroncsn(MapleSea Like)(Incomplete)
-	NPC Name: 		Kanderun
-	Map(s): 		Elin Forest:Entrance to Rocky Mountain(300010400)
-	Description: 		Unknown
+/*
+	名字:	洞穴入口
+	地圖:	岩石山洞穴
+	描述:	300010410
 */
 
-function start(){
-	cm.sendOk("Hmmm! For you to make your way here, far away from the Camp, you must be one strong individual. Let's explore new areas and find a place to establish our own town!!");
-	cm.dispose();
-	}
+function start() {
+	cm.sendYesNoS("What, you're quitting now?", 4);
+}
+
+function action(mode, type, selection) {
+	switch (mode) {
+	case 0:
+		cm.sendOkS("Good thinking. Get rid of Chao!", 4);
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(300010400), cm.getMap(300010400).getPortal(2));
+		}
+		cm.dispose();
+}

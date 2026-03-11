@@ -1,12 +1,10 @@
-/* Author: aaroncsn (MapleSea Like)
-	NPC Name: 		Mike
-	Map(s): 		Warning Street: Perion Dungeon Entrance(106000300)
-	Description: 		Unknown
+/*
+	名字:	空牆
+	地圖:	廢棄的工地
+	描述:	103010100
 */
 
-function start(){
-	if (cm.getQuestStatus(2358) == 1) { //too lazy
-		cm.forceCompleteQuest(2358);
-	}
+function start() {
+	cm.sendOk("This wall looks as if something can be attached to it.");
 	cm.dispose();
 }

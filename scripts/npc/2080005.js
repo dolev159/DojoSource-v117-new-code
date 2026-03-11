@@ -1,11 +1,10 @@
 /*
-	Koscu - Leafre : Leafre (240000000)
+	名字:	寇斯庫
+	地圖:	神木村
+	描述:	240000000
 */
 
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 2080005);
+	cm.dispose();
 }

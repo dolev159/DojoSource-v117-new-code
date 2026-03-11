@@ -1,31 +1,16 @@
 /*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc> 
-					   Matthias Butz <matze@odinms.de>
-					   Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation version 3 as published by
-    the Free Software Foundation. You may not use, modify or distribute
-    this program under any other version of the GNU Affero General Public
-    License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	名字:	水世界
+	地圖:	海底出入口
+	描述:	230010000
 */
 
-/* @Author Lerk
- * 
- * 2302000.js: Aqua Road Reactor - Treasure Chest - Drops Piece of Paper A-E rarely, plus Air Bubbles, Orange Pots, meso
- * 
-*/
-
-function act(){
-	//rm.dropItems(true, 2, 75, 90);
+function act() {
+	rm.dropItems();
 }
+
+
+//4031274		紙張A
+//4031275		紙張B
+//4031276		紙張C
+//4031277		紙張D
+//4031278		紙張E

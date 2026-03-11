@@ -1,13 +1,10 @@
+/*
+	名字:	倉庫李老闆
+	地圖:	邱比特公園
+	描述:	100000200
+*/
+
 function start() {
- 
-	if (cm.getLevel() >= 40) {
-   cm.sendStorage();
-
-    cm.dispose();
-
-
-	} else {
-	cm.sendOk("You must be level 40 for using me.");
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1012009);
 	cm.dispose();
-	 	}
 }

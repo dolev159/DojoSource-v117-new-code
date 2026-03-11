@@ -79,7 +79,8 @@ public class CashShop implements Serializable {
     public void checkExpire(MapleClient c) {
         List<Item> toberemove = new ArrayList<Item>();
         for (Item item : inventory) {
-            if (item != null && !GameConstants.isPet(item.getItemId()) && item.getExpiration() > 0 && item.getExpiration() < System.currentTimeMillis()) {
+            if (item != null && !GameConstants.isPet(item.getItemId()) && item.getExpiration() > 0
+                    && item.getExpiration() < System.currentTimeMillis()) {
                 toberemove.add(item);
             }
         }
@@ -109,7 +110,8 @@ public class CashShop implements Serializable {
             uniqueid = MapleInventoryIdentifier.getInstance();
         }
         long period = cItem.getPeriod();
-        if ((period <= 0 && GameConstants.getInventoryType(cItem.getId()) != MapleInventoryType.EQUIP) || GameConstants.isPet(cItem.getId())) {
+        if ((period <= 0 && GameConstants.getInventoryType(cItem.getId()) != MapleInventoryType.EQUIP)
+                || GameConstants.isPet(cItem.getId())) {
             period = GameConstants.GMS ? 90 : 45;
         }
         if (cItem.getId() >= 5000100 && cItem.getId() < 5000200) { // Permanent pet
@@ -162,7 +164,7 @@ public class CashShop implements Serializable {
 
     public void gift(int recipient, String from, String message, int sn, int uniqueid) {
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("INSERT INTO `gifts` VALUES (DEFAULT, ?, ?, ?, ?, ?)")) {
+                PreparedStatement ps = con.prepareStatement("INSERT INTO `gifts` VALUES (DEFAULT, ?, ?, ?, ?, ?)")) {
             ps.setInt(1, recipient);
             ps.setString(2, from);
             ps.setString(3, message);
@@ -226,12 +228,19 @@ public class CashShop implements Serializable {
     }
 
     public void save() throws SQLException {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            save(con);
+        }
+    }
+
+    public void save(Connection con) throws SQLException {
         List<Pair<Item, MapleInventoryType>> itemsWithType = new ArrayList<Pair<Item, MapleInventoryType>>();
 
         for (Item item : inventory) {
-            itemsWithType.add(new Pair<Item, MapleInventoryType>(item, GameConstants.getInventoryType(item.getItemId())));
+            itemsWithType
+                    .add(new Pair<Item, MapleInventoryType>(item, GameConstants.getInventoryType(item.getItemId())));
         }
 
-        factory.saveItems(itemsWithType, accountId);
+        factory.saveItems(itemsWithType, con, accountId);
     }
 }

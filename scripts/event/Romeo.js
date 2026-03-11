@@ -1,172 +1,142 @@
-var minPlayers = 4;
+/*
+	名字:	隱藏地圖
+	地圖:	蒙特鳩祕密之室
+	描述:	261000011
+*/
 
-function init() {
-em.setProperty("state", "0");
-	em.setProperty("leader", "true");
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function setup(level, leaderid) {
-	em.getProperties().clear();
-em.setProperty("state", "1");
-	em.setProperty("leader", "true");
-    var eim = em.newInstance("Romeo" + leaderid);
-	em.setProperty("stage", "0"); //whether book.. gave report, whether urete.. accepted it
-	em.setProperty("stage1", "0"); //whether book..opened door
-	em.setProperty("stage3", "0"); //how many beakers.. activated
-	em.setProperty("stage4", "0"); //how many files.. gave
-	em.setProperty("stage5", "0"); //mobs spawned/portal opened
-	em.setProperty("summoned", "0");
-	var y;
-	for (y = 0; y < 4; y++) { //stage number
-		em.setProperty("stage6_" + y, "0");
-		for (var b = 0; b < 10; b++) {
-			for (var c = 0; c < 4; c++) {
-				//em.broadcastYellowMsg("stage6_" + y + "_" + b + "_" + c + " = 0");
-				em.setProperty("stage6_ " + y + "_" + b + "_" + c + "", "0");
-			}
+function setup(level, leaderid) {//開始事件，時間
+	em.setProperty("state", 1);
+
+	eim = em.newInstance("Romeo");
+
+	eim.setInstanceMap(926100000).resetFully();
+	eim.setInstanceMap(926100001).resetFully();
+	eim.setInstanceMap(926100100).resetFully();
+	eim.setInstanceMap(926100200).resetFully();
+	eim.setInstanceMap(926100201).resetFully();
+	eim.setInstanceMap(926100202).resetFully();
+	eim.setInstanceMap(926100203).resetFully();
+	eim.setInstanceMap(926100300).resetFully();
+	eim.setInstanceMap(926100301).resetFully();
+	eim.setInstanceMap(926100302).resetFully();
+	eim.setInstanceMap(926100303).resetFully();
+	eim.setInstanceMap(926100304).resetFully();
+	eim.setInstanceMap(926100400).resetFully();
+	eim.setInstanceMap(926100401).resetFully();
+	eim.setInstanceMap(926100500).resetFully();
+	eim.setInstanceMap(926100600).resetFully();
+
+	eim.setInstanceMap(926100203).spawnNpc(2112000, new java.awt.Point(200, 188));
+	eim.setInstanceMap(926100401).spawnNpc(2112000, new java.awt.Point(200, 100));
+	eim.setInstanceMap(926100500).spawnNpc(2112001, new java.awt.Point(200, 100));
+	eim.setInstanceMap(926100600).spawnNpc(2112002, new java.awt.Point(400, 100));
+	eim.setInstanceMap(926100600).spawnNpc(2112018, new java.awt.Point(200, 100));
+
+	eim.setProperty("whog_hp", 0);//給予HP條件
+
+	respawnStages(eim);//加載血量監控
+
+	eim.startEventTimer(20 * 60 * 1000); //30 mins
+
+	return eim;
+}
+
+function respawnStages(eim) {//監控地圖時間
+	checkHogHealth(eim);//監控血量
+	eim.schedule("respawnStages", 10 * 1000);
+}
+
+function checkHogHealth(eim) {//監控地图血量
+	var watchHog = eim.getMapInstance(926100401).getMonsterById(9300137);//讀取當前地圖
+	if (watchHog != null) {
+		var hp = watchHog.getHp();
+		var oldHp = eim.getProperty("whog_hp");
+
+	if (oldHp - hp > 700) {    // or 400, if using mobHP / eventTime
+		eim.getMapInstance(926100401).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Please protect Juliet from harm."));
 		}
-	}
-	var i;
-	for (y = 0; y < 4; y++) { //stage number
-		for (i = 0; i < 10; i++) {		
-			var found = false;
-			while (!found) {
-				for (var x = 0; x < 4; x++) {
-					if (!found) {
-						var founded = false;
-						for (var z = 0; z < 4; z++) { //check if any other stages have this value set already.
-							//em.broadcastYellowMsg("stage6_" + z + "_" + i + "_" + x + " check");
-							if (em.getProperty("stage6_" + z + "_" + i + "_" + x + "") == null) {
-								em.setProperty("stage6_" + z + "_" + i + "_" + x + "", "0");
-							} else if (em.getProperty("stage6_" + z + "_" + i + "_" + x + "").equals("1")) {
-								founded = true;
-								break;
-							}
-						}
-						if (!founded && java.lang.Math.random() < 0.25) {
-							//em.broadcastYellowMsg("stage6_" + z + "_" + i + "_" + x + " = 1");
-							em.setProperty("stage6_" + y + "_" + i + "_" + x + "", "1");
-							found = true;
-							break;
-						}
-					}
-				}
-			}
-			//BUT, stage6_0_0_0 set, then stage6_1_0_0 also not set!
+		eim.setProperty("whog_hp", hp);
+}
+}
+
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(926100000), eim.getMapInstance(926100000).getPortal(0));
+	player.tryPartyQuest(1205);
+}
+
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if ((mob.getId() == 9300145 || mob.getId() == 9300146) && eim.getMapInstance(926100001).getAllMonstersThreadsafe().size() < 1) {
+		eim.getMapInstance(926100001).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "The entrance to the next area has been opened."));
+
+		eim.getMapInstance(926100001).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(926100001).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
 		}
-	}
-	em.setProperty("stage7", "0"); //whether they were killed or not.
-        eim.setInstanceMap(926100000).resetPQ(level);
-        eim.setInstanceMap(926100001).resetPQ(level);
-	eim.setInstanceMap(926100100).resetPQ(level);
-	eim.setInstanceMap(926100200).resetPQ(level);
-        var map = eim.setInstanceMap(926100201);
-	map.resetPQ(level);
-        map = eim.setInstanceMap(926100202);
-	map.resetPQ(level);
-	map = eim.setInstanceMap(926100203);
-	map.resetPQ(level);
-	map.spawnNpc(2112000, new java.awt.Point(200, 188)); //urete MADMAN
-	eim.setInstanceMap(926100300).resetPQ(level);
-	eim.setInstanceMap(926100301).resetPQ(level);
-	eim.setInstanceMap(926100302).resetPQ(level);
-	eim.setInstanceMap(926100303).resetPQ(level);
-	eim.setInstanceMap(926100304).resetPQ(level);
-	eim.setInstanceMap(926100400).resetPQ(level);
-	eim.setInstanceMap(926100401).resetPQ(level);
-	eim.setInstanceMap(926100500).resetPQ(level); //spawn urete based on properties ?????
-	eim.setInstanceMap(926100600).resetPQ(level); //spawn romeo&juliet OR fallen romeo/juliet based on properties???
+	if ((mob.getId() == 9300143 || mob.getId() == 9300144) && eim.getMapInstance(926100203).getAllMonstersThreadsafe().size() < 1) {
+		eim.getMapInstance(926100203).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "The entrance to the next area has been opened."));
 
-    eim.startEventTimer(1200000); //20 mins
-    return eim;
+		eim.getMapInstance(926100203).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(926100203).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+
+		eim.getMapInstance(926100203).getReactorByName("rnj6_out").forceHitReactor(1);
+		}
+	if (mob.getId() == 9300139 || mob.getId() == 9300140) {
+		eim.startEventTimer(3 * 60000);
+
+		eim.setProperty("stage7", 2);
+
+		eim.getMapInstance(926100401).killMonster(9300150);
+		eim.getMapInstance(926100401).killMonster(9300150);
+
+		eim.getMapInstance(926100401).setSpawns(false);//限制刷怪
+
+		eim.getMapInstance(926100401).spawnNpc(2112006, new java.awt.Point(50, 100));
+
+		eim.getMapInstance(926100401).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(926100401).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+		}
+	if (mob.getId() == 9300137) {
+		eim.broadcastPlayerMsg(5, "Saving Juliet failed.");
+		}
+		return 1;
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapInstance(0);
-    player.changeMap(map, map.getPortal(0));
-    player.tryPartyQuest(1205);
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 926100700);
 }
 
-function playerRevive(eim, player) {
+function changedMap(eim, player, mapid) {//進入地圖觸發
+	if (mapid < 926100000 || mapid > 926100600) {
+		playerExit(eim, player);
+}
 }
 
-function scheduledTimeout(eim) {
-    end(eim);
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
 }
 
-function changedMap(eim, player, mapid) {
-    if (mapid < 926100000 || mapid > 926100600) {
+function leftParty(eim, player) {//離開小組觸發
+	player.changeMap(eim.getMapInstance(926100700), eim.getMapInstance(926100700).getPortal(0));
+}
+
+function disbandParty(eim) {//小組退出時觸發
+	eim.disposeIfPlayerBelow(100, 926100700);
+}
+
+function playerExit(eim, player) {//角色退出時觸發
 	eim.unregisterPlayer(player);
-
 	if (eim.disposeIfPlayerBelow(0, 0)) {
-		em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
-    }
-    if (mapid == 926100401 && (em.getProperty("summoned") == null || em.getProperty("summoned").equals("0"))) { //last stage
-	var mobId = 9300139;
-	if (em.getProperty("stage").equals("2")) {
-	    mobId = 9300140;
-	}
-	var mob = em.getMonster(mobId);
-	eim.registerMonster(mob);
-	em.setProperty("summoned", "1");
-	eim.getMapInstance(mapid).spawnMonsterOnGroundBelow(mob, new java.awt.Point(240,150));
-    }
+		em.setProperty("state", 0);
+}
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function monsterValue(eim, mobId) {
-    if (mobId == 9300137 || mobId == 9300138) {
-	em.setProperty("stage7", "1");
-	eim.broadcastPlayerMsg(5, "The one you were protecting has been killed.");
-    } else if (mobId == 9300139 || mobId == 9300140) { //boss
-	//13 = boss, 14 = urete, 15 = romeo&juliet
-	eim.getMapInstance(13).spawnNpc(2112004, new java.awt.Point(-416, -116));
-	if (em.getProperty("stage7").equals("0")) {
-		eim.getMapInstance(14).spawnNpc(2112002, new java.awt.Point(232, 150));
-		eim.getMapInstance(15).spawnNpc(2112018, new java.awt.Point(111, 128));
-		eim.getMapInstance(15).spawnNpc(2112002, new java.awt.Point(320, 128));
-	} else {
-		eim.getMapInstance(14).spawnNpc(2112001, new java.awt.Point(232, 150));
-		eim.getMapInstance(15).spawnNpc(2112009, new java.awt.Point(111, 128));
-		eim.getMapInstance(15).spawnNpc(2112008, new java.awt.Point(211, 128));
-	}
-    }
-    return 1;
-}
+function playerDead(eim, player) {}//玩家死亡時觸發
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
+function playerRevive(eim, player) {}//玩家角色复時觸發
 
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
-}
-
-function end(eim) {
-    eim.disposeIfPlayerBelow(100, 926100700);
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-}
-
-function clearPQ(eim) {
-    end(eim);
-}
-
-function allMonstersDead(eim) {
-}
-
-function leftParty (eim, player) {
-    // If only 2 players are left, uncompletable:
-	end(eim);
-}
-function disbandParty (eim) {
-	end(eim);
-}
-function playerDead(eim, player) {}
-function cancelSchedule() {}
+function cancelSchedule() {}//清除事件

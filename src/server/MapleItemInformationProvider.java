@@ -31,6 +31,7 @@ import provider.MapleDataProviderFactory;
 import provider.MapleDataTool;
 import provider.MapleDataType;
 import server.StructSetItem.SetItem;
+import tools.NativeIntMap;
 import tools.Pair;
 import tools.Triple;
 
@@ -51,7 +52,7 @@ public class MapleItemInformationProvider {
     protected final Map<Integer, Map<Integer, StructItemOption>> socketCache = new ConcurrentHashMap<>();
     protected final Map<Integer, MapleStatEffect> itemEffects = new ConcurrentHashMap<>();
     protected final Map<Integer, MapleStatEffect> itemEffectsEx = new ConcurrentHashMap<>();
-    protected final Map<Integer, Integer> mobIds = new ConcurrentHashMap<>();
+    protected final NativeIntMap mobIds = new NativeIntMap(1000);
     protected final Map<Integer, Pair<Integer, Integer>> potLife = new ConcurrentHashMap<>();
     protected final Map<Integer, StructFamiliar> familiars = new ConcurrentHashMap<>();
     protected final Map<Integer, StructFamiliar> familiars_Item = new ConcurrentHashMap<>();
@@ -382,50 +383,8 @@ public class MapleItemInformationProvider {
             }
         }
 
-        try (Connection con = DatabaseConnection.getConnection()) {
-            // Load Item Data
-            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemdata");
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    initItemInformation(rs);
-                }
-            }
-
-            // Load Item Equipment Data
-            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemequipdata ORDER BY itemid");
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    initItemEquipData(rs);
-                }
-            }
-
-            // Load Item Addition Data
-            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemadddata ORDER BY itemid");
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    initItemAddData(rs);
-                }
-            }
-
-            // Load Item Reward Data
-            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemrewarddata ORDER BY itemid");
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    initItemRewardData(rs);
-                }
-            }
-
-            // Finalize all Equipments
-            for (Entry<Integer, ItemInformation> entry : dataCache.entrySet()) {
-                if (GameConstants.getInventoryType(entry.getKey()) == MapleInventoryType.EQUIP) {
-                    finalizeEquipData(entry.getValue());
-                }
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        loadAllItemEffects();
-        //System.out.println(dataCache.size() + " items loaded.");
+        // Cosmic-Standard: Lazy Loading implemented. Mass loading of items skipped to save RAM.
+        // Items will load via loadItemData(itemId) when first accessed.
     }
 
     public final List<StructItemOption> getPotentialInfo(final int potId) {
@@ -668,7 +627,7 @@ public class MapleItemInformationProvider {
         return mobIds.values();
     }
 
-    public final Map<Integer, Integer> getMonsterBook() {
+    public final NativeIntMap getMonsterBook() {
         return mobIds;
     }
 
@@ -1600,7 +1559,71 @@ public class MapleItemInformationProvider {
         if (itemId <= 0) {
             return null;
         }
-        return dataCache.get(itemId);
+        ItemInformation i = dataCache.get(itemId);
+        if (i == null) {
+            synchronized (this) {
+                i = dataCache.get(itemId);
+                if (i == null) {
+                    loadItemData(itemId);
+                    i = dataCache.get(itemId);
+                }
+            }
+        }
+        return i;
+    }
+
+    public synchronized void loadItemData(int itemId) {
+        if (dataCache.containsKey(itemId)) {
+            return;
+        }
+        try (Connection con = DatabaseConnection.getConnection()) {
+            // Load Item Data
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemdata WHERE itemid = ?")) {
+                ps.setInt(1, itemId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        initItemInformation(rs);
+                    } else {
+                        // Item doesn't exist in DB
+                        return;
+                    }
+                }
+            }
+            // Load Item Equipment Data
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemequipdata WHERE itemid = ?")) {
+                ps.setInt(1, itemId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        initItemEquipData(rs);
+                    }
+                }
+            }
+            // Load Item Addition Data
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemadddata WHERE itemid = ?")) {
+                ps.setInt(1, itemId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        initItemAddData(rs);
+                    }
+                }
+            }
+            // Load Item Reward Data
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_itemrewarddata WHERE itemid = ?")) {
+                ps.setInt(1, itemId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        initItemRewardData(rs);
+                    }
+                }
+            }
+
+            ItemInformation i = dataCache.get(itemId);
+            if (i != null && GameConstants.getInventoryType(itemId) == MapleInventoryType.EQUIP) {
+                finalizeEquipData(i);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
     private ItemInformation tmpInfo = null;
 
@@ -1643,9 +1666,7 @@ public class MapleItemInformationProvider {
             tmpInfo.equipAdditions = new LinkedList<>();
         }
 
-        while (sqlAddData.next()) {
-            tmpInfo.equipAdditions.add(new Triple<>(sqlAddData.getString("key").intern(), sqlAddData.getString("subKey").intern(), sqlAddData.getString("value").intern()));
-        }
+        tmpInfo.equipAdditions.add(new Triple<>(sqlAddData.getString("key").intern(), sqlAddData.getString("subKey").intern(), sqlAddData.getString("value").intern()));
     }
 
     public void initItemEquipData(ResultSet sqlEquipData) throws SQLException {

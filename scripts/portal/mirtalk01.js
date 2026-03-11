@@ -1,8 +1,14 @@
+/*
+	名字:	夢中
+	地圖:	夢見的路
+	描述:	900010100
+*/
+
 function enter(pi) {
-	if (pi.getEvanIntroState("dt00=o;dt01=o;mo00=o;mo01=o;mo10=o;mo02=o")) {
+	if (pi.getPlayer().getInfoQuest(22013).indexOf("dt01=o") != -1) {
 		return false;
-	}
-	pi.updateEvanIntroState("dt00=o;dt01=o;mo00=o;mo01=o;mo10=o;mo02=o");
-	pi.showMapEffect("evan/dragonTalk01");
-	return true;
+		}
+		pi.getPlayer().updateInfoQuest(22013, pi.getPlayer().getInfoQuest(22013) + ";dt01=o");
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("evan/dragonTalk01", 3));
+		return true;
 }

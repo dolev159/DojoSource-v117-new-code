@@ -1,16 +1,14 @@
 /*
-Stage 4: Mark of Evil Door - Guild Quest
-
-@Author Lerk
+	名字:	威廉的古堡
+	地圖:	水路之迷宮
+	描述:	990000630
 */
 
 function enter(pi) {
-    if (pi.getMap().getReactorByName("secretgate2").getState() == 1) {
-	pi.playPortalSE();
-	pi.warp(990000631,1);
-	return true;
-    } else {
-	pi.playerMessage("This door is closed.");
-	return false;
-    }
+	if (pi.getPlayer().getMap().getReactorByName("secretgate2").getState() > 0) {
+		pi.getPlayer().changeMap(pi.getMap(990000631), pi.getMap(990000631).getPortal(1)); //迷宮之盡頭
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "This door is closed."));
+		return false;
 }

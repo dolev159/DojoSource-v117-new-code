@@ -1,34 +1,50 @@
-var status = -1;
-var itemids = Array(2040728, 2040729, 2040730, 2040731, 2040732, 2040733, 2040734, 2040735, 2040736, 2040737, 2040738, 2040739);
+/*
+	名字:	可疑男子
+	地圖:	通往地底的路
+	描述:	105100000
+*/
+
+var status;
 
 function start() {
+	status = -1;
 	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-	if (mode != 1) {
+	switch (mode) {
+	case -1:
 		cm.dispose();
 		return;
-	}
-	status++;
-	if (status == 0) {
-		cm.sendSimple("Hello, #h0#. I can exchange your Balrog Leathers.\r\n\r\n#r#L1#Redeem items#l#k");
-	} else if (status == 1) {
-		var selStr = "Well, okay. These are what you can redeem...\r\n\r\n#b";
-		for (var i = 0; i < itemids.length; i++) {
-			selStr += "#L" + i + "##i" + itemids[i] + "##z" + itemids[i] + "##l\r\n";
-		}
-		cm.sendSimple(selStr);
-	} else if (status == 2) {
-		if (!cm.canHold(itemids[selection], 1)) {
-			cm.sendOk("Please make room");
-		} else if (cm.itemQuantity(4001261) < 1) {
-			cm.sendOk("You don't have enough leathers.");
-		} else {
-			cm.gainItem(4001261, -1);
-			cm.gainItem(itemids[selection], 1);
-			cm.sendOk("Thank you for your redemption");
-		}
+	case 0:
+		if (status < 1) {
 		cm.dispose();
-	}
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("You again? I sure see you a lot. What do you want? \r\n\r\n#L0##bPlease make Leather Shoes with 20 pieces of Balrog Leather.#l");
+		break;
+	case 1:
+		if (cm.getPlayer().itemQuantity(4001261) < 20) {
+			cm.sendNext("This isn't enough Balrog Leather to make anything. Shoes just aren't going to happen.");
+			cm.dispose();
+			return;
+			}
+		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.EQUIP).getNumFreeSlot() < 1) {
+			cm.sendNext("See if you have enough material or if you have enough space available in Equip.");
+			cm.dispose();
+			return;
+			}
+			cm.gainItem(4001261, -20);
+			cm.gainItem(1072375, 1);
+			cm.sendOk("What do you think? Not a bad pair of shoes right? They may look plain, but that Balrog Leather makes them tough as nails!");
+			cm.dispose();
+}
 }

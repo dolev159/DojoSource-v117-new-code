@@ -1,7 +1,13 @@
 /*
-Queen's Path : Forest of the Start 5
+	名字:	皇后之路
+	地圖:	開始之森林5
+	描述:	130030004
 */
 
-function act(){
-	rm.dropItems(true, 2, 8, 12, 2);
+function act() {
+	rm.dropItems();
 }
+
+
+//4032267		石材
+//4032268		徽章

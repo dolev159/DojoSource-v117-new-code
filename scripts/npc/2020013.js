@@ -1,68 +1,47 @@
-/**
-	Fedro: Pirate 3rd job advancement
-	El Nath: Chief's Residence (211000001)
-
-	Custom Quest 100100, 100102
+/*
+	名字:	佩特勞
+	地圖:	长老公馆
+	描述:	211000001
 */
 
-var status = 0;
-var job;
+var status;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0 && status == 1) {
-	cm.sendOk("Make up your mind and visit me again.");
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-    if (status == 0) {
-	if (!(cm.getJob() == 510 || cm.getJob() == 520 || cm.getJob() == 530)) {
-	    cm.sendOk("May the Gods be with you!");
-	    cm.dispose();
-	    return;
-	}
-	if ((cm.getJob() == 510 || cm.getJob() == 520 || cm.getJob() == 530) && cm.getPlayerStat("LVL") >= 70) {
-	    if (cm.getPlayerStat("RSP") > (cm.getPlayerStat("LVL") - 70) * 3) {
-	        if (cm.getPlayer().getAllSkillLevels() > cm.getPlayerStat("LVL") * 3) { //player used too much SP means they have assigned to their skills.. conflict
-		    cm.sendOk("It appears that you have a great number of SP yet you have used enough SP on your skills already. Your SP has been reset. #ePlease talk to me again to make the job advancement.#n");
-		    cm.getPlayer().resetSP((cm.getPlayerStat("LVL") - 70) * 3);
-	        } else {
-	    	    cm.sendOk("Hmm...You have too many #bSP#k. You can't make the job advancement with too many SP left.");
-	        }
-		cm.safeDispose();
-	    } else {
-	        cm.sendNext("You are indeed a strong one.");
-	    }
-	} else {
-	    cm.sendOk("Please make sure that you are eligible for the job advancement. (level 70+)");
-	    cm.safeDispose();
-	}
-    } else if (status == 1) {
-	    if (cm.getPlayerStat("LVL") >= 70 && cm.getPlayerStat("RSP") <= (cm.getPlayerStat("LVL") - 70) * 3) {
-	    if (cm.getJob() == 510) {
-		cm.changeJob(511);
-		cm.sendOk("You are now a #bBuccaneer#k.");
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	    } else if (cm.getJob() == 520) {
-		cm.changeJob(521);
-		cm.sendOk("You are now a #bValkyrie#k.");
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		if (cm.getPlayer().getLevel() < 50) {
+			cm.sendOk("You're nowhere near ready to fight Zakum. I wouldn't suggest going in there until you're at least level 50.");
+			cm.dispose();
+			return;
+			}
+		if (Math.floor(cm.getPlayer().getJob() / 100 % 10) != 5) {
+			cm.sendNext("You're no pirate. I am not qualified to judge you. If you want to explore Zakum, you will need to find a master of your job class to be your guide.");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("You should be able to stand against Zakum. Find #b#p2030008##k deep within the Dead Mine. I will allow it.");
+			break;
+	case 1:
+		cm.sendNextPrev("Then I will send you to #bThe Door to Zakum#k, where #b#p2030008##k is.");
+		break;
+	case 2:
+		cm.getPlayer().changeMap(cm.getMap(211042300), cm.getMap(211042300).getPortal(0));
 		cm.dispose();
-	    } else if (cm.getJob() == 530) {
-		cm.changeJob(531);
-		cm.sendOk("You are now a #bCannon Blaster#k.");
-		cm.dispose();
-	    }
-	    } else {
-		cm.sendOk("Come back when you are level 70 and used SP.");
-		cm.dispose();
-	    }
-    }
+}
 }

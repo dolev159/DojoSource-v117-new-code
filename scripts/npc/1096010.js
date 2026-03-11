@@ -1,9 +1,20 @@
-var status = -1;
+/*
+	名字:	點火裝置
+	地圖:	可可島某處
+	描述:	3000500
+*/
 
-function action(mode, type, selection) {
-	if (cm.isQuestActive(2566) && !cm.haveItem(4032985,1)) {
-		cm.gainItem(4032985,1);
-		cm.sendNext("You recovered the Ignition Device.");
-	}
-	cm.dispose();
+function start() {
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2566)).getStatus() != 1) {
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().itemQuantity(4032985)) {
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("You already have the lgnition Device."));
+		cm.dispose();
+		return;
+		}
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("You found the Ignition Device. Bring it to Cutter."));
+		cm.gainItem(4032985, 1);
+		cm.dispose();
 }

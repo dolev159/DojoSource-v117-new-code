@@ -1,43 +1,28 @@
-/* Holy Stone
-	Hidden Street: Holy Ground at the Snowfield (211040401)
-	
-	Custom quest: 100102
+/*
+	名字:	神聖的石頭
+	地圖:	雪原聖地
+	描述:	211040401
 */
 
-var status = 0;
+var quest = [1431, 1432, 1433, 1435, 1436, 1437, 1439, 1440, 1442, 1443, 1445, 1446, 1447, 1448];
+
+var y = true;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	for (var i = 0; i < quest.length; i++)
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(quest[i])).getStatus() == 1) {
+		y = false;
+		}
+	if (y) {
+		cm.sendOk("#b(A mysterious energy surrounds this stone. It has an incredibly cold aura...)");
+		cm.dispose();
+		return;
+		}
+		cm.sendYesNo("#b(A mysterious energy surrounds this stone. The elder definetly told me to touch it... Should I really touch this thing?)");
 }
 
 function action(mode, type, selection) {
-    if (status >= 2 && mode == 0) {
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-    if (status == 0) {
-	if (cm.haveItem(4031058) || cm.getQuestStatus(100102) != 1) {
-	    cm.sendOk("Lulz, I am a stone.");
-	    cm.dispose();
-	} else {
-	    cm.sendNext("Lulz, I am a stone.");
-	}
-    } else if (status == 1) {
-	cm.sendNextPrev("Give me a #bDark Crystal#k and I will allow you to obtain the #bNecklace of Wisdom#k.");
-    } else if (status == 2) {
-	if (!cm.haveItem(4005004)) {
-	    cm.sendOk("You don't have any #bDark Crystal#ks.");
-	    cm.dispose();
-	} else {
-	    cm.gainItem(4005004, -1);
-	    cm.gainItem(4031058, 1);
-	    cm.sendOk("Indeed.");
-	    cm.dispose();
-	}
-    }
+	if (mode > 0)
+		cm.getPlayer().changeMap(cm.getMap(910540000), cm.getMap(910540000).getPortal(1));
+		cm.dispose();
 }

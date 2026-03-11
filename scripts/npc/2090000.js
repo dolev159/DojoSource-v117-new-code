@@ -1,7 +1,10 @@
+/*
+	名字:	潘大爺
+	地圖:	桃花仙境
+	描述:	250000000
+*/
+
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 2090000);
+	cm.dispose();
 }

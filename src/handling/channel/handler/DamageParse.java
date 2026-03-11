@@ -142,6 +142,9 @@ public class DamageParse {
             monster = map.getMonsterByOid(oned.objectid);
 
             if ((monster != null) && (monster.getLinkCID() <= 0)) {
+                if (!checkDamageDistance(player, monster, attack, theSkill, false, attack_type)) {
+                    continue;
+                }
                 totDamageToOneMonster = 0;
                 hpMob = monster.getMobMaxHp();
                 MapleMonsterStats monsterstats = monster.getStats();
@@ -215,10 +218,6 @@ public class DamageParse {
                 }
                 totDamage += totDamageToOneMonster;
                 player.checkMonsterAggro(monster);
-
-                if ((GameConstants.getAttackDelay(attack.skill, theSkill) >= 100) && (!GameConstants.isNoDelaySkill(attack.skill)) && (attack.skill != 3101005) && (!monster.getStats().isBoss()) && (player.getTruePosition().distanceSq(monster.getTruePosition()) > GameConstants.getAttackRange(effect, player.getStat().defRange))) {
-                    player.getCheatTracker().registerOffense(CheatingOffense.ATTACK_FARAWAY_MONSTER, new StringBuilder().append("[Distance: ").append(player.getTruePosition().distanceSq(monster.getTruePosition())).append(", Expected Distance: ").append(GameConstants.getAttackRange(effect, player.getStat().defRange)).append(" Job: ").append(player.getJob()).append("]").toString());
-                }
 
                 if (player.getBuffedValue(MapleBuffStat.PICKPOCKET) != null) {
                     switch (attack.skill) {
@@ -451,6 +450,9 @@ public class DamageParse {
             MapleMonster monster = map.getMonsterByOid(oned.objectid);
 
             if ((monster != null) && (monster.getLinkCID() <= 0)) {
+                if (!checkDamageDistance(player, monster, attack, theSkill, true, null)) {
+                    continue;
+                }
                 boolean Tempest = (monster.getStatusSourceID(MonsterStatus.FREEZE) == 21120006) && (!monster.getStats().isBoss());
                 int totDamageToOneMonster = 0;
                 MapleMonsterStats monsterstats = monster.getStats();
@@ -506,9 +508,6 @@ if (Tempest)
                 totDamage += totDamageToOneMonster;
                 player.checkMonsterAggro(monster);
 
-                if ((GameConstants.getAttackDelay(attack.skill, theSkill) >= 100) && (!GameConstants.isNoDelaySkill(attack.skill)) && (!monster.getStats().isBoss()) && (player.getTruePosition().distanceSq(monster.getTruePosition()) > GameConstants.getAttackRange(effect, player.getStat().defRange))) {
-                    player.getCheatTracker().registerOffense(CheatingOffense.ATTACK_FARAWAY_MONSTER, new StringBuilder().append("[Distance: ").append(player.getTruePosition().distanceSq(monster.getTruePosition())).append(", Expected Distance: ").append(GameConstants.getAttackRange(effect, player.getStat().defRange)).append(" Job: ").append(player.getJob()).append("]").toString());
-                }
                 if ((attack.skill == 2301002) && (!monsterstats.getUndead())) {
                     player.getCheatTracker().registerOffense(CheatingOffense.HEAL_ATTACKING_UNDEAD);
                     return;
@@ -1196,5 +1195,43 @@ lea.readInt();
         }
 
         return ret;
+    }
+
+    private static boolean checkDamageDistance(MapleCharacter player, MapleMonster monster, AttackInfo attack, Skill theSkill, boolean magic, AttackType attack_type) {
+        if (monster == null || player == null) return true;
+        double distance = player.getTruePosition().distanceSq(monster.getTruePosition());
+        double distanceToDetect = 200000.0;
+        
+        boolean ranged = !magic && attack_type != null && attack_type != AttackType.NON_RANGED && attack_type != AttackType.NON_RANGED_WITH_MIRROR;
+
+        if (ranged) {
+            distanceToDetect += 400000.0;
+        }
+
+        if (magic) {
+            distanceToDetect += 200000.0;
+        }
+
+        if (player.getJob() >= 2100 && player.getJob() <= 2112) { // Aran
+            distanceToDetect += 200000.0; 
+        }
+
+        if (attack.skill == 21100004 || attack.skill == 21000002) { // Aran.COMBO_SMASH or Aran.BODY_PRESSURE
+            distanceToDetect += 40000.0;
+        } else if (attack.skill == 2321008 || attack.skill == 2221001 || attack.skill == 2121001) { // GENESIS, BLIZZARD, METEOR_SHOWER
+            distanceToDetect += 275000.0;
+        } else if (attack.skill == 1121008 || attack.skill == 1311001 || attack.skill == 1311002 || attack.skill == 1311004 || attack.skill == 1311005) { // Hero.BRANDISH or DragonKnight.SPEAR_CRUSHER ...
+            distanceToDetect += 40000.0;
+        } else if (attack.skill == 5101004 || attack.skill == 15101003 || attack.skill == 5201002) { // SUPER DRAGON_ROAR ...
+            distanceToDetect += 250000.0; 
+        } else if (attack.skill == 4221001) { // BOOMERANG_STEP
+            distanceToDetect += 60000.0;
+        }
+
+        if (distance > distanceToDetect) {
+            player.getCheatTracker().registerOffense(CheatingOffense.ATTACK_FARAWAY_MONSTER, "[Cosmic API Distance sq: " + distance + ", Expected Distance: " + distanceToDetect + "] SID: " + attack.skill + " MID: " + monster.getId());
+            return false;
+        }
+        return true;
     }
 }

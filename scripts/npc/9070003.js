@@ -1,18 +1,45 @@
-var status = -1;
+/*
+	名字:	馬西姆斯
+	地圖:	戰鬥廣場
+	描述:	960000000
+*/
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-        status++;
-    } else {
-        if (status == 0) {
-            cm.dispose();
-        }
-        status--;
-    }
-    if (status == 0) {
-        cm.sendSimple((cm.getPlayer().getMapId() != 960000000 ? "\r\n#L5#Go to Battle Square#l" : "\r\n#L5#Go back to town#l"));
-    } else if (status == 1) {
-        cm.warp(cm.getPlayer().getMapId() != 960000000 ? 960000000 : 100000000);
-        cm.dispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendYesNo("Ready to head back to town?");
+		break;
+	case 1:
+		cm.sendNext("Off you go!");
+		break;
+	case 2:
+		var map = cm.getPlayer().getSavedLocation(Packages.server.maps.SavedLocationType.fromString("BATTLESQUARE"));
+		if (map < 0) map = 100000000;
+
+		cm.getPlayer().changeMap(cm.getMap(map), cm.getMap(map).getPortal(0));
+		cm.getPlayer().clearSavedLocation(Packages.server.maps.SavedLocationType.fromString("BATTLESQUARE"));
+		cm.dispose();
+}
 }

@@ -1,136 +1,103 @@
-var minPlayers = 4;
-var stg2_combo0 = Array("3", "2", "1");
-var stg2_combo1 = Array("0", "0", "1"); //unique combos only
-var stg2_combo2 = Array("0", "1", "1");
+/*
+	名字:	勇者亞邁斯
+	地圖:	挑戰入口
+	描述:	670010100
+*/
 
-function init() {
-em.setProperty("state", "0");
-	em.setProperty("leader", "true");
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function setup(eim, leaderid) {
-em.setProperty("state", "1");
-	em.setProperty("leader", "true");
-    var eim = em.newInstance("Amoria" + leaderid);
-	em.setProperty("apq1", "0");
-	//2nd stage areas ..5 people distributed in the 3 areas
-	em.setProperty("apq2", "0");
-	em.setProperty("apq2_tries", "0");
-	em.setProperty("apq3", "0");
-	em.setProperty("apq3_tries", "0");
-	em.setProperty("apq4", "0");
-	em.setProperty("apq5", "0");
-	var rand_combo = java.lang.Math.floor(java.lang.Math.random() * stg2_combo0.length);
-	var rand_num = java.lang.Math.random();
-	var combo0 = rand_num < 0.33 ? true : false;
-	var combo1 = rand_num < 0.66 ? true : false;
-	em.setProperty("apq2_0", combo0 ? stg2_combo0[rand_combo] : (combo1 ? stg2_combo1[rand_combo] : stg2_combo2[rand_combo]));
-	em.setProperty("apq2_1", combo0 ? stg2_combo1[rand_combo] : (combo1 ? stg2_combo2[rand_combo] : stg2_combo0[rand_combo]));
-	em.setProperty("apq2_2", combo0 ? stg2_combo2[rand_combo] : (combo1 ? stg2_combo0[rand_combo] : stg2_combo1[rand_combo]));
-	var i = 0; //stage 3, 9 boxes = 5 random are 1
-	for (var x = 0; x < 9; x++) {
-		em.setProperty("apq3_" + x, "0");
-	}
-	while (i < 3) {
-		for (var x = 0; x < 9; x++) {
-			if (em.getProperty("apq3_" + x).equals("0") && java.lang.Math.random() < 0.2 && i < 3) {
-				em.setProperty("apq3_" + x, "1");
-				i++;
-			}
+function setup(level, leaderid) {//開始事件，時間
+	em.setProperty("state", 1);
+
+	eim = em.newInstance("Amoria");
+
+	eim.setInstanceMap(670010200).resetFully();
+	eim.setInstanceMap(670010300).resetFully();
+	eim.setInstanceMap(670010301).resetFully();
+	eim.setInstanceMap(670010302).resetFully();
+	eim.setInstanceMap(670010400).resetFully();
+	eim.setInstanceMap(670010500).resetFully();
+	eim.setInstanceMap(670010600).resetFully();
+	eim.setInstanceMap(670010700).resetFully();
+	eim.setInstanceMap(670010750).resetFully();
+	eim.setInstanceMap(670010800).resetFully();
+
+	eim.setInstanceMap(670010200).getPortal("go00").setScriptName("apq00");
+	eim.setInstanceMap(670010200).getPortal("go01").setScriptName("apq01");
+	eim.setInstanceMap(670010200).getPortal("go02").setScriptName("apq02");
+
+	eim.setInstanceMap(670010300).getPortal("next00").setScriptName("apq3");
+	eim.setInstanceMap(670010301).getPortal("next00").setScriptName("apq3");
+	eim.setInstanceMap(670010302).getPortal("next00").setScriptName("apq3");
+	eim.setInstanceMap(670010400).getPortal("next00").setScriptName("apq4");
+	eim.setInstanceMap(670010500).getPortal("next00").setScriptName("apq5");
+
+	eim.setInstanceMap(670010700).spawnMonsterOnGroundBelow(em.getMonster(9400536), new java.awt.Point(942, 478));
+
+	eim.startEventTimer(90 * 60000);
+
+	return eim;
+}
+
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(670010200), eim.getMapInstance(670010200).getPortal(0));
+}
+
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 9400514) {
+		eim.setProperty("stage5", 0);
+		eim.restartEventTimer(1 * 10000);//重新加載倒數計時
+		eim.getMapInstance(670010700).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Please wait for the countdown to end as we enter the exciting reward phase."));
+		eim.getMapInstance(670010700).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(670010700).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
 		}
-	}
-
-        var map1 = eim.setInstanceMap(670010200);
-	map1.resetFully();
-	map1.getPortal("go00").setPortalState(false);
-	map1.getPortal("go01").setPortalState(false);
-	map1.getPortal("go02").setPortalState(false);
-        var map2 = eim.setInstanceMap(670010300);
-	map2.resetFully();
-	map2.getPortal("next00").setPortalState(false); //disable NEXT
-        var map3 = eim.setInstanceMap(670010400);
-	map3.resetFully();
-	map3.getPortal("next00").setPortalState(false); //disable NEXT
-        var map4 = eim.setInstanceMap(670010500);
-	map4.resetFully();
-	map4.getPortal("next00").setPortalState(false); //disable NEXT
-        eim.setInstanceMap(670010600).resetFully();
-        eim.setInstanceMap(670010700).resetFully();
-        eim.setInstanceMap(670010800).resetFully();
-
-    eim.startEventTimer(3600000); //1 hr
-    return eim;
+		return 1;
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapInstance(0);
-    player.changeMap(map, map.getPortal(0));
+function scheduledTimeout(eim) {//規定時間結束
+	if (eim.getProperty("stage5") == 0) {
+		eim.setProperty("stage5", 1);
+
+	for (var i = 0; i < eim.getPlayers().size(); i++) {
+		eim.getPlayers().get(i).changeMap(670010800, 0);
+		}
+		eim.startEventTimer(2 * 60000); //2 mins
+		return;
+		}
+		eim.disposeIfPlayerBelow(100, 670011000);
 }
 
-function playerRevive(eim, player) {
+function changedMap(eim, player, mapid) {//進入地圖觸發
+	if (mapid < 670010200 || mapid > 670010800) {
+		playerExit(eim, player);
+}
 }
 
-function scheduledTimeout(eim) {
-    end(eim);
-}
-
-function changedMap(eim, player, mapid) {
-    if (mapid < 670010200 || mapid > 670010800) {
-	eim.unregisterPlayer(player);
-
-	if (eim.disposeIfPlayerBelow(0, 0)) {
-		em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
-    } else if (mapid == 670010800) {
-	if (em.getProperty("apq5").equals("0")) {
-	    eim.restartEventTimer(60000); //1 min bonus
-	    em.setProperty("apq5", "1");
-	}
-    }
-}
-
-function playerDisconnected(eim, player) {
-    return 0;
-}
-
-function monsterValue(eim, mobId) {
-    return 1;
-}
-
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
-
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
-}
-
-function end(eim) {
-    eim.disposeIfPlayerBelow(100, 670011000);
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-}
-
-function clearPQ(eim) {
-    end(eim);
-}
-
-function allMonstersDead(eim) {
-}
-
-function leftParty (eim, player) {
-    // If only 2 players are left, uncompletable:
-    var party = eim.getPlayers();
-    if (party.size() < minPlayers) {
-	end(eim);
-    }
-    else
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
 	playerExit(eim, player);
 }
-function disbandParty (eim) {
-	end(eim);
+
+function leftParty(eim, player) {//離開小組觸發
+	player.changeMap(eim.getMapInstance(670011000), eim.getMapInstance(670011000).getPortal(0));
 }
-function playerDead(eim, player) {}
-function cancelSchedule() {}
+
+function disbandParty(eim) {//小組退出時觸發
+	eim.disposeIfPlayerBelow(100, 670011000);
+}
+
+function playerExit(eim, player) {//角色退出時觸發
+	eim.unregisterPlayer(player);
+	if (eim.disposeIfPlayerBelow(0, 0)) {
+		em.setProperty("state", 0);
+}
+}
+
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
+
+function playerDead(eim, player) {}//玩家死亡時觸發
+
+function playerRevive(eim, player) {}//玩家角色复時觸發
+
+function cancelSchedule() {}//清除事件

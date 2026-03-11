@@ -1,8 +1,11 @@
+/*
+	名字:	隱藏地圖
+	地圖:	黑色魔法師的房前迴廊1
+	描述:	927000020
+*/
+
 function enter(pi) {
-        pi.sendDirectionStatus(4, 2159308);
-		pi.sendDirectionStatus(3, 2);
-		pi.sendDirectionStatus(1, 10);
-		pi.EnableUI(1);
-		pi.DisableUI(true);
-		pi.openNpc(2159309);
+	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(1));
+	pi.openNpc(2159309);
+	return true;
 }

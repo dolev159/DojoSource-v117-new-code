@@ -1,19 +1,19 @@
+/*
+	名字:	水世界
+	地圖:	危險海峽2
+	描述:	230040300
+*/
+
 function enter(pi) {
-    if (pi.getQuestStatus(6132) == 1) {
-	var em = pi.getEventManager("s4resurrection");
-	if (em == null) {
-	    pi.playerMessage("You're not allowed to enter with unknown reason. Try again." );
-	} else { // 923000100
-	    var prop = em.getProperty("started");
-	    if (prop == null || prop.equals("false")) {
-		em.startInstance(pi.getPlayer());
+	if (!pi.getPlayer().itemQuantity(4001108)) {
+		return false;
+		}
+	if (pi.getMap(923000100).getCharacters().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		return false;
+		}
+		pi.getMap(923000100).resetFully();
+		pi.getPlayer().changeMap(pi.getMap(923000100), pi.getMap(923000100).getPortal(1)); //冰冷的洞穴
+		pi.getPlayer().startMapTimeLimitTask(300, pi.getMap(230040300));
 		return true;
-	    } else {
-		pi.playerMessage("Someone is already attempting on the quest.");
-	    }
-	}
-    } else {
-	pi.playerMessage("You can't enter sealed place.");
-    }
-    return false;
 }

@@ -1,18 +1,15 @@
-/* 
- *  NPC   : Kiriko
- *  Maps  : Training Hall 2
- *  FUNC  : Second job Advancement
- */
+/*
+	名字:	奇理科
+	地圖:	第 2 練武場
+	描述:	913001000
+*/
 
 function start() {
-    cm.askAcceptDecline("Have you found all proof of test? Do you want to get out of here?");
+	cm.sendAcceptDecline("Have you found all the proof for the test? Do you want to get out of here?");
 }
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.sendNext("You might need some more time.");
-    } else {
-	cm.warp(130020000, 0);
-    }
-    cm.dispose();
+	if (mode > 0)
+		cm.getPlayer().changeMap(cm.getMap(130020000), cm.getMap(130020000).getPortal(12));
+		cm.dispose();
 }

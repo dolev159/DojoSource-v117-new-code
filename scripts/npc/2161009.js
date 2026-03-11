@@ -1,22 +1,10 @@
-var status = -1;
+/*
+	名字:	依菲雅
+	地圖:	陰鬱的見面室
+	描述:	921140001
+*/
 
-function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (status == 0) {
-	cm.sendSimple("#b#L0#Exchange Medals#l\r\n#L1#Go to the Audience Room#l");
-    } else if (status == 1) {
-	if (selection == 0) {
-	    cm.openShop(200);
-	} else if (selection == 1) {
-	    cm.warp(211070000);
-	}
+function start() {
+	cm.sendNext("Leon! Leon! Can't you hear my voice? #h0#, could you talk to him for me?! Ahh, he's so close...");
 	cm.dispose();
-    }
 }

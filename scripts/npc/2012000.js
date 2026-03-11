@@ -1,87 +1,133 @@
-var minPlayers = 1;
+/*
+	名字:	售票員
+	地圖:	天空之城售票處
+	描述:	200000100
+*/
 
-function init() {
-em.setProperty("state", "0");
-    em.setProperty("leader", "true");
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
 }
 
-function setup(level, leaderid) {
-em.setProperty("state", "1");
-    em.setProperty("leader", "true");
-    var eim = em.newInstance("HenesysPQ" + leaderid);
-    em.setProperty("stage", "0");
-        var map = eim.setInstanceMap(910010000);
-    map.resetFully(false);
-    map.setSpawns(false);
-    map.resetSpawnLevel(level);
-    eim.startEventTimer(600000); //10 mins
-    return eim;
+function action(mode, type, selection) {
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+            		cm.sendSimple("I can guide you to the right ship to reach your destination. Where are you headed? \r\n#L0##bVictoria Island#l\r\n#L1#Ludibrium Castle#l\r\n#L2#Leafre#l\r\n#L3#Mu Lung#l\r\n#L4#Ariant#l\r\n#L5#Ereve#l\r\n#L6#Edelstein#l");
+		break;
+	default:
+		if (status == 1 && type == 5) select = selection;
+		reactor = 'action' + select;
+		eval(reactor)(mode, type, selection);
+}
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapInstance(0);
-    player.changeMap(map, map.getPortal(0));
-    player.tryPartyQuest(1200);
+function action0(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("You're headed to Victoria Island? Oh, it's a beautiful island with a variety of villages. A #b1-seater ship for Victoria is always standing by#k for you to use.");
+		break;
+	case 2:
+		cm.sendNextPrev("Talk to #bIsa the Platform Guide#k on the right if you would like to take the Airship to Victoria. If anyone can show you the way, it's Isa.");
+		break;
+	case 3:
+		cm.dispose();
+}
 }
 
-function playerRevive(eim, player) {
+function action1(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("You're headed to Ludibrium Castle at Ludus Lake? It's such a fun village made of toys. A #b1-seater ship for Ludibrium Fortress is always standing by#k for you to use.");
+		break;
+	case 2:
+		cm.sendNextPrev("Talk to #bIsa the Platform Guide#k on the right if you would like to take the Airship to Ludibrium. If anyone can show you the way, it's Isa.");
+		break;
+	case 3:
+		cm.dispose();
+}
 }
 
-function scheduledTimeout(eim) {
-    end(eim);
+function action2(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("You're headed to Leafre in Minar Forest? I love that quaint little village of Halflingers. A #b1-seater ship for Leafre is always standing by#k for you to use.");
+		break;
+	case 2:
+		cm.sendNextPrev("Talk to #bIsa the Platform Guide#k on the right if you would like to take the Airship to Leafre. If anyone can show you the way, it's Isa.");
+		break;
+	case 3:
+		cm.dispose();
+}
 }
 
-function changedMap(eim, player, mapid) {
-    if (mapid != 910010000) {
-    eim.unregisterPlayer(player);
-
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-        em.setProperty("state", "0");
-        em.setProperty("leader", "true");
-    }
-    }
+function action3(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("Are you heading towards Mu Lung in the Mu Lung Temple? I'm sorry, but there's no ship that flies from Orbis to Mu Lung. There is another way to get there, though. There's a #bCrane that runs a cab service for 1 that's always available#k, so you'll get there as soon as you wish.");
+		break;
+	case 2:
+		cm.sendNextPrev("Unlike the ships that fly for free, however, this cab requires a set fee. This personalized flight to Mu Lung will cost you #b1,500 mesos#k, so please have the fee ready before riding the Crane.");
+		break;
+	case 3:
+		cm.sendNextPrev("Talk to #bIsa the Platform Guide#k on the right if you would like to take the Crane to Mu Lung. If anyone can show you the way, it's Isa.");
+		break;
+	case 4:
+		cm.dispose();
+}
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
+function action4(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("You're headed to Ariant in the Nihal Desert? The people living there have a passion as hot as the desert. A #bship that heads to Ariant is always standing by#k for you to use.");
+		break;
+	case 2:
+		cm.sendNextPrev("Talk to #bIsa the Platform Guide#k on the right if you would like to take the Genie to Ariant. If anyone can show you the way, it's Isa.");
+		break;
+	case 3:
+		cm.dispose();
+}
 }
 
-function monsterValue(eim, mobId) {
-    if (mobId == 9300061) {
-    eim.broadcastPlayerMsg(5, "The Moon Bunny has been killed.");
-    end(eim);
-    }
-    return 1;
+function action5(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("Are you heading toward Ereve? It's a beautiful island blessed with the presence of the Shinsoo the Holy Beast and Empress Cygnus. #bThe boat is for 1 person and it's always readily available#k so you can travel to Ereve fast.");
+		break;
+	case 2:
+		cm.sendNextPrev("Talk to #bIsa the Platform Guide#k on the right if you would like to take the ship to Ereve. If anyone can show you the way, it's Isa.");
+		break;
+	case 3:
+		cm.dispose();
+}
 }
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
-
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-    em.setProperty("state", "0");
-        em.setProperty("leader", "true");
-    }
+function action6(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("Are you going to Edelstein? The brave people who live there constantly fight the influence of dangerous monsters. #b1-person Airship to Edelstein is always on standby#k, so you can use it at any time.");
+		break;
+	case 2:
+		cm.sendNextPrev("Talk to #bIsa the Platform Guide#k on the right if you would like to take the ship to Edelstein. If anyone can show you the way, it's Isa.");
+		break;
+	case 3:
+		cm.dispose();
 }
-
-function end(eim) {
-    eim.disposeIfPlayerBelow(100, 910010300);
-    em.setProperty("state", "0");
-        em.setProperty("leader", "true");
 }
-
-function clearPQ(eim) {
-    end(eim);
-}
-
-function allMonstersDead(eim) {
-}
-
-function leftParty (eim, player) {
-    // If only 2 players are left, uncompletable:
-    end(eim);
-}
-function disbandParty (eim) {
-    end(eim);
-}
-function playerDead(eim, player) {}
-function cancelSchedule() {}  

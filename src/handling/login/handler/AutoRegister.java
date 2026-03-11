@@ -15,7 +15,7 @@ public class AutoRegister {
 
     public static boolean getAccountExists(String login) {
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT name FROM accounts WHERE name = ?")) {
+                PreparedStatement ps = con.prepareStatement("SELECT name FROM accounts WHERE name = ?")) {
             ps.setString(1, login);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -37,11 +37,13 @@ public class AutoRegister {
         }
 
         try (Connection con = DatabaseConnection.getConnection()) {
-            try (PreparedStatement ipc = con.prepareStatement("SELECT SessionIP FROM accounts WHERE SessionIP = ?")) {
+            try (PreparedStatement ipc = con
+                    .prepareStatement("SELECT COUNT(*) AS total FROM accounts WHERE SessionIP = ?")) {
                 ipc.setString(1, address);
                 try (ResultSet rs = ipc.executeQuery()) {
-                    if (rs.first() == false || (rs.last() == true && rs.getRow() < ACCOUNTS_PER_IP)) {
-                        try (PreparedStatement ps = con.prepareStatement("INSERT INTO accounts (name, password, email, birthday, macs, SessionIP) VALUES (?, ?, ?, ?, ?, ?)")) {
+                    if (rs.next() && rs.getInt("total") < ACCOUNTS_PER_IP) {
+                        try (PreparedStatement ps = con.prepareStatement(
+                                "INSERT INTO accounts (name, password, email, birthday, macs, SessionIP) VALUES (?, ?, ?, ?, ?, ?)")) {
                             ps.setString(1, login);
                             ps.setString(2, LoginCrypto.hexSha1(pwd));
                             ps.setString(3, "autoregister@mail.com");
@@ -51,11 +53,14 @@ public class AutoRegister {
                             ps.executeUpdate();
                         }
                         success = true;
+                    } else {
+                        System.out.println("AutoRegister failed: IP " + address + " has reached the account limit ("
+                                + ACCOUNTS_PER_IP + ").");
                     }
                 }
             }
         } catch (SQLException ex) {
-            System.out.println(ex);
+            System.err.println("Error during AutoRegister: " + ex);
         }
     }
 }

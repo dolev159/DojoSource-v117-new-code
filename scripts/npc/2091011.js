@@ -12,7 +12,7 @@ function start() {
     mapid = cm.getMapId();
 
     if (mapid == 925020001) {
-	cm.sendSimple("My master is the most powerful man in Mu Lung. Are you telling me you're trying to challenge our great master? Don't say I didn't warn you. \r #b#L0# I want to tackle him myself.#l \n\r #L1# I want to challenge him as a team.#l \n\r #L2# I want to exchange for rewards.#l \n\r #L3# I want to reset my training points.#l \n\r #L5# What's a Mu Lung Training Tower?#l \r\n\r\n\r\n#k#eNew option - #L6##rExchange #i 1132000# for 15 #i 4310025##l#k");
+	cm.sendSimple("My master is the most powerful man in Mu Lung. Are you telling me you're trying to challenge our great master? Don't say I didn't warn you. \r #b#L0# I want to tackle him myself.#l \n\r #L1# I want to challenge him as a team.#l \n\r #L2# I want to exchange for rewards.#l \n\r #L3# I want to reset my training points.#l \n\r #L5# What's a Mu Lung Training Tower?#l");
     } else if (isRestingSpot(mapid)) {
 	cm.sendSimple("I'm amazed to know that you've safely reached up to this level. I can guarantee you, however, that it won't get any easier. What do you think? Do you want to keep going?#b \n\r #L0# Yes, I'll keep going.#l \n\r #L1# I want out#l \n\r #L2# I want to save my progress on record.#l");
     } else {
@@ -31,30 +31,21 @@ function action(mode, type, selection) {
 	if (status == 0) {
 	    sel = selection;
 
-	    if (sel == 6)  {
-		if (cm.getPlayer().haveItem(1132000, 1)) {
-		cm.gainItem(1132000, -1);
-		cm.gainItem(4310025, 15);
-		cm.dispose();
-	    	cm.sendOk("There you go. Enjoy your #r7th anniversary coins#k.");
-		 } else { 
-		cm.sendOk("Too bad, you do not have #i 1132000#.\r\nTry again later.");
-}
-	    } else if (sel == 5) {
-		cm.sendNext("My master is the most powerful individual in Mu Lung, and he is responsible for erecting this amazing Mu Lung Training Tower. Mu Lung Training Tower is a colossal training facility that consists of 38 floors. Each floor represents additional levels of difficulty. Of course, with your skills, reaching the top floor will be impossible...");
+	    if (sel == 5) {
+		cm.sendNext("My master is the most powerful individual in Mu Lung, and he is responsible for erecting this amazing Mu Lung Training Tower. Mu Lung Training Tower is a colossal training facility that consists of 38 floors. Each floor represents additional levels of difficulty. Of course, with your skills, reaching the top floor will be impossible.");
 		cm.dispose();
 	    } else if (sel == 3) {
 		cm.sendYesNo("You know if you reset your training points, then it'll return to 0, right? I can honestly say that it's not necessarily a bad thing. Once you reset your training points and start over again, then you'll be able to receive the belts once more. Do you want to reset your training points?");
 	    } else if (sel == 2) {
-		cm.sendSimple("Your total training points so far are #b"+cm.getDojoPoints()+"#k #r(Reset your points after buying a belt please.)#k. Our master loves talented individuals, so if you rack up enough training points, you'll be able to receive a belt based on your training points...\n\r #L0##i1132000:# #t1132000#(200)#l \n\r #L1##i1132001:# #t1132001#(1800)#l \n\r #L2##i1132002:# #t1132002#(4000)#l \n\r #L3##i1132003:# #t1132003#(9200)#l \n\r #L4##i1132004:# #t1132004#(17000)#l \r\n#L5##i1082232:# #t1082232# (20)#l");
+		cm.sendSimple("Your total training points so far are #b"+cm.getDojoPoints()+"#k. Our master loves talented individuals, so if you rack up enough training points, you'll be able to receive a belt based on your training points.\n\r #L0##i1132000:# #t1132000# (500)#l \n\r #L1##i1132001:# #t1132001# (1500)#l \n\r #L2##i1132002:# #t1132002# (3000)#l \n\r #L3##i1132003:# #t1132003# (4500)#l \n\r #L4##i1132004:# #t1132004# (6000)#l\r\n#L5##i1082394:# #t1082394# (9000)#l\r\n#L6##i1082393:# #t1082393# (11000)#l\r\n#L7##i1082392:# #t1082392# (15000)#l");
 	    } else if (sel == 1) {
 		if (cm.getParty() != null) {
 		    if (cm.isLeader()) {
-			cm.sendOk("Would you like to Enter now?");
+			cm.sendOk("Would you like to enter now?");
 		    } else {
-			cm.sendOk("Hey, you're not even a leader of your party. What are you doing trying to sneak in? Tell your party leader to talk to me if you want to enter the premise...");
+			cm.sendOk("Hey, you're not even a leader of your party. What are you doing trying to sneak in? Tell your party leader to talk to me if you want to enter the premise.");
 		    }
-}
+		}
 	    } else if (sel == 0) {
 		if (cm.getParty() != null) {
 			cm.sendOk("Please leave your party.");

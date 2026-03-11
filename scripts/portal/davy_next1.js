@@ -1,12 +1,14 @@
+/*
+	名字:	隱藏地圖
+	地圖:	突破船首!
+	描述:	925100100
+*/
+
 function enter(pi) {
- try {
-    var em = pi.getEventManager("Pirate");
-    if (em != null && em.getProperty("stage2").equals("3")) {
-	pi.warp(925100200,0); //next
-    } else {
-	pi.playerMessage(5, "The portal is not opened yet.");
-    }
- }catch(e) {
-    pi.playerMessage(5, "Error: " + e);
- }
+	if (pi.getPlayer().getMap().getReactorByName("treasure1").getState() > 0) {
+		pi.getPlayer().changeMap(pi.getMap(925100200), pi.getMap(925100200).getPortal(0)); //突破甲板1
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The portal is not opened yet."));
+		return false;
 }

@@ -1,28 +1,34 @@
-var status = -1;
+/*
+	名字:	坎特
+	地圖:	動物園
+	描述:	230000003
+*/
 
 function start() {
-status = -1;
-action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-
-if (mode == -1) {
-cm.dispose();
-}
-else {
-if (status == 0 && mode == 0) {
-cm.dispose();
-return;
-    }
-}
-
-if (mode == 1) 
-   status++;
-
-else 
-   status--;
-    if (status == 0) { 
-        cm.sendOk("Not being used right now NPC Id is #r2060005#k");
-    }
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(6002)).getStatus() > 1) {
+		cm.sendNext("You already guarded the pig, and you did just fine.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(6002)).getStatus() < 1) {
+		cm.sendOk("What pig? Where did you hear about that?");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().itemQuantity(4031508) > 5 && cm.getPlayer().itemQuantity(4031507) > 5) {
+		cm.sendNext("I don't need another one of #bKenta's Reports#k and I'm all stocked up on #bPheromone#k. You don't need to go in.");
+		cm.dispose();
+		return;
+		}
+		var em = cm.getEventManager("q6002");
+		var prop = em.getProperty("state");
+	if (prop == null || prop == 0) {
+		cm.getPlayer().removeAll(4031507);
+		cm.getPlayer().removeAll(4031508);
+		em.startInstance(cm.getPlayer());
+		cm.dispose();
+		return;
+		}
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Someone is attempting to protect the Watch Hog already. Please try again later."));
+		cm.dispose();
 }

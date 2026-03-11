@@ -1,191 +1,76 @@
-/**
--- Odin JavaScript --------------------------------------------------------------------------------
-	Faito(Showa Exchange Quest) - Showa Town(801000300)
--- By ---------------------------------------------------------------------------------------------
-	Information
--- Version Info -----------------------------------------------------------------------------------
-	1.0 - First Version by Information
-	    - Base from Sean360 script, thanks
----------------------------------------------------------------------------------------------------
-**/
+/*
+	名字:	伏特加
+	地圖:	昭和商店街
+	描述:	801000300
+*/
 
-var status = -1;
-var eQuestChoices = new Array (4000064,4000065,4000066,4000075,4000077,4000089,4000090,4000091,4000092,4000093,4000094); 
+var item = [4000064, 4000065, 4000066, 4000075, 4000077, 4000089, 4000090, 4000091, 4000092, 4000093, 4000094];
+var Prizes = [2022019, 2022019, 2022019, 2022022, 2022022, 2022022, 2022026, 2001002, 2022000];
+var num = [5, 10, 15, 5, 10, 15, 15, 15, 20];
 
-var eQuestPrizes = new Array();
+var status;
 
-eQuestPrizes[0] = new Array ([2000000,1],  // Red Potion
-    [2000006,1],	// Mana Elixir
-    [2000003,5], 	// Blue Potion
-    [2000002,5],	// White Potion
-    [4020006,2],	// Topaz Ore
-    [4020000,2],	// Garnet Ore
-    [4020004,2],	// Opal Ore
-    [2000003,10],	// Blue Potion
-    [2000003,20],	// Blue Potion
-    [2000002,10],	// White Potion
-    [2000002,20],	// White Potion
-    [2022026,15],	// Yakisoba
-    [2022024,15],	// Takoyaki (Octopus Ball)
-    [1002393,1]);	// Pink Bandana
-eQuestPrizes[1] = new Array ([2000006,1],	// Mana Elixir
-    [2000002,5],	// White Potion
-    [4020006,2],	// Topaz Ore
-    [2000002,10],	// White Potion
-    [2000003,10],	// Blue Potion
-    [2000002,20],	// White Potion
-    [2000003,20],	// Blue Potion
-    [2022024,15],	// Takoyaki (Octopus Ball)
-    [2022026,15]);	// Yakisoba
-eQuestPrizes[2] = new Array ([2000006,1],	// Mana Elixir
-    [2000002,5],	// White Potion
-    [2000003,5],	// Blue Potion
-    [4020000,2],	// Garnet Ore
-    [2000003,10],	// Blue Potion
-    [2000002,10],	// White Potion
-    [2000003,20],	// Blue Potion
-    [2000002,20],	// White Potion
-    [2022024,15],	// Takoyaki (Octopus Ball)
-    [1002393,1]);	// Pink Bandana
-eQuestPrizes[3] = new Array ([2060003,1000],	// Red Arrow for Bow
-    [4010004,2],	// Silver Ore
-    [4010006,2],	// Gold Ore
-    [2022022,5],	// Tempura (Dish)
-    [2022022,10],	// Tempura (Dish)
-    [2022022,15],	// Tempura (Dish)
-    [2022019,5],	// Kinoko Ramen (Pig Bone)
-    [2022019,10],	// Kinoko Ramen (Pig Bone)
-    [2022019,15],	// Kinoko Ramen (Pig Bone)
-    [2001002,15],	// Red Bean Sundae
-    [2001001,15],	// Ice Cream Pop
-    [1102040,1],	// Yellow Adventurer Cape
-    [1102043,1]);	// Brown Adventurer Cape
-eQuestPrizes[4] = new Array ([2000003,1],	//Blue Potion
-    [2022019,5],	// Kinoko Ramen (Pig Bone)
-    [2000006,5],	// Mana Elixir
-    [4010002,2],	// Mithril Ore
-    [4010003,2],	// Adamantium Ore
-    [2000006,10],	// Mana Elixir
-    [2000006,15],	// Mana Elixir
-    [2022019,10],	// Kinoko Ramen (Pig Bone)
-    [2022019,15],	// Kinoko Ramen (Pig Bone)
-    [2060003,1000],	// Red Arrow for Bow
-    [2061003,1000],	// Blue Arrow for Crossbow
-    [1082150,1],	// Grey Work Gloves
-    [1082149,1]);	// Brown Work Gloves
-eQuestPrizes[5] = new Array ([2000006,1],	// Mana Elixir
-    [2000003,5],	// Blue Potion
-    [2000002,5],	// White Potion
-    [2000003,10],	// Blue Potion
-    [2000003,20],	// Blue Potion
-    [2000002,10],	// White Potion
-    [2000002,15],	// White Potion
-    [2060003,1000],	// Red Arrow for Bow
-    [2061003,1000],	// Blue Arrow for Crossbow
-    [2022026,15],	// Yakisoba
-    [1002395,1]);	// Purple Bandana
-eQuestPrizes[6] = new Array ([2022019,5],	// Kinoko Ramen (Pig Bone)
-    [2000006,5],	// Mana Elixir
-    [4010003,2],	// Adamantium Ore
-    [2022019,10],	// Kinoko Ramen (Pig Bone)
-    [2022019,15],	// Kinoko Ramen (Pig Bone)
-    [2000006,10],	// Mana Elixir
-    [2000006,15],	// Mana Elixir
-    [2060003,1000],	// Red Arrow for Bow
-    [2061003,1000]);	// Blue Arrow for Crossbow
-eQuestPrizes[7] = new Array ([2000003,1],	// Blue Potion
-    [2000006,1],	// Mana Elixir
-    [2022019,1],	// Kinoko Ramen (Pig Bone)
-    [2000006,5],	// Mana Elixir
-    [4010002,2],	// Mithril Ore
-    [4020001,2],	// Amethyst Ore
-    [2022019,10],	// Kinoko Ramen (Pig Bone)
-    [2022019,15],	// Kinoko Ramen (Pig Bone)
-    [2000006,10],	// Mana Elixir
-    [2000006,15],	// Mana Elixir
-    [2060003,1000],	// Red Arrow for Bow
-    [2061003,1000]);	// Blue Arrow for Crossbow
-eQuestPrizes[8] = new Array ([2022019,5],	// Kinoko Ramen (Pig Bone)
-    [2022022,5],	// Tempura (Dish)
-    [4010006,2],	// Gold Ore
-    [2022019,10],	// Kinoko Ramen (Pig Bone)
-    [2022019,15],	// Kinoko Ramen (Pig Bone)
-    [2022022,10],	// Tempura (Dish)
-    [2022022,15],	// Tempura (Dish)
-    [2001002,15],	// Red Bean Sundae
-    [2001001,15],	// Ice Cream Pop
-    [1102043,1]);	// Brown Adventurer Cape
-eQuestPrizes[9] = new Array ([4010004,5],	// Silver Ore
-    [2022019,5],	// Kinoko Ramen (Pig Bone)
-    [2022022,15],	// Tempura (Dish)
-    [2022019,15],	// Kinoko Ramen (Pig Bone)
-    [2001002,15],	// Red Bean Sundae
-    [2001001,15],	// Ice Cream Pop
-    [1102043,1]);	// Brown Adventurer Cape
-eQuestPrizes[10] = new Array   ([2000006,1],	// Mana Elixir
-    [4020008,15],	// Black Crystal Ore
-    [2022018,5],	// Kinoko Ramen (Roasted Pork)
-    [2022018,10],	// Kinoko Ramen (Roasted Pork)
-    [2022018,15],	// Kinoko Ramen (Roasted Pork)
-    [2022000,10],	// Pure Water
-    [2022000,20],	// Pure Water
-    [2022025,15]);	// Takoyaki (Jumbo)
-var requiredItem  = 0;
-var lastSelection = 0;
-var prizeItem     = 0;
-var prizeQuantity = 0;
-var info;
-var itemSet;
-var reward;
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.sendOk("Really? Let me know if you ever change your mind.");
-	    cm.safeDispose();
-	    return;
-	}
-	status--;
-    }
-
-    if (status == 0) {
-	cm.sendYesNo("If you're looking for someone that can pinpoint the characteristics of various items, you're looking at one right now. I'm currently looking for something. Would you like to hear my story?");
-    } else if (status == 1) {
-	var eQuestChoice = makeChoices(eQuestChoices);
-	cm.sendSimple(eQuestChoice);
-    } else if (status == 2){
-	requiredItem = eQuestChoices[selection];
-	reward = eQuestPrizes[selection];
-	itemSet = (Math.floor(Math.random() * reward.length));
-	prizeItem = reward[itemSet][0];
-	prizeQuantity = reward[itemSet][1];
-	if (!cm.canHold(prizeItem)){
-	    cm.sendNext("What? I can't give you the reward if your equip., use, or etc. inventory is full. Please go take a look right now.");
-	} else if (checkQuantity(requiredItem) >= 100){   // check they have >= 100 in Inventory
-	    cm.gainItem(requiredItem,-100);
-	    cm.gainItem(prizeItem,prizeQuantity);
-	    cm.sendOk("Hmmm ... if not for this minor scratch ... sigh. I'm afaird I can only deem this a standard-quality item. Well, here's \r\n#t"+ prizeItem +"# for you.");
-	} else{
-	    cm.sendOk("Hey, what do you think you're doing? Go lie someone that DOESN'T know what he's talking about. Not me!");
-	}
-	cm.safeDispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.sendOk("Really? Let me know if you ever change your mind. I'll be waiting!");
+		cm.dispose();
+		return;
+		}
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendYesNo("If you're looking for someone who can pinpoint the characteristics of various items, you're looking at him now. Would you like to hear my story?");
+		break;
+	case 1:
+		var chat = "The items I'm looking for are...ugh, just too many to mention. But if you gather up 100 of the same items, then I may trade it for something similar. I can understand being a little wary, but don't worry--I'll keep my end of the deal. Now, shall we trade? #b"
+		for (var i = 0; i < item.length; i++)
+		chat += "\r\n#L" + i + "##v" + item[i] + "##z" + item[i] + "##l";
+		cm.sendSimple(chat);
+		break;
+	case 2:
+		if (cm.getPlayer().itemQuantity(item[selection]) < 100) {
+			cm.sendNext("Hey, what do you think you're doing? Go lie to some other unassuming fellow. Not me!");
+			cm.dispose();
+			return;
+			}
+			rand = Math.floor(Math.random() * Prizes.length);
+		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.USE).getNumFreeSlot() < 1) {
+			cm.sendNext("What? I can't give you the reward if your Equip, Use, or Etc window in your Item Inventory is full. Please make room and I will gladly give you what you came for.");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext(txt[rand]);
+			cm.gainItem(item[selection], -100);
+			cm.gainItem(Prizes[rand], num[rand]);
+			cm.dispose();
+}
 }
 
-function makeChoices(a){
-    var result  = "The items I'm looking for are 1,2,3 ... phew, too many to\r\nmention. Anyhow, if you gather up 100 of the same items,\r\nthen i may trade it with something similiar. What? You may\r\nnot know this, but i keep my end of the promise, so you\r\nneed not worry. Now, shall we trade?\r\n";
-    for (var x = 0; x< a.length; x++){
-	result += " #L" + x + "##v" + a[x] + "##t" + a[x] + "##l\r\n";
-    }
-    return result;
-}
-function checkQuantity(itemId){
-    var itemCount = 0;
-    var iter = cm.getInventory(4).listById(itemId).iterator();
-    while (iter.hasNext()) {
-	itemCount += iter.next().getQuantity();
-    }
-    return itemCount;
-}
+var txt = ["Hmmm...I see some dents here and there. And what's this scratch here? Did you run into a wild cat? Honestly, this is below the standard I've come to expect from warriors such as yourself. As always, I will reward you with an item of similar quality. Here, I'll give you Kinoko Ramen(pig head).", 
+	"Hmmm...if not for this minor scratch...sigh. I'm afraid I can only deem this a standard-quality item. Well, here's Kinoko Ramen(pig head) for you.", 
+	"Hmmm...if not for this minor scratch...sigh. I'm afraid I can only deem this a standard-quality item. Well, here's Kinoko Ramen(pig head) for you.", 
+	"Hmmm...I see some dents here and there. And what's this scratch here? Did you run into a wild cat? Honestly, this is below the standard I've come to expect from warriors such as yourself. As always, I will reward you with an item of similar quality. Here, I'll give you Fish Cake(dish).", 
+	"Hmmm...if not for this minor scratch...sigh. I'm afraid I can only deem this a standard-quality item. Well, here's Fish Cake(dish) for you.", 
+	"Hmmm...if not for this minor scratch...sigh. I'm afraid I can only deem this a standard-quality item. Well, here's Fish Cake(dish) for you.", 
+	"Ohh... I like this. Yes! This is definitely something that cannot be easily obtained. No doubt this is going to be part of my collection. I can't believe that you not only found this, but also gathered up mass quantities! Something as awesome as this deserves a similarly great reward like Yakisoba. It's okay, please go ahead and receive it!", 
+	"Ohh... I like this. Yes! This is definitely something that cannot be easily obtained. No doubt this is going to be part of my collection. I can't believe that you not only found this, but also gathered up mass quantities! Something as awesome as this deserves a similarly great reward like Very Special Sundae. It's okay, please go ahead and receive it!", 
+	"Hmmm...if not for this minor scratch...sigh. I'm afraid I can only deem this a standard-quality item. Well, here's Pure Water for you."];

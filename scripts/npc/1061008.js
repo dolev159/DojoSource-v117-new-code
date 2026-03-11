@@ -1,11 +1,10 @@
-/**
-	Mr. Oh - Dungeon : Sleepywood (105040300)
-**/
+/*
+	名字:	倉庫吳老闆
+	地圖:	林中之城
+	描述:	105000000
+*/
 
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1061008);
+	cm.dispose();
 }

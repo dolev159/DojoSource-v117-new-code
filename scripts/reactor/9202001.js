@@ -1,8 +1,12 @@
 /*
-Guild Quest - Chained Spear
-Drops the Longinus Spear (4001025)
+	名字:	威廉的古堡
+	地圖:	榮耀之室
+	描述:	990000410
 */
 
 function act() {
 	rm.dropItems();
 }
+
+
+//4001025		隆奇努斯之槍

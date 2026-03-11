@@ -1,14 +1,14 @@
+/*
+	名字:	組隊任務
+	地圖:	敏捷的測試
+	描述:	610030300
+*/
+
 function enter(pi) {
-    var em = pi.getEventManager("CWKPQ");
-    if (em != null) {
-	pi.warpS(610030300, 0);
-	if (!em.getProperty("glpq3").equals("10")){
-	    em.setProperty("glpq3", parseInt(em.getProperty("glpq3")) + 1);
-	    pi.mapMessage(6, "An adventurer has passed through!");
-	    if (em.getProperty("glpq3").equals("10")) {
-		pi.mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
-		pi.getMap().changeEnvironment("3pt", 2);
-	    }
-	}
-    }
+	var nun = pi.getPlayer().getMap().getReactorByName("3skill0").getState() + pi.getPlayer().getMap().getReactorByName("3skill1").getState() + pi.getPlayer().getMap().getReactorByName("3skill2").getState() + pi.getPlayer().getMap().getReactorByName("3skill3").getState() + pi.getPlayer().getMap().getReactorByName("3skill4").getState();
+	pi.getPlayer().changeMap(pi.getMap(610030300), pi.getMap(610030300).getPortal(0)); //敏捷的測試
+	if (nun > 4) {
+		pi.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("3pt", 2));
+		}
+		return true;
 }

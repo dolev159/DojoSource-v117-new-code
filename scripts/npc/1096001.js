@@ -1,6 +1,10 @@
-var status = -1;
+/*
+	名字:	水兵
+	地圖:	維多利亞島
+	描述:	3000600
+*/
 
-function action(mode, type, selection) {
-	cm.sendNext("I hate cleaning...");
+function start() {
+	cm.sendOk("I have to finish cleaning.");
 	cm.dispose();
 }

@@ -1,10 +1,13 @@
+/*
+	名字:	隱密之地
+	地圖:	雅典娜禁地&amp;lt;中央塔&gt;
+	描述:	920010100
+*/
 
 function act() {
-	rm.mapMessage(6, "One of the pieces has been placed.");
-	var em = rm.getEventManager("OrbisPQ");
-	if (em != null) {
-		em.setProperty("stage", parseInt(em.getProperty("stage")) + 1);
-		var r = rm.getMap().getReactorByName("minerva");
-		r.forceHitReactor(r.getState() + 1);
-	}
+	rm.getPlayer().getMap().getReactorByName("minerva").forceHitReactor(rm.getPlayer().getMap().getReactorByName("minerva").getState() + 1);
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "One of the pieces has been placed."));
 }
+
+
+//4001048		女神像的第四個碎片

@@ -34,7 +34,8 @@ public class MapleStorage implements Serializable {
     private int lastNPC = 0;
     private byte slots;
     private boolean changed = false;
-    private Map<MapleInventoryType, List<Item>> typeItems = new EnumMap<MapleInventoryType, List<Item>>(MapleInventoryType.class);
+    private Map<MapleInventoryType, List<Item>> typeItems = new EnumMap<MapleInventoryType, List<Item>>(
+            MapleInventoryType.class);
 
     private MapleStorage(int id, byte slots, int meso, int accountId) {
         this.id = id;
@@ -46,7 +47,9 @@ public class MapleStorage implements Serializable {
 
     public static int create(int id) throws SQLException {
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("INSERT INTO storages (accountid, slots, meso) VALUES (?, ?, ?)", DatabaseConnection.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO storages (accountid, slots, meso) VALUES (?, ?, ?)",
+                        DatabaseConnection.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, id);
             ps.setInt(2, 4);
             ps.setInt(3, 0);
@@ -65,7 +68,7 @@ public class MapleStorage implements Serializable {
         MapleStorage ret = null;
         int storeId;
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM storages WHERE accountid = ?")) {
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM storages WHERE accountid = ?")) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -91,8 +94,20 @@ public class MapleStorage implements Serializable {
         if (!changed) {
             return;
         }
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("UPDATE storages SET slots = ?, meso = ? WHERE storageid = ?")) {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            saveToDB(con);
+        } catch (SQLException ex) {
+            FileoutputUtil.logDatabaseError("UPDATE storages id=" + id, ex);
+            System.err.println("[Storage] Error saving storage for account " + accountId + ": " + ex.getMessage());
+        }
+    }
+
+    public void saveToDB(Connection con) throws SQLException {
+        if (!changed) {
+            return;
+        }
+        try (PreparedStatement ps = con
+                .prepareStatement("UPDATE storages SET slots = ?, meso = ? WHERE storageid = ?")) {
             ps.setInt(1, slots);
             ps.setInt(2, meso);
             ps.setInt(3, id);
@@ -102,10 +117,7 @@ public class MapleStorage implements Serializable {
             for (final Item item : items) {
                 listing.add(new Pair<Item, MapleInventoryType>(item, GameConstants.getInventoryType(item.getItemId())));
             }
-            ItemLoader.STORAGE.saveItems(listing, accountId);
-        } catch (SQLException ex) {
-            FileoutputUtil.logDatabaseError("UPDATE storages id=" + id, ex);
-            System.err.println("[Storage] Error saving storage for account " + accountId + ": " + ex.getMessage());
+            ItemLoader.STORAGE.saveItems(listing, con, accountId);
         }
     }
 
@@ -178,13 +190,15 @@ public class MapleStorage implements Serializable {
 
     public void sendStorage(MapleClient c, int npcId) {
         // sort by inventorytype to avoid confusion
-	lastNPC = npcId;
+        lastNPC = npcId;
         Collections.sort(items, new Comparator<Item>() {
 
             public int compare(Item o1, Item o2) {
-                if (GameConstants.getInventoryType(o1.getItemId()).getType() < GameConstants.getInventoryType(o2.getItemId()).getType()) {
+                if (GameConstants.getInventoryType(o1.getItemId()).getType() < GameConstants
+                        .getInventoryType(o2.getItemId()).getType()) {
                     return -1;
-                } else if (GameConstants.getInventoryType(o1.getItemId()) == GameConstants.getInventoryType(o2.getItemId())) {
+                } else if (GameConstants.getInventoryType(o1.getItemId()) == GameConstants
+                        .getInventoryType(o2.getItemId())) {
                     return 0;
                 } else {
                     return 1;

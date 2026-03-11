@@ -7,6 +7,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import java.util.List;
 import tools.MapleAESOFB;
 import tools.MapleCustomEncryption;
+import constants.ServerConstants;
 
 public class NettyPacketDecoder extends ByteToMessageDecoder {
 
@@ -46,12 +47,16 @@ public class NettyPacketDecoder extends ByteToMessageDecoder {
             return;
         }
 
-        final byte[] decryptedPacket = new byte[packetLength];
-        in.readBytes(decryptedPacket);
+        final byte[] data = new byte[packetLength];
+        in.readBytes(data);
 
-        client.getReceiveCrypto().crypt(decryptedPacket);
-        MapleCustomEncryption.decryptData(decryptedPacket);
+        if (ServerConstants.USE_AES) {
+            client.getReceiveCrypto().crypt(data);
+        }
+        if (ServerConstants.USE_SHANDA) {
+            MapleCustomEncryption.decryptData(data);
+        }
 
-        out.add(decryptedPacket);
+        out.add(data);
     }
 }

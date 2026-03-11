@@ -149,7 +149,8 @@ public class MonsterBook implements Serializable {
         }
 
         final int fullSize = (cardItems.size() / 2) + (cardItems.size() % 2 > 0 ? 1 : 0);
-        mplew.writeShort(fullSize); // I honestly don't know the point of this, is it to signify yes/no if you have the card or not?... which is already done...?
+        mplew.writeShort(fullSize); // I honestly don't know the point of this, is it to signify yes/no if you have
+                                    // the card or not?... which is already done...?
         for (int i = 0; i < fullSize; i++) {
             mplew.write(i == (cardItems.size() / 2) ? 1 : 0x11);
         }
@@ -191,7 +192,8 @@ public class MonsterBook implements Serializable {
         eq.setPotential4(0);
         eq.setPotential5(0);
         if (currentSet > -1) {
-            final Triple<Integer, List<Integer>, List<Integer>> set = MapleItemInformationProvider.getInstance().getMonsterBookInfo(currentSet);
+            final Triple<Integer, List<Integer>, List<Integer>> set = MapleItemInformationProvider.getInstance()
+                    .getMonsterBookInfo(currentSet);
             if (set != null) {
                 for (int i = 0; i < set.right.size(); i++) {
                     if (i == 0) {
@@ -262,7 +264,8 @@ public class MonsterBook implements Serializable {
     public final static MonsterBook loadCards(final int charid, final MapleCharacter chr) throws SQLException {
         Map<Integer, Integer> cards = new LinkedHashMap<Integer, Integer>();
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM monsterbook WHERE charid = ? ORDER BY cardid ASC")) {
+                PreparedStatement ps = con
+                        .prepareStatement("SELECT * FROM monsterbook WHERE charid = ? ORDER BY cardid ASC")) {
             ps.setInt(1, charid);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -278,35 +281,42 @@ public class MonsterBook implements Serializable {
             return;
         }
         try (Connection con = DatabaseConnection.getConnection()) {
-            try (PreparedStatement ps = con.prepareStatement("DELETE FROM monsterbook WHERE charid = ?")) {
-                ps.setInt(1, charid);
-                ps.execute();
-            }
-            changed = false;
-            if (cards.isEmpty()) {
-                return;
-            }
+            saveCards(charid, con);
+        }
+    }
 
-            boolean first = true;
-            final StringBuilder query = new StringBuilder();
+    public final void saveCards(final int charid, final Connection con) throws SQLException {
+        if (!changed) {
+            return;
+        }
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM monsterbook WHERE charid = ?")) {
+            ps.setInt(1, charid);
+            ps.execute();
+        }
+        changed = false;
+        if (cards.isEmpty()) {
+            return;
+        }
 
-            for (final Entry<Integer, Integer> all : cards.entrySet()) {
-                if (first) {
-                    first = false;
-                    query.append("INSERT INTO monsterbook VALUES (DEFAULT,");
-                } else {
-                    query.append(",(DEFAULT,");
-                }
-                query.append(charid);
-                query.append(",");
-                query.append(all.getKey()); // Card ID
-                query.append(",");
-                query.append(all.getValue()); // Card level
-                query.append(")");
+        boolean first = true;
+        final StringBuilder query = new StringBuilder();
+
+        for (final Entry<Integer, Integer> all : cards.entrySet()) {
+            if (first) {
+                first = false;
+                query.append("INSERT INTO monsterbook VALUES (DEFAULT,");
+            } else {
+                query.append(",(DEFAULT,");
             }
-            try (PreparedStatement ps = con.prepareStatement(query.toString())) {
-                ps.execute();
-            }
+            query.append(charid);
+            query.append(",");
+            query.append(all.getKey()); // Card ID
+            query.append(",");
+            query.append(all.getValue()); // Card level
+            query.append(")");
+        }
+        try (PreparedStatement ps = con.prepareStatement(query.toString())) {
+            ps.execute();
         }
     }
 
@@ -317,7 +327,8 @@ public class MonsterBook implements Serializable {
             c.getSession().write(EffectPacket.showForeignEffect(16));
             cards.put(cardid, 2);
             if (c.getPlayer().getQuestStatus(50195) != 1) {
-                MapleQuest.getInstance(50195).forceStart(c.getPlayer(), 9010000, "1"); // This quest signifies that a card is done
+                MapleQuest.getInstance(50195).forceStart(c.getPlayer(), 9010000, "1"); // This quest signifies that a
+                                                                                       // card is done
             }
             if (c.getPlayer().getQuestStatus(50196) != 1) {
                 MapleQuest.getInstance(50196).forceStart(c.getPlayer(), 9010000, "1"); // This quest signifies something
@@ -326,7 +337,8 @@ public class MonsterBook implements Serializable {
             byte rr = calculateScore();
             if (rr > 0) {
                 if (c.getPlayer().getQuestStatus(50197) != 1) {
-                    MapleQuest.getInstance(50197).forceStart(c.getPlayer(), 9010000, "1"); // This quest signifies that a set is done
+                    MapleQuest.getInstance(50197).forceStart(c.getPlayer(), 9010000, "1"); // This quest signifies that
+                                                                                           // a set is done
                 }
                 c.getSession().write(EffectPacket.showForeignEffect(43));
                 if (rr > 1) {

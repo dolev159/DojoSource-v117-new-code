@@ -53,7 +53,7 @@ public class LoginPacket {
         mplew.writeInt(0);
         mplew.writeShort(257);
         mplew.writeInt(0);
-        mplew.writeInt(0); // V118 uses a byte here
+        mplew.writeInt(0);
         return mplew.getPacket();
     }
 
@@ -297,9 +297,9 @@ public class LoginPacket {
         for (MapleCharacter chr : chars) {
             addCharEntry(mplew, chr, (!chr.isGM()) && (chr.getLevel() >= 30), false);
         }
-        mplew.write(2); // PIC/Second Password disabled
+        mplew.write(secondpw != null && secondpw.length() > 0 ? 1 : (secondpw != null && secondpw.length() <= 0 ? 2 : 0)); // second pw request
         mplew.write(0);
-        mplew.writeInt(1);
+        mplew.writeInt(charslots);
         mplew.writeInt(0);
         mplew.writeInt(0);
         mplew.writeInt(0);
@@ -359,7 +359,7 @@ public class LoginPacket {
          for (MapleCharacter chr : chars) {
              addCharEntry(mplew, chr, true, true);
         }
-         mplew.write(2); // PIC/Second Password disabled
+         mplew.write(pic.equals("") ? 2 : pic == null ? 0 : 1);
          return mplew.getPacket();
     }
 

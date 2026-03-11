@@ -1,156 +1,111 @@
+/*
+	名字:	隱藏地圖
+	地圖:	月妙的年糕&amp;lt;離開地圖&gt;
+	描述:	910010500
+*/
 
-importPackage(Packages.net.world);
-importPackage(Packages.tools);
-
-var exitMap;
-var mainMap;
-var minPlayers = 3;
-var pqTime = 10;//10 Minutes
-
-function init() {
-    exitMap = em.getChannelServer().getMapFactory().getMap(910010300); // <exit>
-    exitClearMap = em.getChannelServer().getMapFactory().getMap(910010100); // <clear>
-    mainMap = em.getChannelServer().getMapFactory().getMap(910010000); // <main>
-    //mainMap.setMonsterSpawn(false);
-    //mainMap.killAllMonsters();
-    em.setProperty("HPQOpen", "true"); // allows entrance.
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function monsterValue(eim, mobId) {
-    return 1;
+function setup(level, leaderid) {//開始事件，時間
+	em.setProperty("state", 1);
+
+	eim = em.newInstance("HenesysPQ");
+
+	eim.setInstanceMap(910010000).resetFully(false);
+
+	eim.setInstanceMap(910010000).setSpawns(false); //限制刷怪
+
+	checkbunnyHealth(eim); //監控血量
+
+	checkcakesdrop(eim); //監控年糕掉落
+
+	eim.startEventTimer(10 * 60 * 1000); //10 mins
+
+	return eim;
 }
 
-function setup() {
-    em.setProperty("HPQOpen", "false")
-    var eim = em.newInstance("HenesysPQ_" + em.getProperty("latestLeader"));
-    eim.setProperty("stage", "0");
-    eim.setProperty("clear", "false");
-    eim.getMapInstance(910010000).setMonsterSpawn(false);
-    eim.getMapInstance(910010000).killAllMonsters();
-    var timer = 1000 * 60 * pqTime; // 10 minutes
-    em.schedule("timeOut", eim, timer);
-    eim.startEventTimer(timer);
-    return eim;
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(910010000), eim.getMapInstance(910010000).getPortal(0));
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapInstance(mainMap.getId());
-    player.changeMap(map, map.getPortal(0));
-//player.getClient().getSession().write(MaplePacketCreator.getClock(1800));
+function checkbunnyHealth(eim) {//監控月妙血量
+	bunny = eim.getMapInstance(910010000).getMonsterById(9300061); //讀取指定怪物ID
+
+	if (bunny != null) {
+
+		var hp = bunny.getHp();
+
+		var oldHp = eim.getProperty("bunny_hp") == null ? 0 : eim.getProperty("bunny_hp");
+
+	if (oldHp - hp > 100) {
+		eim.getMapInstance(910010000).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(6, "The Moon Bunny is feeling sick. please protect so it can make delicious rice cakes."));
+		}
+		eim.setProperty("bunny_hp", hp);
+		}
+		eim.schedule("checkbunnyHealth", 5 * 1000);
 }
 
-function playerDead(eim, player) {
-    if (player.isAlive()) {
-        if (eim.isLeader(player)) {
-            var party = eim.getPlayers();
-            for (var i = 0; i < party.size(); i++)
-                playerExit(eim, party.get(i));
-            eim.dispose();
-        } else {
-            var partyz = eim.getPlayers();
-            if (partyz.size() < minPlayers) {
-                for (var j = 0; j < partyz.size(); j++)
-                    playerExit(eim,partyz.get(j));
-                eim.dispose();
-            } else
-                playerExit(eim, player);
-        }
-    }
+function checkcakesdrop(eim) {//監控年糕掉落
+	bunny = eim.getMapInstance(910010000).getMonsterById(9300061); //讀取指定怪物ID
+
+	cakes = new Packages.client.inventory.Item(4001101, 0, 1);
+
+	st = eim.getProperty("cake") == null ? 1 : parseInt(eim.getProperty("cake"));
+
+	if (bunny != null) {
+
+		eim.setProperty("cake", st + 1);
+
+		eim.getMapInstance(910010000).spawnItemDrop(bunny, eim.getPlayers().get(0), cakes, new java.awt.Point(-183, -433), true, true);
+
+		eim.getMapInstance(910010000).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(6, "The Moon Bunny made rice cake number " + st  + "."));
+		}
+		eim.schedule("checkcakesdrop", 20 * 1000);
 }
 
-function playerDisconnected(eim, player) {
-    if (eim.isLeader(player)) {
-        
-        var party = eim.getPlayers();
-        for (var i = 0; i < party.size(); i++) {
-            if (party.get(i).equals(player)) {
-                removePlayer(eim, player);
-            }
-            else {
-                playerExit(eim, party.get(i));
-            }
-        }
-        eim.dispose();
-    }
-    else {
-        
-        var partyz = eim.getPlayers();
-        if (partyz.size() < minPlayers) {
-            for (var j = 0; j < partyz.size(); j++)
-                playerExit(eim,partyz.get(j));
-            eim.dispose();
-        }
-        else
-            playerExit(eim, player);
-    }
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 9300061) {
+		eim.getMapInstance(910010000).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(6, "Due to your failure to protect the Moon Bunny, you have been transported to the Exile Map."));
+		eim.startEventTimer(10 * 1000);
+		}
+		return 1;
 }
 
-function leftParty(eim, player) {
-    var party = eim.getPlayers();
-    if (party.size() < minPlayers) {
-        for (var i = 0; i < party.size(); i++)
-            playerExit(eim,party.get(i));
-        eim.dispose();
-    }
-    else
-        playerExit(eim, player);
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 910010300);
 }
 
-function disbandParty(eim) {
-    
-    var party = eim.getPlayers();
-    for (var i = 0; i < party.size(); i++) {
-        playerExit(eim, party.get(i));
-    }
-    eim.dispose();
+function changedMap(eim, player, mapid) {//進入地圖觸發
+	if (mapid != 910010000) {
+		playerExit(eim, player);
+}
 }
 
-function playerExitClear(eim, player) {
-    eim.unregisterPlayer(player);
-    player.changeMap(exitClearMap, exitClearMap.getPortal(0));
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
 }
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
-    player.changeMap(exitMap, exitMap.getPortal(0));
+function leftParty(eim, player) {//離開小組觸發
+	player.changeMap(eim.getMapInstance(910010300), eim.getMapInstance(910010300).getPortal(0));
 }
 
-function removePlayer(eim, player) {
-    eim.unregisterPlayer(player);
-    player.getMap().removePlayer(player);
-    player.setMap(exitMap);
+function disbandParty(eim) {//小組退出時觸發
+	eim.disposeIfPlayerBelow(100, 910010300);
 }
 
-function clearPQ(eim) {
-    var party = eim.getPlayers();
-    for (var i = 0; i < party.size(); i++)
-        playerExitClear(eim, party.get(i));
-    eim.dispose();
+function playerExit(eim, player) {//角色退出時觸發
+	eim.unregisterPlayer(player);
+	if (eim.disposeIfPlayerBelow(0, 0)) {
+		em.setProperty("state", 0);
+}
 }
 
-function allMonstersDead(eim) {
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function dispose() {
-    em.cancelSchedule()
-    em.schedule("OpenHPQ", 5000);
-}
+function playerDead(eim, player) {}//玩家死亡時觸發
 
-function cancelSchedule(eim) {
-    eim.startEventTimer(0);
-}
+function playerRevive(eim, player) {}//玩家角色复時觸發
 
-function timeOut(eim) {
-    if (eim != null) {
-        if (eim.getPlayerCount() > 0) {
-            var pIter = eim.getPlayers().iterator();
-            while (pIter.hasNext())
-                playerExit(eim, pIter.next());
-        }
-        eim.dispose();
-    }
-}
-
-function OpenHPQ() {
-    em.setProperty("HPQOpen", "true");
-}  
+function cancelSchedule() {}//清除事件

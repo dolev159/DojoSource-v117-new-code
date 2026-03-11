@@ -1,51 +1,53 @@
-var status = 0;
-var menu;
-var payment = false;
+/*
+	名字:	海豚 計程車
+	地圖:	水之都
+	描述:	230000000
+*/
+
+var status;
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if (mode == 0 && status == 0) {
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-    if (status == 0) {
-	if (cm.haveItem(4031242)) {
-	    menu = "#L0##bI will use #t4031242##k to move to #b#m230030200##k.#l\r\n#L1#Go to #b#m251000000##k after paying #b10000mesos#k.#l";
-	} else {
-	    menu = "#L0#Go to #b#m230030200##k after paying #b1000mesos#k.#l\r\n#L1#Go to #b#m251000000##k after paying #b10000mesos#k.#l";
-	    payment = true;
-	}
-	cm.sendSimple ("Ocean are all connected to each other. Place you can't reach by foot can easily reached oversea. How about taking #bDolphin Taxi#k with us today?\r\n"+menu);
-    } else if (status == 1) {
-	if (selection == 0) {
-	    if(payment == true) {
-		if(cm.getMeso() < 1000) {
-		    cm.sendOk("I don't think you have enough money...");
-		    cm.dispose();
-		} else {
-		    cm.gainMeso(-1000);
-		}
-	    } else {
-		cm.gainItem(4031242,-1);
-	    }
-	    cm.warp(230030200);
-	    cm.dispose();
-	} else if (selection == 1) {
-	    if(cm.getMeso() < 10000) {
-		cm.sendOk("I don't think you have enough money...");
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	    }
-	    cm.gainMeso(-10000);
-	    cm.warp(251000100);
-	    cm.dispose();
-	}
-    }
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		if (status < 2) {
+		cm.sendNext("Okay, next time.");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("Oceans are all connected to each other. Places you can't reach by foot can be easily reached oversea. How about taking #bDolphin Taxi#k with us today? \r\n\r\n#b" + (cm.getPlayer().getMap().getId() == 230000000 ? "" + "#L0#Go to the Sharp Unknown. (Towards Ludibrium/Korean Folk Town)#l\r\n#L1#Go to Herb Town.#l" : "#L1#Go to Acuariurm.#l") + "");
+		break;
+	case 1:
+		cm.sendYesNo("The fare is " + (selection < 1 ? 1000 : 10000) + " mesos. Shall we go?");
+		select = selection;
+		break;
+	case 2:
+		if (cm.getPlayer().getMeso() < (select < 1 ? 1000 : 10000)) {
+			cm.sendNext("You don't have enough mesos.");
+			cm.dispose();
+			return;
+			}
+			cm.dispose();
+			cm.gainMeso(-(select < 1 ? 1000 : 10000));
+			cm.getPlayer().changeMap(cm.getMap(select < 1 ? 230030200 : cm.getPlayer().getMap().getId() == 251000100 ? 230000000 : 251000100), cm.getMap(select < 1 ? 230030200 : cm.getPlayer().getMap().getId() == 251000100 ? 230000000 : 251000100).getPortal(select < 1 ? 2 : 0));
+}
 }

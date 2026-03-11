@@ -1,7 +1,7 @@
 package client.inventory;
 
 import client.MapleCharacter;
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import database.DatabaseConnection;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -36,21 +36,18 @@ public class MapleRing
   }
 
   public static MapleRing loadFromDb(int ringId, boolean equipped) {
-    try {
-      Connection con = DatabaseConnection.getConnection();
-      PreparedStatement ps = con.prepareStatement("SELECT * FROM rings WHERE ringId = ?");
+    try (Connection con = DatabaseConnection.getConnection();
+         PreparedStatement ps = con.prepareStatement("SELECT * FROM rings WHERE ringId = ?")) {
       ps.setInt(1, ringId);
 
-      ResultSet rs = ps.executeQuery();
-      MapleRing ret = null;
-      if (rs.next()) {
-        ret = new MapleRing(ringId, rs.getInt("partnerRingId"), rs.getInt("partnerChrId"), rs.getInt("itemid"), rs.getString("partnerName"));
-        ret.setEquipped(equipped);
+      try (ResultSet rs = ps.executeQuery()) {
+        MapleRing ret = null;
+        if (rs.next()) {
+          ret = new MapleRing(ringId, rs.getInt("partnerRingId"), rs.getInt("partnerChrId"), rs.getInt("itemid"), rs.getString("partnerName"));
+          ret.setEquipped(equipped);
+        }
+        return ret;
       }
-      rs.close();
-      ps.close();
-
-      return ret;
     } catch (SQLException ex) {
       ex.printStackTrace();
     }
@@ -59,24 +56,25 @@ public class MapleRing
 
   public static void addToDB(int itemid, MapleCharacter chr, String player, int id, int[] ringId) throws SQLException
   {
-    Connection con = DatabaseConnection.getConnection();
-    PreparedStatement ps = con.prepareStatement("INSERT INTO rings (ringId, itemid, partnerChrId, partnerName, partnerRingId) VALUES (?, ?, ?, ?, ?)");
-    ps.setInt(1, ringId[0]);
-    ps.setInt(2, itemid);
-    ps.setInt(3, chr.getId());
-    ps.setString(4, chr.getName());
-    ps.setInt(5, ringId[1]);
-    ps.executeUpdate();
-    ps.close();
+    try (Connection con = DatabaseConnection.getConnection()) {
+      try (PreparedStatement ps = con.prepareStatement("INSERT INTO rings (ringId, itemid, partnerChrId, partnerName, partnerRingId) VALUES (?, ?, ?, ?, ?)")) {
+        ps.setInt(1, ringId[0]);
+        ps.setInt(2, itemid);
+        ps.setInt(3, chr.getId());
+        ps.setString(4, chr.getName());
+        ps.setInt(5, ringId[1]);
+        ps.executeUpdate();
+      }
 
-    ps = con.prepareStatement("INSERT INTO rings (ringId, itemid, partnerChrId, partnerName, partnerRingId) VALUES (?, ?, ?, ?, ?)");
-    ps.setInt(1, ringId[1]);
-    ps.setInt(2, itemid);
-    ps.setInt(3, id);
-    ps.setString(4, player);
-    ps.setInt(5, ringId[0]);
-    ps.executeUpdate();
-    ps.close();
+      try (PreparedStatement ps = con.prepareStatement("INSERT INTO rings (ringId, itemid, partnerChrId, partnerName, partnerRingId) VALUES (?, ?, ?, ?, ?)")) {
+        ps.setInt(1, ringId[1]);
+        ps.setInt(2, itemid);
+        ps.setInt(3, id);
+        ps.setString(4, player);
+        ps.setInt(5, ringId[0]);
+        ps.executeUpdate();
+      }
+    }
   }
 
   public static int createRing(int itemid, MapleCharacter partner1, String partner2, String msg, int id2, int sn) {
@@ -98,7 +96,7 @@ public class MapleRing
     try
     {
       addToDB(itemid, partner1, partner2.getName(), partner2.getId(), ringID);
-    } catch (MySQLIntegrityConstraintViolationException mslcve) {
+    } catch (SQLIntegrityConstraintViolationException mslcve) {
       return ringID;
     }
     return ringID;
@@ -109,7 +107,7 @@ public class MapleRing
     try
     {
       addToDB(itemid, partner1, partner2, id2, ringID);
-    } catch (MySQLIntegrityConstraintViolationException mslcve) {
+    } catch (SQLIntegrityConstraintViolationException mslcve) {
       return 0;
     }
     MapleInventoryManipulator.addRing(partner1, itemid, ringID[1], sn, partner2);
@@ -165,25 +163,22 @@ public class MapleRing
   }
 
   public static void removeRingFromDb(MapleCharacter player) {
-    try {
-      Connection con = DatabaseConnection.getConnection();
-      PreparedStatement ps = con.prepareStatement("SELECT * FROM rings WHERE partnerChrId = ?");
-      ps.setInt(1, player.getId());
-      ResultSet rs = ps.executeQuery();
-      if (!rs.next()) {
-        ps.close();
-        rs.close();
-        return;
+    try (Connection con = DatabaseConnection.getConnection();
+         PreparedStatement ps1 = con.prepareStatement("SELECT * FROM rings WHERE partnerChrId = ?")) {
+      ps1.setInt(1, player.getId());
+      try (ResultSet rs = ps1.executeQuery()) {
+        if (!rs.next()) {
+          return;
+        }
+        int otherId = rs.getInt("partnerRingId");
+        int otherotherId = rs.getInt("ringId");
+        
+        try (PreparedStatement ps2 = con.prepareStatement("DELETE FROM rings WHERE ringId = ? OR ringId = ?")) {
+          ps2.setInt(1, otherotherId);
+          ps2.setInt(2, otherId);
+          ps2.executeUpdate();
+        }
       }
-      int otherId = rs.getInt("partnerRingId");
-      int otherotherId = rs.getInt("ringId");
-      rs.close();
-      ps.close();
-      ps = con.prepareStatement("DELETE FROM rings WHERE ringId = ? OR ringId = ?");
-      ps.setInt(1, otherotherId);
-      ps.setInt(2, otherId);
-      ps.executeUpdate();
-      ps.close();
     } catch (SQLException sex) {
       sex.printStackTrace();
     }

@@ -49,6 +49,7 @@ import tools.packet.CField;
 public class GameConstants {
 
     public static boolean GMS = true; // true = GMS
+    public static final int POTION_DELAY = 500;
     public static final List<MapleMapObjectType> rangedMapobjectTypes = Collections.unmodifiableList(Arrays.asList(
             MapleMapObjectType.ITEM,
             MapleMapObjectType.MONSTER,
@@ -3909,4 +3910,16 @@ public class GameConstants {
     public static final int PARTY_INVITE = 122901;
     public static final int QUICK_SLOT = 123000;
     public static final int ITEM_TITLE = 124000;
+    public static boolean isBossMap(int mapid) {
+        switch (mapid) {
+            case 280030000: // Zakum
+            case 240060200: // Horntail
+            case 270050100: // Pink Bean
+            case 211042400: // Chaos Zakum
+            case 240060201: // Chaos Horntail
+            case 802000110: // Empress
+                return true;
+        }
+        return false;
+    }
 }

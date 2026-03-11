@@ -1,12 +1,15 @@
-/* 	Sejan
-	Ariant
+/*
+	名字:	米奇里
+	地圖:	納希民宅
+	描述:	260000200
 */
 
-
 function start() {
-    cm.sendNext("The light and dark always coexist...");
-}
-
-function action() {
-    cm.dispose()
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3900)).getStatus() > 1) {
+		cm.sendNext("The light and dark always coexist...");
+		cm.dispose();
+		return;
+		}
+		cm.sendNext("...");
+		cm.dispose();
 }

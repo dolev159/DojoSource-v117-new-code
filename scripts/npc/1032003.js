@@ -1,61 +1,33 @@
-/**
--- Odin JavaScript --------------------------------------------------------------------------------
-	Shane - Ellinia (101000000)
--- By ---------------------------------------------------------------------------------------------
-	Unknown
--- Version Info -----------------------------------------------------------------------------------
-	1.1 - Statement fix [Information]
-	1.0 - First Version by Unknown
----------------------------------------------------------------------------------------------------
-**/
-
-var status = 0;
-var check = 0;
+/*
+	名字:	賽恩
+	地圖:	魔法森林
+	描述:	101000000
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2050)).getStatus() != 1 && cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2051)).getStatus() != 1) {
+		cm.sendNext("You want to go in? Must have heard that there's a precious medicinal herb in here, huh? But I can't let some stranger like you who doesn't know that I own this land in. I'm sorry but I'm afraid that's all there is to it.");
+		cm.dispose();
+		return;
+		}
+		Meso = cm.getPlayer().getLevel() * 100;
+		cm.sendYesNo("You want my herbs, do you? What kind of farmer would just let people trample over his family land? But... I could use the money. I need at least #r" + Meso + "#k mesos to feel good about this.");
 }
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.sendOk("Alright, see you next time.");
-	cm.dispose();
-	return;
-    }
-    if (mode == 1) {
-	status++;
-    }
-    else {
-	status--;
-    }
-    if (status == 0) {
-	if (cm.getPlayerStat("LVL") < 25) {
-	    cm.sendOk("You must be a higher level to enter the Forest of Patience.");
-	    cm.dispose();
-	    check = 1;
-	}
-	else {
-	    cm.sendYesNo("Hi, i'm Shane. I can let you into the Forest of Patience for a small fee. Would you like to enter for #b5000#k mesos?");
-	}
-    } else if (status == 1) {
-	if (check != 1) {
-	    if (cm.getMeso() < 5000) {
-		cm.sendOk("Sorry but it doesn't like you have enough mesos!")
-		cm.dispose();
-	    }
-	    else {
-		if (cm.getQuestStatus(2050) == 1 || cm.getPlayerStat("LVL") < 50) {
-		    cm.warp(910130000, 0);
-		}
-		else if (cm.getQuestStatus(2051) == 1 || cm.getPlayerStat("LVL") >= 50) {
-		    cm.warp(910130100, 0);
-		}
-		cm.gainMeso(-5000);
-		cm.dispose();
-	    }
-	}
-    }
-}	
-
-
+	switch (mode) {
+	case 0:
+		cm.sendNext("Okay, okay. But don't forget. You ain't going anywhere if you don't pay the toll!");
+		break;
+	case 1:
+		if (cm.getPlayer().getMeso() < Meso) {
+			cm.sendNext("Lacking mesos by any chance? Make sure you have more than #r" + Meso + "#k mesos on hand. Don't expect me to give you any discounts.");
+			cm.dispose();
+			return;
+			}
+			map = cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2050)).getStatus() == 1 ? 910130000 : 910130100;
+			cm.getPlayer().changeMap(cm.getMap(map), cm.getMap(map).getPortal(0));
+			cm.gainMeso(-Meso);
+			}
+			cm.dispose();
+}

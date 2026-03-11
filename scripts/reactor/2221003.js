@@ -1,10 +1,13 @@
-/* @Author Lerk
- * 
- * 2221003.js: KFT Reactor - Hongbu Gourd
- * Note that Gourd (should) drop both Hongbu and Nolbu's quest items; in Global you would only see the quest item that you need, 
- * and nobody would see the other unless they had the other quest started and were in your party.
+/*
+	名字:	路德斯湖
+	地圖:	童話村
+	描述:	222000000
 */
 
-function act(){
-	rm.spawnMonster(9500400);
+function act() {
+	rm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9500400), new java.awt.Point(rm.getReactor().getPosition()));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "A gourd has grown out."));
 }
+
+
+//4031244		興夫的葫蘆種子

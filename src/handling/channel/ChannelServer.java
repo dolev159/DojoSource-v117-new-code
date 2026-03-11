@@ -57,22 +57,25 @@ public class ChannelServer {
     private int channel, running_MerchantID = 0, flags = 0;
     private String serverMessage, ip, serverName;
     // volatile: read by many threads that check shutdown state
-    private volatile boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false, adminOnly = false;
+    private volatile boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false, adminOnly = false,
+            online = false;
     private PlayerStorage players;
     private NettyServerAcceptor acceptor;
     private ServerTickManager tickManager;
     private final MapleMapFactory mapFactory;
     private EventScriptManager eventSM;
     private AramiaFireWorks works = new AramiaFireWorks();
-    // ConcurrentHashMap: accessed from multiple threads (channel startup, shutdown, login)
+    // ConcurrentHashMap: accessed from multiple threads (channel startup, shutdown,
+    // login)
     private static final Map<Integer, ChannelServer> instances = new ConcurrentHashMap<>();
     private final Map<MapleSquadType, MapleSquad> mapleSquads = new ConcurrentEnumMap<>(MapleSquadType.class);
     private final Map<Integer, HiredMerchant> merchants = new HashMap<>();
     // CopyOnWriteArrayList: playerNPCs is read frequently, written rarely
     private final List<PlayerNPC> playerNPCs = new CopyOnWriteArrayList<>();
-    private final ReentrantReadWriteLock merchLock = new ReentrantReadWriteLock(); //merchant
+    private final ReentrantReadWriteLock merchLock = new ReentrantReadWriteLock(); // merchant
     private int eventmap = -1;
-    private final Map<MapleEventType, MapleEvent> events = new EnumMap<MapleEventType, MapleEvent>(MapleEventType.class);
+    private final Map<MapleEventType, MapleEvent> events = new EnumMap<MapleEventType, MapleEvent>(
+            MapleEventType.class);
     // volatile: event state read from multiple player threads
     public volatile boolean eventOn = false;
     public volatile int eventMap = 0;
@@ -84,7 +87,7 @@ public class ChannelServer {
     private volatile boolean race = false;
     private volatile int competitors = 0;
     private volatile int waitingTime;
-    //End of Custom Race
+    // End of Custom Race
     private int mesoRate;
     private int dropRate;
 
@@ -101,7 +104,8 @@ public class ChannelServer {
         if (events.size() != 0) {
             return;
         }
-        events.put(MapleEventType.CokePlay, new MapleCoconut(channel, MapleEventType.CokePlay)); // Yep, coconut. same shit
+        events.put(MapleEventType.CokePlay, new MapleCoconut(channel, MapleEventType.CokePlay)); // Yep, coconut. same
+                                                                                                 // shit
         events.put(MapleEventType.Coconut, new MapleCoconut(channel, MapleEventType.Coconut));
         events.put(MapleEventType.Fitness, new MapleFitness(channel, MapleEventType.Fitness));
         events.put(MapleEventType.OlaOla, new MapleOla(channel, MapleEventType.OlaOla));
@@ -128,7 +132,7 @@ public class ChannelServer {
 
         // 2. Update Map-based event clocks?
         // Usually handled by MapTimer, but could be integrated here.
-        
+
         // 3. Update specific event managers
         // if (eventOn) { ... }
     }
@@ -141,11 +145,12 @@ public class ChannelServer {
             flags = Integer.parseInt(ServerProperties.getProperty("flags", "0"));
             adminOnly = Boolean.parseBoolean(ServerProperties.getProperty("admin", "false"));
             eventSM = new EventScriptManager(this, ServerProperties.getProperty("events").split(","));
-            port = Short.parseShort(ServerProperties.getProperty("port" + channel, String.valueOf(DEFAULT_PORT + channel)));
+            port = Short
+                    .parseShort(ServerProperties.getProperty("port" + channel, String.valueOf(DEFAULT_PORT + channel)));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        ip = ServerProperties.getProperty("interface") + ":" + port;
+        ip = "127.0.0.1:" + port;
 
         players = new PlayerStorage(channel);
         loadEvents();
@@ -156,6 +161,7 @@ public class ChannelServer {
         acceptor = new NettyServerAcceptor(port);
         acceptor.run();
         eventSM.init();
+        online = true;
     }
 
     public final void shutdown() {
@@ -179,6 +185,10 @@ public class ChannelServer {
 
         instances.remove(channel);
         setFinishShutdown();
+    }
+
+    public final boolean isOnline() {
+        return online;
     }
 
     public final boolean hasFinishedShutdown() {
@@ -340,7 +350,7 @@ public class ChannelServer {
             while (merchants_.hasNext()) {
                 HiredMerchant hm = merchants_.next().getValue();
                 hm.closeShop(true, false);
-                //HiredMerchantSave.QueueShopForSave(hm);
+                // HiredMerchantSave.QueueShopForSave(hm);
                 hm.getMap().removeMapObject(hm);
                 merchants_.remove();
                 ret++;
@@ -352,7 +362,7 @@ public class ChannelServer {
         for (int i = 910000001; i <= 910000022; i++) {
             for (MapleMapObject mmo : mapFactory.getMap(i).getAllHiredMerchantsThreadsafe()) {
                 ((HiredMerchant) mmo).closeShop(true, false);
-                //HiredMerchantSave.QueueShopForSave((HiredMerchant) mmo);
+                // HiredMerchantSave.QueueShopForSave((HiredMerchant) mmo);
                 ret++;
             }
         }
@@ -561,13 +571,17 @@ public class ChannelServer {
                     setWaitingTime(getWaitingTime() - 1);
                     if (getWaitingTime() > 1) {
                         try {
-                            broadcastMessage(CWvsContext.serverNotice(6, "[Event] The Great Victoria Island Race will start in " + getWaitingTime() + " minutes! There are " + getCompetitors() + " players in the race."));
+                            broadcastMessage(CWvsContext.serverNotice(6,
+                                    "[Event] The Great Victoria Island Race will start in " + getWaitingTime()
+                                            + " minutes! There are " + getCompetitors() + " players in the race."));
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                     } else {
                         try {
-                            broadcastMessage(CWvsContext.serverNotice(6, "[Event] The Great Victoria Island Race will start in " + getWaitingTime() + " minute! There are " + getCompetitors() + " players in the race."));
+                            broadcastMessage(CWvsContext.serverNotice(6,
+                                    "[Event] The Great Victoria Island Race will start in " + getWaitingTime()
+                                            + " minute! There are " + getCompetitors() + " players in the race."));
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -577,7 +591,8 @@ public class ChannelServer {
                     setRace(true);
                     setWaiting(false);
                     try {
-                        broadcastMessage(CWvsContext.serverNotice(6, "[Event] The Great Victoria Island Race has begun! Race all the way around Victoria Island going East, to win!"));
+                        broadcastMessage(CWvsContext.serverNotice(6,
+                                "[Event] The Great Victoria Island Race has begun! Race all the way around Victoria Island going East, to win!"));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -607,13 +622,13 @@ public class ChannelServer {
     }
 
     public final int getDropRate() {
-        return dropRate;      
+        return dropRate;
     }
-    
+
     public final int getMesoRate() {
         return mesoRate;
     }
-    
+
     public void setCompetitors(int set) {
         this.competitors = set;
     }

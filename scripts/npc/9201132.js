@@ -1,20 +1,45 @@
-var status = -1;
+/*
+	名字:	惡魔之門
+	地圖:	藍色緞帶海岸
+	描述:	120020300
+*/
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
+
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	cm.dispose();
-	return;
-    }
-    if (status == 0) {
-		if (cm.getPlayer().getLevel() < 40) {
-			cm.sendYesNo("Would you like to move to Crocell's Strolling Place?");
-		} else {
-			cm.sendOk("You need to be less than level 40 and need the Crocell's Necklace to enter.");
-			cm.dispose();
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
 		}
-} else {
-	cm.warp(677000006,0);
-	cm.dispose();
-    }
+	switch (status) {
+	case 0:
+		cm.sendNext("#r[Requirements to Enter] \r\n\r\n#b      1.You must be a Pirate, a Thunder Breaker, or a Mechanic.\r\n      2.You must be under Level 40.");
+		break;
+	case 1:
+		if (Math.floor(cm.getPlayer().getJob() / 100 % 10) != 5 || cm.getPlayer().getLevel() > 40) {
+			cm.dispose();
+			return;
+			}
+			cm.sendNextPrev("You are permitted to enter the Demon's Doorway.");
+			break;
+	case 2:
+		if (cm.getMap(677000006).getCharacters().size() > 0 || cm.getMap(677000007).getCharacters().size() > 0) {
+			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Try again soon."));
+			return false;
+			}
+			cm.getPlayer().changeMap(cm.getMap(677000006), cm.getMap(677000006).getPortal(2));
+			cm.dispose();
+}
 }

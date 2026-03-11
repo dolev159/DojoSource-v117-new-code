@@ -583,6 +583,14 @@ public abstract class AbstractPlayerInteraction {
         c.getPlayer().dropMessage(type, message);
     }
 
+    public final void serverNotice(final int type, final String message) {
+        c.getPlayer().dropMessage(type, message);
+    }
+
+    public final void sendNotice(final int type, final String message) {
+        c.getPlayer().dropMessage(type, message);
+    }
+
     public final void mapMessage(final int type, final String message) {
         c.getPlayer().getMap().broadcastMessage(CWvsContext.serverNotice(type, message));
     }
@@ -946,15 +954,24 @@ public abstract class AbstractPlayerInteraction {
     }
 
     public final void teachSkill(final int id, final int level, final byte masterlevel) {
-        getPlayer().changeSingleSkillLevel(SkillFactory.getSkill(id), level, masterlevel);
+        Skill skil = SkillFactory.getSkill(id);
+        if (skil != null) {
+            getPlayer().changeSingleSkillLevel(skil, level, masterlevel);
+        } else {
+             System.err.println("Error: Script tried to teach null skill ID: " + id);
+        }
     }
 
     public final void teachSkill(final int id, int level) {
         final Skill skil = SkillFactory.getSkill(id);
-        if (getPlayer().getSkillLevel(skil) > level) {
-            level = getPlayer().getSkillLevel(skil);
+        if (skil != null) {
+            if (getPlayer().getSkillLevel(skil) > level) {
+                level = getPlayer().getSkillLevel(skil);
+            }
+            getPlayer().changeSingleSkillLevel(skil, level, (byte) skil.getMaxLevel());
+        } else {
+             System.err.println("Error: Script tried to teach null skill ID: " + id);
         }
-        getPlayer().changeSingleSkillLevel(skil, level, (byte) skil.getMaxLevel());
     }
 
     public final int getPlayerCount(final int mapid) {
@@ -1064,12 +1081,20 @@ public abstract class AbstractPlayerInteraction {
         c.getSession().write(EffectPacket.AranTutInstructionalBalloon(data));
     }
 
-    public final void ShowWZEffect(final String data) {
+    public final void AranTutInstructionalBalloon(final String data) {
         c.getSession().write(EffectPacket.AranTutInstructionalBalloon(data));
+    }
+
+    public final void ShowWZEffect(final String data) {
+        c.getSession().write(EffectPacket.ShowWZEffect(data));
     }
 
     public final void showWZEffect(final String data) {
         c.getSession().write(EffectPacket.ShowWZEffect(data));
+    }
+
+    public final void environmentChange(final String env, final int mode) {
+        c.getSession().write(CField.environmentChange(env, mode));
     }
 
     public final void EarnTitleMsg(final String data) {
@@ -1084,12 +1109,24 @@ public abstract class AbstractPlayerInteraction {
         c.getSession().write(UIPacket.IntroEnableUI(i));
     }
 
+    public final void enableUI(final short i) {
+        c.getSession().write(UIPacket.IntroEnableUI(i));
+    }
+
     public final void DisableUI(final boolean enabled) {
+        c.getSession().write(UIPacket.IntroDisableUI(enabled));
+    }
+
+    public final void disableUI(final boolean enabled) {
         c.getSession().write(UIPacket.IntroDisableUI(enabled));
     }
 
     public final void MovieClipIntroUI(final boolean enabled) {
         c.getSession().write(UIPacket.IntroDisableUI(enabled));
+        c.getSession().write(UIPacket.IntroLock(enabled));
+    }
+
+    public final void lockUI(final boolean enabled) {
         c.getSession().write(UIPacket.IntroLock(enabled));
     }
 
@@ -1283,6 +1320,11 @@ public abstract class AbstractPlayerInteraction {
     }
 
     public void sendDirectionStatus(int key, int value) {
+        c.getSession().write(UIPacket.getDirectionInfo(key, value));
+        c.getSession().write(UIPacket.getDirectionStatus(true));
+    }
+
+    public void showDirectionStatus(int key, int value) {
         c.getSession().write(UIPacket.getDirectionInfo(key, value));
         c.getSession().write(UIPacket.getDirectionStatus(true));
     }

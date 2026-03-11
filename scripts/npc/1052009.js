@@ -1,63 +1,26 @@
-/**
--- Odin JavaScript --------------------------------------------------------------------------------
-	Treasure Chest - Line 3 Construction Site: B2 <Subway Depot> (103000905)
--- By ---------------------------------------------------------------------------------------------
-	Unknown
--- Version Info -----------------------------------------------------------------------------------
-	1.1 - Statement fix [Information]
-	1.0 - First Version by Unknown
----------------------------------------------------------------------------------------------------
-**/
+/*
+	名字:	寶箱
+	地圖:	地鐵車庫
+	描述:	910360102
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	if (cm.getPlayer().getPosition().x < -50 || cm.getPlayer().getPosition().x > 250 || cm.getPlayer().getPosition().y > 600) {
+		cm.sendOk("You cannot see very well because you're too far. Go a little closer.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.sendNext("Looking carefully into Treasure Box, there seems to be a shiny object inside but since your etc. inventory is full, that item is unattainable.");
+		cm.dispose();
+		return;
+		}
+		cm.gainItem(4031040, cm.getPlayer().itemQuantity(4031040) ? 0 : 1);
+		cm.sendNext("Looking carefully into Treasure Box, there seems to be a stack of papers in there. I reached out my hand and voila, a huge stack of money.");
 }
 
 function action(mode, type, selection) {
-    if (status >= 2 && mode == 0) {
-	cm.sendOk("Alright, see you next time.");
-	cm.dispose();
-	return;
-    }
-    if (mode == 1) {
-	status++;
-    }
-    else {
-	status--;
-    }
-    if (status == 0) {
-	if (cm.getQuestStatus(2056) == 1 && !cm.haveItem(4031040)) {
-	    cm.gainItem(4031040, 1); // Shumi's Roll of Cash
-	    cm.warp(103000000, 0);
-	}
-	else {
-	    var rand = 1 + Math.floor(Math.random() * 7);
-	    if (rand == 1) {
-		cm.gainItem(4020005, 2); // Sapphire Ore
-	    }
-	    else if (rand == 2) {
-		cm.gainItem(4020006, 2); // Topaz Ore
-	    }
-	    else if (rand == 3) {
-		cm.gainItem(4020004, 2); // Opal Ore
-	    }
-	    else if (rand == 4) {
-		cm.gainItem(4020001, 2); // Amethyst Ore
-	    }
-	    else if (rand == 5) {
-		cm.gainItem(4020003, 2); // Emerald Ore
-	    }
-	    else if (rand == 6) {
-		cm.gainItem(4020000, 2); // Garnet Ore
-	    }
-	    else if (rand == 7) {
-		cm.gainItem(4020002, 2); // AquaMarine Ore
-	    }
-	    cm.warp(103000000, 0);
-	}
-	cm.dispose();
-    }
-}	
-
-
+	if (mode > 0)
+		cm.getPlayer().changeMap(cm.getMap(103020000), cm.getMap(103020000).getPortal(0));
+		cm.dispose();
+}

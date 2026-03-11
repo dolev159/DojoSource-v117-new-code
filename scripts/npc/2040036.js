@@ -1,41 +1,16 @@
 /*
-	Red Balloon - LudiPQ 1st stage NPC
-**/
-
-var status;
+	名字:	紅氣球
+	地圖:	遺棄之塔&amp;lt;第1階段&gt;
+	描述:	922010100
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-    if (cm.getMap().getEventStatus("stage1status") == "clear") {
-        cm.sendNext("Congratulations! You've passed the 1st stage. Hurry on now, to the 2nd stage.");
-        cm.dispose();
-        return;
-    }
-
-    if (cm.isLeader()) {
-        if (cm.getMap().getAllMonstersThreadsafe().size() == 0) {
-            cm.sendNext("Congratulations! You've passed the 1st stage. Hurry on now, to the 2nd stage.");
-            server.MaplePQManager.stageClear(cm.getChar(), 1);
-            cm.givePartyExp(2100);
-            cm.dispose();
-        } else {
-            cm.sendOk("Welcome to the 1st stage. Go around, and collect #rPasses of Dimension#k from the #bRatz#k and #bBlack Ratz#k in this map. Once you're done, get your party members to hand all the #rPasses#k to you, then talk to me again.");
-            cm.dispose();
-        }
-    } else {
-        cm.sendNext("Welcome to the 1st stage. Go around, and collect #rPasses of Dimension#k from the #bRatz#k and #bBlack Ratz#k in this map. Once you're done, hand all the #rPasses#k to your party leader.");
-        cm.dispose();
-    }
-}
-
-function clear(stage, eim, cm) {
-    eim.setProperty("stage" + stage.toString() + "status","clear");
-    
-    cm.showEffect(true, "quest/party/clear");
-    cm.playSound(true, "Party1/Clear");
-    cm.environmentChange(true, "gate");
+	var eim = cm.getPlayer().getEventInstance();
+	if (eim.getProperty("stage1") == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+		cm.sendNext("In the first stage, you'll find Ratz and Black Ratz from Another Dimension, who are nibbling away at the Dimensional Schism. If you gather up 20 passes that the Ratz and Black Ratz have stolen, I'll open the way to the next stage. Good luck!");
+		cm.dispose();
+		return;
+		}
+		cm.sendNext("Wow! Congratulations on clearing the quests for this stage. Please use the portal you see over there and move on to the next stage. Best of luck to you!");
+		cm.dispose();
 }

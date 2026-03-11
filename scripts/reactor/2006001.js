@@ -1,33 +1,19 @@
 /*
-	This file is part of the OdinMS Maple Story Server
-    Copyright (C) 2008 Patrick Huy <patrick.huy@frz.cc>
-		       Matthias Butz <matze@odinms.de>
-		       Jan Christian Meyer <vimes@odinms.de>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation version 3 as published by
-    the Free Software Foundation. You may not use, modify or distribute
-    this program under any other version of the GNU Affero General Public
-    License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	名字:	隱密之地
+	地圖:	雅典娜禁地&amp;lt;中央塔&gt;
+	描述:	920010100
 */
-/**
- *2006001.js - Spawns Minevra
- *@author Jvlaple
- */
- 
+
 function act() {
-    rm.spawnNpc(2013002);
-	var em = rm.getEventManager("OrbisPQ");
-	if (em != null) {
-		em.setProperty("finished", "1");
-	}
+	var eim = rm.getPlayer().getEventInstance();
+
+	eim.stopEventTimer();
+	eim.startEventTimer(5 * 60000); //bonus time
+	rm.getPlayer().getMap().spawnNpc(2013002, new java.awt.Point(rm.getReactor().getPosition()));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Due to the power of the Life Grass, Minerva the Goddess woke up and all the magic inside the blockade tower was lifted."));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
 }
+
+
+//4001055		生命草

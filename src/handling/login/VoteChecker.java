@@ -81,16 +81,13 @@ public class VoteChecker implements Runnable {
     }
 
     public static boolean voteCounted(String ip, long time) {
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("SELECT `id` FROM `gtopvotes` WHERE `ip`=? AND `timestamp`=?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT `id` FROM `gtopvotes` WHERE `ip`=? AND `timestamp`=?")) {
             ps.setString(1, ip);
             ps.setLong(2, time);
-            ResultSet rs = ps.executeQuery();
-            boolean counted = rs.next();
-            rs.close();
-            ps.close();
-            return counted;
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -98,9 +95,8 @@ public class VoteChecker implements Runnable {
     }
 
     public static boolean logVote(String ip, long time) {
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("INSERT INTO `gtopvotes` (`ip`,`timestamp`) VALUES (?,?)");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("INSERT INTO `gtopvotes` (`ip`,`timestamp`) VALUES (?,?)")) {
             ps.setString(1, ip);
             ps.setLong(2, time);
             ps.execute();
@@ -112,12 +108,11 @@ public class VoteChecker implements Runnable {
     }
 
     public static boolean countVote(String ip) {
-        Connection con = DatabaseConnection.getConnection();
-        try {
-            PreparedStatement ps = con.prepareStatement("UPDATE `accounts` "
-                                                      + "SET `vpoints` = `vpoints` + 2 "
-                                                      + "WHERE `lastknownip`= ? "
-                                                      + "ORDER BY `lastlogin` DESC LIMIT 1");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE `accounts` "
+                                                       + "SET `vpoints` = `vpoints` + 2 "
+                                                       + "WHERE `lastknownip`= ? "
+                                                       + "ORDER BY `lastlogin` DESC LIMIT 1")) {
             ps.setString(1, ip);
             ps.execute();
             return true;

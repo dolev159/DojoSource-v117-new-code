@@ -1,13 +1,10 @@
+/*
+	名字:	倉庫老闆丁妮
+	地圖:	天空之城
+	描述:	200000000
+*/
+
 function start() {
- 
-	if (cm.getLevel() >= 40) {
-   cm.sendStorage();
-
-    cm.dispose();
-
-
-	} else {
-	cm.sendOk("You must be level 40 for using me.");
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 2010006);
 	cm.dispose();
-	 	}
 }

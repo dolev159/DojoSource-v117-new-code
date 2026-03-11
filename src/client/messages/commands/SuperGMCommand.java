@@ -8,8 +8,8 @@ import client.*;
 import client.anticheat.CheatingOffense;
 import client.inventory.*;
 import client.messages.CommandProcessorUtil;
-import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.PreparedStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import constants.GameConstants;
 import constants.ServerConstants.PlayerGMRank;
 import database.DatabaseConnection;
@@ -19,7 +19,6 @@ import handling.SendPacketOpcode;
 import handling.channel.ChannelServer;
 import handling.world.World;
 import java.awt.Point;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -1521,9 +1520,9 @@ public static class Mute extends CommandExecute {
 
         @Override
         public int execute(MapleClient c, String[] splitted) {
-            for (int e : MapleItemInformationProvider.getInstance().getMonsterBook().keySet()) {
-                c.getPlayer().getMonsterBook().getCards().put(e, 2);
-            }
+            MapleItemInformationProvider.getInstance().getMonsterBook().forEach((mobId, itemId) -> {
+                c.getPlayer().getMonsterBook().getCards().put(mobId, 2);
+            });
             c.getPlayer().getMonsterBook().changed();
             c.getPlayer().dropMessage(5, "Done.");
             return 1;
@@ -1534,23 +1533,23 @@ public static class Mute extends CommandExecute {
 
         @Override
         public int execute(MapleClient c, String[] splitted) {
-            final List<Entry<Integer, Integer>> mbList = new ArrayList<Entry<Integer, Integer>>(MapleItemInformationProvider.getInstance().getMonsterBook().entrySet());
+            final List<Pair<Integer, Integer>> mbList = MapleItemInformationProvider.getInstance().getMonsterBook().getEntries();
             Collections.sort(mbList, new BookComparator());
             final int page = Integer.parseInt(splitted[1]);
             for (int e = (page * 8); e < Math.min(mbList.size(), (page + 1) * 8); e++) {
-                c.getPlayer().dropMessage(6, e + ": " + mbList.get(e).getKey() + " - " + mbList.get(e).getValue());
+                c.getPlayer().dropMessage(6, e + ": " + mbList.get(e).left + " - " + mbList.get(e).right);
             }
 
             return 0;
         }
 
-        public static class BookComparator implements Comparator<Entry<Integer, Integer>>, Serializable {
+        public static class BookComparator implements Comparator<Pair<Integer, Integer>>, Serializable {
 
             @Override
-            public int compare(Entry<Integer, Integer> o1, Entry<Integer, Integer> o2) {
-                if (o1.getValue() > o2.getValue()) {
+            public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
+                if (o1.right > o2.right) {
                     return 1;
-                } else if (o1.getValue() == o2.getValue()) {
+                } else if (o1.right == o2.right) {
                     return 0;
                 } else {
                     return -1;

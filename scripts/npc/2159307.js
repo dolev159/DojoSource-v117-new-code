@@ -1,61 +1,115 @@
-var status = -1;
+/*
+	名字:	莫斯提馬
+	地圖:	時間神殿迴廊1
+	描述:	927000000
+*/
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (status == 0) {
-		cm.sendNextNoESC("Commander! Where were you? I thought maybe Arkarium had actually made a move against you...");
-    } else if (status == 1) {
-		cm.sendNextNoESC("Things are strange these days. Arkarium has it for you, since you were the one who managed to catch the Goddess of the Temple of Time. He only managed to blind her, but he still thinks he deserves all the credit...Fool.");
-    } else if (status == 2) {
-		cm.sendDirectionStatus(3, 2);
-		cm.sendNextNoESC("...Are you okay? You seem different... Yeah, you are. You used to scold me when I asked you such things, but now... Hey, you don't look so good. Did something happen? Are you hurt?");
-	} else if (status == 3) {
-		cm.sendPlayerToNpc("...Tell me, Mastema, Who do you serve? Is it me, or the Black Mage?");
-	} else if (status == 4) {
-		cm.sendNextNoESC("W-wha?");
-	} else if (status == 5) {
-		cm.sendPlayerToNpc("Answer me!");
-	} else if (status == 6) {
-		cm.sendNextNoESC("Well, I'm loyal to the Black Mage, of course. But we pledged our lives for each other. I go where you go.");
-	} else if (status == 7) {
-		cm.sendPlayerToNpc("I have a favor to ask of you then... Give this letter to the #rHeroes#k.");
-	} else if (status == 8) {
-		cm.sendNextNoESC("Do what?! Why? What are you thinking? Are you trying to make things worse? You're finished as a Commander once anyone finds out you're trying to communicate with the Heroes!");
-	} else if (status == 9) {
-		cm.sendPlayerToNpc("I am already finished as a Commander.");
-	} else if (status == 10) {
-		cm.sendNextNoESC("What? Are you betraying the Black Mage? Why are you doing this?");
-	} else if (status == 11) {
-		cm.sendPlayerToNpc("There's no time to explain. Please do as I say. If not...");
-	} else if (status == 12) {
-		cm.sendNextNoESC("No, I'll do it. I'm just worried. What about your family? Wont' they be in dang-");
-	} else if (status == 13) {
-		cm.sendPlayerToNpc("Not another word about my family!");
-	} else if (status == 14) {
-		cm.sendNextNoESC("What? Did something happen to them already?");
-	} else if (status == 15) {
-		cm.sendPlayerToNpc("....");
-	} else if (status == 16) {
-		cm.sendNextNoESC("I see... You've always been the quiet type, but sometimes silence speaks for itself. Very well. I'll give this letter to the Heroes.");
-	} else if (status == 17) {
-		cm.sendPlayerToNpc("Thank you. Sorry for asking such a task of you.");
-	} else if (status == 18) {
-		cm.sendNextNoESC("Don't be sorry. I owe you my life, after all. Alright, I'm going. Good luck.");
-	} else if (status == 19) {
-		cm.removeNpc(2159307);
-		cm.sendDirectionStatus(1, 720);
-		cm.sendPlayerToNpc("...Your loyalty means so much to me. Thank you.");
-	} else if (status == 20) {
-		cm.sendDirectionStatus(3, 2);
-		cm.sendDirectionStatus(4, 0);
-		cm.warp(927000080,0);
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	}
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendNextS("Commander! Where were you? I thought maybe #p2159308# had actually made a move against you...", 1);
+		break;
+	case 1:
+		cm.sendNextPrevS("Things are strange around here these days. #p2159308# has it out for you, since you were the one who managed to catch the Goddess of the Temple of Time. He only managed to blind her, but he still thinks he deserves all the credit... Fool.", 1);
+		break;
+	case 2:
+		cm.sendNextPrevS("...Are you okay? You seem different... Yeah, you are. You used to scold me when I asked you such things, but now... Hey, you don't look so good. Did something happen? Are you hurt?", 1);
+		break;
+	case 3:
+		cm.sendNextPrevS("...Tell me, #p2151009#. Who do you serve? Is it me, or the Black Mage?", 3);
+		break;
+	case 4:
+		cm.sendNextPrevS("W-what? Why would you ask me such a-", 1);
+		break;
+	case 5:
+		cm.sendNextPrevS("Answer me!", 3);
+		break;
+	case 6:
+		cm.sendNextPrevS("Well... Um... I am loyal to the Black Mage, of course... But the day you saved my life, I pledged myself to you. I go where you go. Does, um, does that answer your question?", 1);
+		break;
+	case 7:
+		cm.sendNextPrevS("Yes. I have a favor to ask of you, then.", 3);
+		break;
+	case 8:
+		cm.sendNextPrevS("Give this letter to the #rHeroes#k.", 3);
+		break;
+	case 9:
+		cm.sendNextPrevS("Do what?! Why... What are you thinking? After everything that's happened, you want to make things worse? If anyone finds out you're trying to contact the Heroes, you're finished as a Commander!", 1);
+		break;
+	case 10:
+		cm.sendNextPrevS("I am already finished as a Commander.", 3);
+		break;
+	case 11:
+		cm.sendNextPrevS("Wait... Are you betraying the Black Mage? But, you're the most loyal of his Commanders! You practically GAVE him the Temple of Time! We have everything... Why are you doing this?", 1);
+		break;
+	case 12:
+		cm.sendNextPrevS("There's no time to explain! If you are truly loyal to me, you will do as I ask. If not...", 3);
+		break;
+	case 13:
+		cm.sendNextPrevS("No! No... I'll do it. I'm just...worried about you.", 1);
+		break;
+	case 14:
+		cm.sendNextPrevS("......", 3);
+		break;
+	case 15:
+		cm.sendNextPrevS("I mean, what about your family? Won't they be in dan-", 1);
+		break;
+	case 16:
+		cm.sendNextPrevS("SILENCE! Do not say another word about my family...", 3);
+		break;
+	case 17:
+		cm.sendNextPrevS("...What? Did... Did something happen to them already...?", 1);
+		break;
+	case 18:
+		cm.sendNextPrevS("......", 3);
+		break;
+	case 19:
+		cm.sendNextPrevS("I see... You've always been the quiet type, but silence sometimes speaks for itself.", 1);
+		break;
+	case 20:
+		cm.sendNextPrevS("Very well. I swear to you, on my very life, that I will deliver this letter to the Heroes.", 1);
+		break;
+	case 21:
+		cm.sendNextPrevS("Thank you. I am sorry to ask such a thing of you, #p2151009#...", 3);
+		break;
+	case 22:
+		cm.sendNextPrevS("Don't be sorry. I owe you my life, after all. In fact, I...I really appreciate your trust.", 1);
+		break;
+	case 23:
+		cm.sendNextPrevS("Okay...I'm going. Whatever it is you're doing...good luck.", 1);
+		break;
+	case 24:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159307, "teleportation"));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1200));
+		break;
+	case 25:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.removeNPCController(2159307));
+		cm.sendNextS("(Your loyalty means so much to me, #p2151009#. Thank you.)", 3);
+		break;
+	case 26:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 2));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		break;
+	case 27:
+		cm.dispose();
+		cm.getPlayer().changeMap(cm.getMap(927000080), cm.getMap(927000080).getPortal(0));
+}
 }

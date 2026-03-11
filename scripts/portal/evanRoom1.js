@@ -1,9 +1,15 @@
+/*
+	名字:	猶他家
+	地圖:	小閣樓
+	描述:	100030100
+*/
+
 function enter(pi) {
-	if (pi.getEvanIntroState("dt00=o;dt01=o;mo00=o;mo01=o;mo10=o;mo02=o;mo11=o;mo20=o;hand=o") || pi.getEvanIntroState("dt00=o;dt01=o;mo00=o;mo01=o;mo10=o;mo02=o;mo11=o;mo20=o;hand=o;mo21=o")) {
+	if (pi.getPlayer().getInfoQuest(22013).indexOf("hand=o") != -1) {
 		return false;
-	}
-	pi.updateEvanIntroState("dt00=o;dt01=o;mo00=o;mo01=o;mo10=o;mo02=o;mo11=o;mo20=o;hand=o;mo21=o");
-	pi.evanTutorial("UI/tutorial/evan/0/0", -1);
-	pi.ShowWZEffect("Effect/OnUserEff.img/guideEffect/evanTutorial/evanBalloon70");
-	return true;
+		}
+		pi.getPlayer().updateInfoQuest(22013, pi.getPlayer().getInfoQuest(22013) + ";hand=o");
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.getEvanTutorial("UI/tutorial/evan/0/0"));
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/guideEffect/evanTutorial/evanBalloon70"));
+		return true;
 }

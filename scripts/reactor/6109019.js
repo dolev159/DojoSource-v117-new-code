@@ -1,15 +1,16 @@
+/*
+	名字:	組隊任務
+	地圖:	機智的測試
+	描述:	610030400
+*/
+
 function act() {
-    var em = rm.getEventManager("CWKPQ");
-    if (em != null) {
-        if (Packages.server.MaplePQManager.canActivateSigil(rm.getPlayer(), 6109019)) {
-            rm.mapMessage(6, "The Thief Sigil has been activated!");
-            em.setProperty("glpq4", parseInt(em.getProperty("glpq4")) + 1);
-            if (em.getProperty("glpq4").equals("5")) {
-                rm.mapMessage(6, "The Antellion grants you access to the next portal! Proceed!");
-                rm.getMap().changeEnvironment("4pt", 2);
-            }
-        } else {
-            rm.playerMessage(5, "Only a Thief may activate this sigil.");
-        }
-    }
+	var nun = rm.getPlayer().getMap().getReactorByName("4skill0a").getState() + rm.getPlayer().getMap().getReactorByName("4skill1a").getState() + rm.getPlayer().getMap().getReactorByName("4skill2a").getState() + rm.getPlayer().getMap().getReactorByName("4skill3a").getState() + rm.getPlayer().getMap().getReactorByName("4skill4a").getState();
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "The Thief Sigil has been activated!"));
+	if (nun > 9) {
+		rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "The Antellion grants you access to the next portal! Proceed!"));
+		rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("4pt", 2));
+		rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+}
 }

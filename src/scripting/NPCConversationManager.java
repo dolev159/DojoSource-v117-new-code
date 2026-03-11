@@ -486,6 +486,16 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         return getText;
     }
 
+    /**
+     * Nexus Omni: Autonomous AI Dialogue
+     * Bridges the NPC script with the asynchronous LLM utility.
+     * 
+     * @param text The text input provided by the player.
+     */
+    public void askOmni(String text) {
+        server.AIOmniGuide.askOmniAsync(c, id, text);
+    }
+
     public void setHair(int hair) {
         getPlayer().setHair(hair);
         getPlayer().updateSingleStat(MapleStat.HAIR, hair);

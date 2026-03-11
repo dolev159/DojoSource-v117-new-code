@@ -213,24 +213,24 @@ public class MapleMonsterInformationProvider {
             }
         }
         
-        for (Entry<Integer, Integer> i : ii.getMonsterBook().entrySet()) {
-            if (!drops.containsKey(i.getKey())) {
-                final MapleMonsterStats mons = MapleLifeFactory.getMonsterStats(i.getKey());
+        ii.getMonsterBook().forEach((mobId, itemId) -> {
+            if (!drops.containsKey(mobId)) {
+                final MapleMonsterStats mons = MapleLifeFactory.getMonsterStats(mobId);
                 List<MonsterDropEntry> e = new ArrayList<>();
-                e.add(new MonsterDropEntry(i.getValue().intValue(), mons.isBoss() ? 1000000 : 10000, 1, 1, 0));
-                StructFamiliar f = ii.getFamiliarByMob(i.getKey().intValue());
+                e.add(new MonsterDropEntry(itemId, mons.isBoss() ? 1000000 : 10000, 1, 1, 0));
+                StructFamiliar f = ii.getFamiliarByMob(mobId);
                 if (f != null) {
                     e.add(new MonsterDropEntry(f.itemid, mons.isBoss() ? 10000 : 100, 1, 1, 0));
                 }
                 addMeso(mons, e);
 
                 List<MonsterDropEntry> unmodifiableDrops = Collections.unmodifiableList(e);
-                drops.put(i.getKey(), unmodifiableDrops);
+                drops.put(mobId, unmodifiableDrops);
                 if (mons != null) {
                     mons.setDrops(unmodifiableDrops);
                 }
             }
-        }
+        });
         for (StructFamiliar f : ii.getFamiliars().values()) {
             if (!drops.containsKey(f.mob)) {
                 MapleMonsterStats mons = MapleLifeFactory.getMonsterStats(f.mob);

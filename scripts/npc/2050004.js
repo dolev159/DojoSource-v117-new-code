@@ -1,11 +1,10 @@
 /*
-	Kubo the Storageman - Omega Sector : Silo (221000200)
+	名字:	倉庫之地 庫保
+	地圖:	機庫
+	描述:	221000200
 */
 
-function action(mode, type, selection) {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+function start() {
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 2050004);
+	cm.dispose();
 }

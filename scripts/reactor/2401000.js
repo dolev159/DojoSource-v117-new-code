@@ -1,9 +1,11 @@
+/*
+	名字:	生命之穴
+	地圖:	闇黑龍王洞穴
+	描述:	240060200
+*/
+
 function act() {
-    rm.changeMusic("Bgm14/HonTale");
-    rm.spawnMonster(8810026, 71, 260);
-    rm.mapMessage("The cave shakes and rattles, Horned Tail is summoned.");
-	//rm.scheduleWarp(43200, 240000000);
-	if (!rm.getPlayer().isGM()) {
-		rm.getMap().startSpeedRun();
-	}
+	rm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("Bgm14/HonTale", 6));
+	rm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(8810026), new java.awt.Point(71, 260));
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "The cave shakes and rattles, Horned Tail is summoned."));
 }

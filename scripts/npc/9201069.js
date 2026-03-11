@@ -1,38 +1,54 @@
-/* V. Isage
-	NLC VIP Eye Change.
+/*
+	名字:	蘭斯
+	地圖:	新叶城 购物中心
+	描述:	600000001
 */
-var status = -1;
-var facetype;
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		if (cm.getPlayer().getGender() < 1)
+			face = [20012, 20000, 20001, 20002, 20003, 20004, 20005, 20006, 20008];
+		else
+			face = [21016, 21001, 21002, 21003, 21004, 21005, 21006, 21008, 21012];
 
-    if (status == 0) {
-	cm.sendNext("Well, hello! Welcome to the New Leaf City Plastic Surgery! Would you like to transform your face into something new? With a #b#t5152034##k, you can let us take care of the rest and have the face you've always wanted~!");
-    } else if (status == 1) {
-	var face = cm.getPlayerStat("FACE");
+			for (var i = 0; i < face.length; i++)
+			face[i] = face[i] + parseInt(cm.getPlayer().getFace() / 100 % 10) * 100;
 
-	if (cm.getPlayerStat("GENDER") == 0) {
-	    facetype = [20000, 20001, 20002, 20003, 20004, 20005, 20006, 20007, 20008, 20012];
-	} else {
-	    facetype = [21001, 21002, 21003, 21004, 21005, 21006, 21008, 21012, 21014, 21016];
-	}
-	for (var i = 0; i < facetype.length; i++) {
-	    facetype[i] = facetype[i] + face % 1000 - (face % 100);
-	}
-	cm.askAvatar("Let's see... I can totally transform your face into something new. Don't you want to try it? For #b#t5152034##k, you can get the face of your liking. Take your time in choosing the face of your preference.", facetype);
-
-    } else if (status == 2){
-	if (cm.setAvatar(5152034, facetype[selection]) == 1) {
-	    cm.sendOk("Enjoy your new and improved face!");
-	} else {
-	    cm.sendOk("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
-	}
-	cm.safeDispose();
-    }
+			cm.sendStyle("Let's see...for #b#t5152057##k, you can get a new face. That's right. I can completely transform your face! Wanna give it a shot? Please consider your choice carefully.", face);
+			break;
+	case 1:
+		if (cm.getPlayer().itemQuantity(5152057)) {
+			cm.gainItem(5152057, -1);
+			cm.getPlayer().setFace(face[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.FACE, face[selection]);
+			cm.sendNext("Alright, it's all done! Check yourself out in the mirror. Well, aren't you lookin' marvelous? Haha! If you're sick of it, just give me another call, alright?");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Hmm ... it looks like you don't have the coupon specifically for this place. Sorry to say this, but without the coupon, there's no plastic surgery for you...");
+			cm.dispose();
+}
 }

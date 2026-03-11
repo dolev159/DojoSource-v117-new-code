@@ -1,33 +1,21 @@
-/* NPC : A pile of pink flower
- * Location : Sleepywood, forest of patient
- */
-
-var itemSet = new Array(4010003, 4010000, 4010002, 4010005, 4010004, 4010001);
-var rand = Math.floor(Math.random() * itemSet.length);
-
+/*
+	名字:	粉紅色花簇
+	地圖:	第2階段
+	描述:	910530001
+*/
 
 function start() {
-    status = -1;
-    action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-    if (status >= 2 && mode == 0) {
-	cm.dispose();
-	return;
-    }
-    if (mode == 1) {
-	status++;
-
-    } else {
-	status--;
-    }
-    if (status == 0) {
-	cm.gainItem(4032024, -1);
-	cm.warp(105000000);
-        cm.gainMeso(20000);
-	cm.gainItem(4310025, 4);
- 	cm.gainJQPoints(2);
-	cm.dispose();
-    }
+	if (cm.getPlayer().getPosition().y > -2205) {
+		cm.sendOk("You can't see the inside of the pile of flowers very well because you're too far. Go a little closer.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Etc item inventory is full."));
+		cm.dispose();
+		return;
+		}
+		cm.gainItem(4031025, 10);
+		cm.getPlayer().changeMap(cm.getMap(105000000), cm.getMap(105000000).getPortal(0)); //奇幻村
+		cm.dispose();
 }

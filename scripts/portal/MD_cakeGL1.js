@@ -1,35 +1,20 @@
-var baseid = 683000000;
-var dungeonid = 683000100;
-var dungeons = 10;
+/*
+	名字:	隱藏的街道
+	地圖:	甜蜜蛋糕山丘入口
+	描述:	683000000
+*/
+
+var map = 683000000;
+var maps = 683000100; //甜饼地图
+var num = 10;
 
 function enter(pi) {
-try {
-    if (pi.getMapId() == baseid) {
-	if (pi.getParty() != null) {
-	    if (pi.isLeader()) {
-		for (var i = 0; i < dungeons; i++) {
-		    if (pi.getPlayerCount(dungeonid + i) == 0) {
-			pi.warpParty(dungeonid + i);
-			return;
-		    }
+	for (var i = 0; i < num; i++)
+	if (pi.getMap(maps + i).getCharacters().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(maps + i), pi.getMap(maps + i).getPortal(3));
+		pi.gainItem(4032055, -1);
+		return true;
 		}
-	    } else {
-		pi.playerMessage(5, "You are not the leader of the party.");
-	    }
-	} else {
-	    for (var i = 0; i < dungeons; i++) {
-		if (pi.getPlayerCount(dungeonid + i) == 0) {
-		    pi.warp(dungeonid + i);
-		    return;
-		}
-	    }
-	}
-	pi.playerMessage(5, "All of the Mini-Dungeons are in use right now, please try again later.");
-    } else {
-	pi.playPortalSE();
-	pi.warp(baseid, "MD00");
-    }
-} catch (e) {
-    pi.playerMessage("Error: " + e);
-}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "All of the Mini-Dungeons are in use right now, please try again later."));
+		return false;
 }

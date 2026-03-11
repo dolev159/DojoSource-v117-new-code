@@ -1,76 +1,83 @@
 /*
-	Bell - KC/NLC Subway Station(103000100/600010001), Waiting Room(600010002/600010004)
+	名字:	貝爾
+	地圖:	地鐵售票處
+	描述:	103020000
 */
 
-var section;
-var msg = new Array("New Leaf City of Masteria","Kerning City of Victoria Island","Kerning City","New Leaf City");
-var ticket = new Array(4031711,4031713);
-var cost = 5000;
-var returnMap = new Array(103000100,600010001);
+var status;
 
 function start() {
-    status = -1;
-    sw = cm.getEventManager("Subway");
-    action(1, 0, 0);
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    if(mode == 0 && status == 0) {
-	cm.dispose();
-    } else {
-	status++;
-	if(mode == 0) {
-	    if(section == 2) {
-		cm.sendNext("Okay, Please wait~!");
-	    } else {
-		cm.sendOk("You must have some business to take care of here, right?");
-	    }
-	    cm.dispose();
-	    return;
-	}
-	if (status == 0) {
-	    switch (cm.getMapId()) {
-		case 103000100:
-		    section = 0;
-		    break;
-		case 600010001:
-		    section = 1;
-		    break;
-		case 600010004:
-		    section = 2;
-		    break;
-		case 600010002:
-		    section = 3;
-		    break;
-		default:
-		    cm.sendNext("Error~");
-		    cm.dispose();
-		    break;
-	    }
-	    if(section < 2) {
-		cm.sendSimple("Hello. Would you like to buy a ticket for the subway?\r\n#L0##b"+msg[section]+"#l");
-	    } else {
-		cm.sendYesNo("Do you want to go back to "+msg[section]+" subway station now?");
-	    }
-	}
-	else if(status == 1) {
-	    if(section < 2) {
-		cm.sendYesNo("The ride to "+msg[section]+" takes off every 10 minutes, beginning on the hour, and it'll cost you #b"+cost+" mesos#k. Are you sure you want to purchase #b#t"+ticket[section]+"##k?");
-	    } else {
-		section -= 2;
-		cm.warp(returnMap[section]);
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	    }
-	}
-	else if(status == 2) {
-	    if(cm.getMeso() < cost || !cm.canHold(ticket[section])) {
-		cm.sendNext("Are you sure you have #b"+cost+" mesos#k? If so, then I urge you to check your etc. inventory, and see if it's full or not.");
-	    }
-	    else {
-		cm.gainItem(ticket[section],1);
-		cm.gainMeso(-cost);
-	    }
-	    cm.dispose();
-	}
-    }
+		return;
+	case 0:
+		if (status < 2) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+		reactor = 'action' + (cm.getPlayer().getMap().getId() == 103020000 ? 0 : cm.getPlayer().getMap().getId() == 600010001 ? 1 : 2);
+		eval(reactor)(mode, type, selection);
+}
+
+function action0(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendSimple("Hello. Would you like to buy a ticket for the subway? \r\n#L0##bNew Leaf City of Masteria#l");
+		break;
+	case 1:
+		cm.sendYesNo("The ride to New Leaf City of Masteria takes off every 10 minutes, beginning on the hour, and it'll cost you #b5000 mesos#k. Are you sure you want to purchase #b#t4031711##k?");
+		break;
+	case 2:
+		if (cm.getPlayer().getMeso() < 5000 || cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+			cm.sendNext("Are you sure you have #b5000 mesos#k? Please check the Etc window of your Item Inventory.");
+			cm.dispose();
+			return;
+			}
+			cm.gainMeso(-5000);
+			cm.gainItem(4031711, 1);
+			cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendSimple("Hello. Would you like to buy a ticket for the subway? \r\n#L0##bKerning City of Victoria Island#l");
+		break;
+	case 1:
+		cm.sendYesNo("The ride to Kerning City of Victoria Island takes off every 10 minutes, beginning on the hour, and it'll cost you #b5000 mesos#k. Are you sure you want to purchase #b#t4031713##k?");
+		break;
+	case 2:
+		if (cm.getPlayer().getMeso() < 5000 || cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+			cm.sendNext("Are you sure you have #b5000 mesos#k? Please check the Etc window of your Item Inventory.");
+			cm.dispose();
+			return;
+			}
+			cm.gainMeso(-5000);
+			cm.gainItem(4031713, 1);
+			cm.dispose();
+}
+}
+
+function action2(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendYesNo("Do you want to leave before the train start? There will be no refund.");
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(cm.getPlayer().getMap().getId() == 600010004 ? 103020000 : 600010001), cm.getMap(cm.getPlayer().getMap().getId() == 600010004 ? 103020000 : 600010001).getPortal(0));
+		cm.dispose();
+}
 }

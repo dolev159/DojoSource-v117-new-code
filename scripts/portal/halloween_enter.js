@@ -1,8 +1,10 @@
 /*
-Enter the Haunted House (used to be NX only o.op)
+	名字:	隱藏地圖
+	地圖:	鬧鬼宅邸外部
+	描述:	682000000
 */
 
 function enter(pi) {
-    pi.playPortalSE();
-    pi.warp(682000100, "st00");
+	pi.getPlayer().changeMap(pi.getMap(682000100), pi.getMap(682000100).getPortal(8)); //大廳
+	return true;
 }

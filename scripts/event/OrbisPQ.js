@@ -1,202 +1,121 @@
-var minPlayers = 2;
-var stg2_combo0 = Array("3", "2", "1");
-var stg2_combo1 = Array("0", "0", "1"); //unique combos only
-var stg2_combo2 = Array("0", "1", "1");
-var stg6_combo = Array("00", "01", "02", "03", "04", "05", "06", "07", "08");
-var cx = Array(200, -300, -300, -300, 200, 200, 200, -300, -300, 200, 200, -300, -300, 200); //even = 200 odd = -300
-var cy = Array(-2321, -2114, -2910, -2510, -1526, -2716, -717, -1310, -3357, -1912, -1122, -1736, -915, -3116);
+/*
+	名字:	天空之城
+	地圖:	疑問之塔
+	描述:	200080101
+*/
 
-function init() {
-em.setProperty("state", "0");
-	em.setProperty("leader", "true");
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function setup(level, leaderid) {
-	em.getProperties().clear();
-em.setProperty("state", "1");
-	em.setProperty("leader", "true");
-    var eim = em.newInstance("OrbisPQ" + leaderid);
-	em.setProperty("stage", "0"); //center stage
-	em.setProperty("pre", "0"); //first stage
-	em.setProperty("finished", "0"); //first stage
-	em.setProperty("stage2", "0"); //num.spawned in storage, 15 = done
-	em.setProperty("stage3", "0"); //lobby
-	em.setProperty("stage4", "0"); //sealed
-	var rand_combo = java.lang.Math.floor(java.lang.Math.random() * stg2_combo0.length);
-	var rand_num = java.lang.Math.random();
-	var combo0 = rand_num < 0.33 ? true : false;
-	var combo1 = rand_num < 0.66 ? true : false;
-	em.setProperty("stage4_0", combo0 ? stg2_combo0[rand_combo] : (combo1 ? stg2_combo1[rand_combo] : stg2_combo2[rand_combo]));
-	em.setProperty("stage4_1", combo0 ? stg2_combo1[rand_combo] : (combo1 ? stg2_combo2[rand_combo] : stg2_combo0[rand_combo]));
-	em.setProperty("stage4_2", combo0 ? stg2_combo2[rand_combo] : (combo1 ? stg2_combo0[rand_combo] : stg2_combo1[rand_combo]));
-	em.setProperty("stage6", "0"); //on way up ... hard
+function setup(level, leaderid) {//開始事件，時間
+	em.setProperty("state", 1);
 
-	for (var b = 0; b < stg6_combo.length; b++) { //stage6_001
-		for (var y = 0; y < 4; y++) { //stage number
-			em.setProperty("stage6_" + stg6_combo[b] + "" + (y+1) + "", "0");
+	eim = em.newInstance("OrbisPQ");
+
+	em.setProperty("stage2", 0); //倉庫的女神的紅獨角獅计数
+
+	eim.setInstanceMap(920010000).resetFully();
+	eim.setInstanceMap(920010100).resetFully();
+	eim.setInstanceMap(920010200).resetFully();
+	eim.setInstanceMap(920010300).resetFully();
+	eim.setInstanceMap(920010400).resetFully();
+	eim.setInstanceMap(920010500).resetFully();
+	eim.setInstanceMap(920010600).resetFully();
+	eim.setInstanceMap(920010601).resetFully();
+	eim.setInstanceMap(920010602).resetFully();
+	eim.setInstanceMap(920010603).resetFully();
+	eim.setInstanceMap(920010604).resetFully();
+	eim.setInstanceMap(920010700).resetFully();
+	eim.setInstanceMap(920010800).resetFully();
+	eim.setInstanceMap(920010900).resetFully();
+	eim.setInstanceMap(920010910).resetFully();
+	eim.setInstanceMap(920010911).resetFully();
+	eim.setInstanceMap(920010912).resetFully();
+	eim.setInstanceMap(920010920).resetFully();
+	eim.setInstanceMap(920010921).resetFully();
+	eim.setInstanceMap(920010922).resetFully();
+	eim.setInstanceMap(920010930).resetFully();
+	eim.setInstanceMap(920010931).resetFully();
+	eim.setInstanceMap(920010932).resetFully();
+	eim.setInstanceMap(920011000).resetFully();
+	eim.setInstanceMap(920011100).resetFully();
+
+	eim.startEventTimer(20 * 60000);//60000 = 1分鐘
+
+	return eim;
+}
+
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(920010000), eim.getMapInstance(920010000).getPortal(0));
+
+	eim.applyBuff(player, 2022090 + Math.floor(Math.random() * 4));//加載Buff內容
+
+	eim.getMapInstance(920010000).startMapEffect("Hi, I am the steward of the goddess. I have been sealed, so you cannot see me now. Can you help me unseal it?", 5120019);//添加的
+
+	player.tryPartyQuest(1203);
+}
+
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 9300049) {
+		eim.getMapInstance(920010800).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Papa Pixie has been spawned."));
+		eim.getMapInstance(920010800).spawnMonsterOnGroundBelow(em.getMonster(9300039), new java.awt.Point(-830, 563));
 		}
-	}
-	for (var b = 0; b < stg6_combo.length; b++) { //stage6_001	
-		var found = false;
-		while (!found) {
-			for (var x = 0; x < 4; x++) {
-				if (!found) {
-					var founded = false;
-					for (var z = 0; z < 4; z++) { //check if any other stages have this value set already.
-						if (em.getProperty("stage6_" + stg6_combo[b] + "" + (z+1) + "") == null) {
-							em.setProperty("stage6_" + stg6_combo[b] + "" + (z+1) + "", "0");
-						} else if (em.getProperty("stage6_" + stg6_combo[b] + "" + (z+1) + "").equals("1")) {
-							founded = true;
-							break;
-						}
-					}
-					if (!founded && java.lang.Math.random() < 0.25) {
-						em.setProperty("stage6_" + stg6_combo[b] + "" + (x+1) + "", "1");
-						found = true;
-						break;
-					}
-				}
+	if (mob.getId() == 9300039) {
+		eim.getMapInstance(920010800).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Please bring the Life Grass and go save the goddess as soon as possible."));
+		eim.getMapInstance(920010800).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(920010800).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+		}
+	if (mob.getId() == 9300040) {
+		st = parseInt(em.getProperty("stage2"));
+
+		if (st < 14) {
+			em.setProperty("stage2", st + 1);
+
+			eim.getMapInstance(920010300).spawnMonsterOnGroundBelow(em.getMonster(9300040), new java.awt.Point(eim.getMapInstance(920010300).getReactorById(2001002 + Math.floor(Math.random() * 5)).getPosition()));
+			eim.getMapInstance(920010300).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Cellion has been spawned somewhere in the map."));
 			}
-		}
-	}
-	//STILL not done yet! levers = 2 of them
-	for (var i = 0; i < 3; i++) {
-		em.setProperty("stage62_" + i + "", "0");
-	}
-	var found_1 = false;
-	while(!found_1) {
-		for (var i = 0; i < 3; i++) {
-			if (em.getProperty("stage62_" + i + "") == null) {
-				em.setProperty("stage62_" + i + "", "0");
-			} else if (!found_1 && java.lang.Math.random() < 0.2) {
-				em.setProperty("stage62_" + i + "", "1");
-				found_1 = true;
 			}
-		}
-	}
-	var found_2 = false;
-	while(!found_2) {
-		for (var i = 0; i < 3; i++) {
-			if (em.getProperty("stage62_" + i + "") == null) {
-				em.setProperty("stage62_" + i + "", "0");
-			} else if (!em.getProperty("stage62_" + i + "").equals("1") && !found_2 && java.lang.Math.random() < 0.2) {
-				em.setProperty("stage62_" + i + "", "1");
-				found_2 = true;
-			}
-		}
-	}
-	em.setProperty("stage7", "0"); //papa spawned
-	em.setProperty("done", "0");
-        eim.setInstanceMap(920010000).resetPQ(level);
-        var center = eim.setInstanceMap(920010100);
-	center.resetPQ(level);
-	// Authentically progression: do not force hit reactors
-        eim.setInstanceMap(920010200).resetPQ(level);
-        eim.setInstanceMap(920010300).resetPQ(level);
-        eim.setInstanceMap(920010400).resetPQ(level);
-        eim.setInstanceMap(920010500).resetPQ(level);
-        eim.setInstanceMap(920010600).resetPQ(level);
-        eim.setInstanceMap(920010601).resetPQ(level);
-        eim.setInstanceMap(920010602).resetPQ(level);
-        eim.setInstanceMap(920010603).resetPQ(level);
-        eim.setInstanceMap(920010604).resetPQ(level);
-        eim.setInstanceMap(920010700).resetPQ(level);
-        eim.setInstanceMap(920010800).resetPQ(level);
-        eim.setInstanceMap(920010900).resetPQ(level);
-        eim.setInstanceMap(920010910).resetPQ(level);
-        eim.setInstanceMap(920010911).resetPQ(level);
-        eim.setInstanceMap(920010912).resetPQ(level);
-        eim.setInstanceMap(920010920).resetPQ(level);
-        eim.setInstanceMap(920010921).resetPQ(level);
-        eim.setInstanceMap(920010922).resetPQ(level);
-        eim.setInstanceMap(920010930).resetPQ(level);
-        eim.setInstanceMap(920010931).resetPQ(level);
-        eim.setInstanceMap(920010932).resetPQ(level);
-        eim.setInstanceMap(920011000).resetPQ(level);
-        eim.setInstanceMap(920011100).resetPQ(level);
-    eim.startEventTimer(1200000); //20 min
-    return eim;
+			return 1;
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapInstance(0);
-    player.changeMap(map, map.getPortal(0));
-    player.tryPartyQuest(1203);
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, eim.getMapInstance(920010100).getReactorByName("minerva").getState() == 5 ? 920011300 : 920011200);
 }
 
-function playerRevive(eim, player) {
+function changedMap(eim, player, mapid) {//進入地圖觸發
+	if (mapid < 920010000 || mapid > 920011100) {
+		playerExit(eim, player);
+}
 }
 
-function scheduledTimeout(eim) {
-    end(eim);
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
 }
 
-function changedMap(eim, player, mapid) {
-    if (mapid < 920010000 || mapid > 920011100) {
+function leftParty(eim, player) {//離開小組觸發
+	player.changeMap(eim.getMapInstance(920011200), eim.getMapInstance(920011200).getPortal(0));
+}
+
+function disbandParty(eim) {//小組退出時觸發
+	eim.disposeIfPlayerBelow(100, 920011200);
+}
+
+function playerExit(eim, player) {//角色退出時觸發
 	eim.unregisterPlayer(player);
-
+	player.dispelBuff(2022090);//清除BUFF
+	player.dispelBuff(2022091);
+	player.dispelBuff(2022092);
+	player.dispelBuff(2022093);
 	if (eim.disposeIfPlayerBelow(0, 0)) {
-		em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
-    } else if (mapid == 920011100 && em.getProperty("done").equals("0")) { //bonus
-	em.setProperty("done", "1");
-	eim.restartEventTimer(60000); //minute
-    }
+		em.setProperty("state", 0);
+}
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function monsterValue(eim, mobId) {
-    if (mobId == 9300049 && em.getProperty("stage7").equals("0")) { //dark nep
-	eim.broadcastPlayerMsg(6, "Papa Pixie has been spawned.");
-	var mob = em.getMonster(9300039);
-	eim.registerMonster(mob);
-	em.setProperty("stage7", "0");
-	eim.getMapInstance(12).spawnMonsterOnGroundBelow(mob, new java.awt.Point(-830, 563));
-    } else if (mobId == 9300040) {
-	var st = parseInt(em.getProperty("stage2"));
-	if (st < 14) {
-	     eim.broadcastPlayerMsg(6, "Cellion has been spawned somewhere in the map.");
-	     var mob = em.getMonster(9300040);
-	     em.setProperty("stage2", st+1);
-	     eim.registerMonster(mob);
-	     eim.getMapInstance(3).spawnMonsterOnGroundBelow(mob, new java.awt.Point(cx[st], cy[st]));
-	}
-    }
-    return 1;
-}
+function playerDead(eim, player) {}//玩家死亡時觸發
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
+function playerRevive(eim, player) {}//玩家角色复時觸發
 
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
-}
-
-function end(eim) {
-    eim.disposeIfPlayerBelow(100, em.getProperty("done").equals("0") ? 920011200 : 920011300);
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-}
-
-function clearPQ(eim) {
-    end(eim);
-}
-
-function allMonstersDead(eim) {
-}
-
-function leftParty (eim, player) {
-    // If only 2 players are left, uncompletable:
-	end(eim);
-}
-function disbandParty (eim) {
-	end(eim);
-}
-function playerDead(eim, player) {}
-function cancelSchedule() {}
+function cancelSchedule() {}//清除事件

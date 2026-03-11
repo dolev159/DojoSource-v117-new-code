@@ -1,192 +1,115 @@
-/**
-	Ludibrium PQ (101st Eos Tower)
+/*
+	名字:	玩具城
+	地圖:	愛奧斯塔101樓
+	描述:	221023300
 */
-var stg6_combo = Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
-var minPlayers = 2;
 
-function init() {
-    em.setProperty("state", "0");
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function monsterValue(eim, mobId) {
-    return 1;
+function setup(level, leaderid) {//開始事件，時間
+	em.setProperty("state", 1);
+
+	eim = em.newInstance("LudiPQ");
+
+	eim.setInstanceMap(922010100).resetFully();
+	eim.setInstanceMap(922010400).resetFully();
+	eim.setInstanceMap(922010401).resetFully();
+	eim.setInstanceMap(922010402).resetFully();
+	eim.setInstanceMap(922010403).resetFully();
+	eim.setInstanceMap(922010404).resetFully();
+	eim.setInstanceMap(922010405).resetFully();
+	eim.setInstanceMap(922010600).resetFully();
+	eim.setInstanceMap(922010700).resetFully();
+	eim.setInstanceMap(922010800).resetFully();
+	eim.setInstanceMap(922010900).resetFully();
+
+	eim.setInstanceMap(922010700).getPortal("next00").setScriptName("ludi_s4Clear");
+	eim.setInstanceMap(922010800).getPortal("next00").setScriptName("ludi_s5Clear");
+
+	eim.startEventTimer(20 * 60000); //20 mins
+
+	return eim;
 }
 
-function setup(level, leaderid) {
-    em.setProperty("state", "1");
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(922010100), eim.getMapInstance(922010100).getPortal(0));
+}
 
-    var eim = em.newInstance("LudiPQ");
-    eim.setProperty("stage2", "0");
-    var map = eim.setInstanceMap(922010100);
-    map.resetPQ(level);
-    map = eim.setInstanceMap(922010200); //stage 2
-    map.resetPQ(level);
-    map.getPortal("next00").setScriptName("lpq2");
-    map.setReactorDelay(-1);
-    eim.setInstanceMap(922010201).resetPQ(level); //Towers Trap
-    map = eim.setInstanceMap(922010300);
-    map.resetPQ(level);
-    map.getPortal("next00").setScriptName("lpq3"); //Stage 3
-    map = eim.setInstanceMap(922010400);
-    map.resetPQ(level);
-    eim.setInstanceMap(922010401).resetPQ(level);
-    eim.setInstanceMap(922010402).resetPQ(level);
-    eim.setInstanceMap(922010403).resetPQ(level);
-    eim.setInstanceMap(922010404).resetPQ(level);
-    eim.setInstanceMap(922010405).resetPQ(level);
-    map = eim.setInstanceMap(922010500);
-    map.resetPQ(level);
-    map.getPortal("next00").setScriptName("lpq5");
-    eim.setInstanceMap(922010501).resetPQ(level);
-    eim.setInstanceMap(922010502).resetPQ(level);
-    eim.setInstanceMap(922010503).resetPQ(level);
-    eim.setInstanceMap(922010504).resetPQ(level);
-    eim.setInstanceMap(922010505).resetPQ(level);
-    eim.setInstanceMap(922010506).resetPQ(level); //Stage 5
-    map = eim.setInstanceMap(922010600); // Stage 6
-    map.resetPQ(level);
-    map.getPortal("next00").setScriptName("lpq6");
-    map = eim.setInstanceMap(922010700);
-	map.resetPQ(level);
-	map.getPortal("next00").setScriptName("lpq7");
-	map = eim.setInstanceMap(922010800);
-    map.resetPQ(level);
-    map.getPortal("next00").setScriptName("lpq8");
-    eim.setInstanceMap(922010900).resetPQ(level);
-    eim.setInstanceMap(922011000).resetPQ(level); //Bonus
-	
-	for (var b = 0; b < stg6_combo.length; b++) { //stage6_001
-		for (var y = 0; y < 3; y++) { //stage number
-			em.setProperty("stage6_" + stg6_combo[b] + "" + y + "", "0");
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 9300008 || mob.getId() == 9300014) {
+		eim.setProperty("stage2a", eim.getProperty("stage2a") == null ? 1 : parseInt(eim.getProperty("stage2a")) + 1);
+
+	if (eim.getProperty("stage2a") == 14) {
+		eim.getMapInstance(922010400).startMapEffect("You've defeated all the Dark Eyes and Shadow Eyes. Talk to the Lime Balloon to proceed to the next stage!", 5120018);
+		eim.getMapInstance(922010400).broadcastMessage(Packages.tools.packet.CField.environmentChange("gate", 2));
+		eim.setProperty("stage2", 1);
+
+	for (var i = 0; i < 6; i++) {
+		eim.getMapInstance(922010400 + i).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(922010400 + i).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
 		}
-	}
-	for (var b = 0; b < stg6_combo.length; b++) { //stage6_001	
-		var found = false;
-		while (!found) {
-			for (var x = 0; x < 3; x++) {
-				if (!found) {
-					var founded = false;
-					for (var z = 0; z < 3; z++) { //check if any other stages have this value set already.
-						if (em.getProperty("stage6_" + stg6_combo[b] + "" + (z) + "") == null) {
-							em.setProperty("stage6_" + stg6_combo[b] + "" + (z) + "", "0");
-						} else if (em.getProperty("stage6_" + stg6_combo[b] + "" + (z) + "").equals("1")) {
-							founded = true;
-							break;
-						}
-					}
-					if (!founded && java.lang.Math.random() < 0.33) {
-						em.setProperty("stage6_" + stg6_combo[b] + "" + (x) + "", "1");
-						found = true;
-						break;
-					}
-				}
-			}
 		}
-	}
+		}
 
-    eim.startEventTimer(1200000); //20 mins
+	if (mob.getId() == 9300010 && eim.getMapInstance(922010700).getAllMonstersThreadsafe().size() < 1) {
+		eim.getMapInstance(922010700).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(922010700).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+		eim.setProperty("stage4", 0);
+		}
 
-    return eim;
+	if (mob.getId() == 9300012) {
+		eim.getMapInstance(922010900).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(922010900).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+
+		eim.setProperty("stage9", 0);
+
+		Qa = player.getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1202)).getCustomData();
+
+		player.gainExp(player.getLevel() * 1000, true, true, true);
+	if (player.getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1202)).getStatus() < 2) {
+		Packages.server.quest.MapleQuest.getInstance(1202).forceComplete(player, 0);
+		player.getClient().getSession().write(Packages.tools.packet.CWvsContext.getShowQuestCompletion(1202));
+		}
+		player.getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1202)).setCustomData(Qa == null ? 1 : parseInt(Qa) + 1);
+		}
+		return 1;
 }
 
-function scheduledTimeout(eim) {
-    eim.disposeIfPlayerBelow(100, 922010000);
-
-    em.setProperty("state", "0");
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 922010000);
 }
 
-function changedMap(eim, player, mapid) {
-    switch (mapid) {
-	case 922010100: // Stage 1
-	case 922010200: // Stage 2
-	case 922010201: // Stage 2 - Tower's Trap'
-	case 922010300: // Stage 3
-	case 922010400: //stage 4
-	case 922010401: //darkness in stage 4
-	case 922010402: //darkness in stage 4
-	case 922010403: //darkness in stage 4
-	case 922010404: //darkness in stage 4
-	case 922010405: //darkness in stage 4
-	case 922010500: //stage 5
-	case 922010501: //tower's maze in stage 5
-	case 922010502: //tower's maze in stage 5
-	case 922010503: //tower's maze in stage 5
-	case 922010504: //tower's maze in stage 5
-	case 922010505: //tower's maze in stage 5
-	case 922010506: //tower's maze in stage 5
-	case 922010600:
-	case 922010700: //stage 7
-	case 922010800:
-	case 922010900: //crack on the wall
-	case 922011000: //bonus
-	    return;
-    }
-    eim.unregisterPlayer(player);
-
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-    }
+function changedMap(eim, player, mapid) {//進入地圖觸發
+	if (mapid < 922010100 || mapid > 922010900) {
+		playerExit(eim, player);
+}
 }
 
-function playerEntry(eim, player) {
-    var map = em.getMapFactory().getMap(922010100);
-    player.changeMap(map, map.getPortal(0));
-    player.tryPartyQuest(1202);
-}
-
-function playerRevive(eim, player) {
-}
-
-function playerDisconnected(eim, player) {
-    return -3;
-}
-
-function leftParty(eim, player) {			
-    // If only 2 players are left, uncompletable
-    if (eim.disposeIfPlayerBelow(minPlayers, 922010000)) {
-	em.setProperty("state", "0");
-    } else {
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
 	playerExit(eim, player);
-    }
 }
 
-function disbandParty(eim) {
-    // Boot whole party and end
-    eim.disposeIfPlayerBelow(100, 922010000);
-
-    em.setProperty("state", "0");
+function leftParty(eim, player) {//離開小組觸發
+	player.changeMap(eim.getMapInstance(922010000), eim.getMapInstance(922010000).getPortal(0));
 }
 
-function playerExit(eim, player) {
-    var map = em.getMapFactory().getMap(922010000);
-
-    eim.unregisterPlayer(player);
-    player.changeMap(map, map.getPortal(0));
+function disbandParty(eim) {//小組退出時觸發
+	eim.disposeIfPlayerBelow(100, 922010000);
 }
 
-// For offline players
-function removePlayer(eim, player) {
-    eim.unregisterPlayer(player);
+function playerExit(eim, player) {//角色退出時觸發
+	eim.unregisterPlayer(player);
+	if (eim.disposeIfPlayerBelow(0, 0)) {
+		em.setProperty("state", 0);
+}
 }
 
-function clearPQ(eim) {
-    eim.disposeIfPlayerBelow(100, 922010000);
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-    em.setProperty("state", "0");
-}
+function playerDead(eim, player) {}//玩家死亡時觸發
 
-function finish(eim) {
-    eim.disposeIfPlayerBelow(100, 922010000);
+function playerRevive(eim, player) {}//玩家角色复時觸發
 
-    em.setProperty("state", "0");
-}
-
-function timeOut(eim) {
-    eim.disposeIfPlayerBelow(100, 922010000);
-
-    em.setProperty("state", "0");
-}
-
-function cancelSchedule() {}
-function playerDead() {}
-function allMonstersDead(eim) {}
+function cancelSchedule() {}//清除事件

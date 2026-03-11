@@ -1,7 +1,12 @@
 /*
-Florina Beach Coconut - drops a coconut 
+	名字:	黃金海灘
+	地圖:	紅螃蟹沙灘
+	描述:	120030100
 */
 
 function act() {
 	rm.dropItems();
 }
+
+
+//4000136		可可果實

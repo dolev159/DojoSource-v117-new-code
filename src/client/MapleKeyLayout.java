@@ -29,16 +29,16 @@ public class MapleKeyLayout implements Serializable {
         changed = true;
         return keymap;
     }
-	
-	public final void unchanged() {
-		changed = false;
-	}
+
+    public final void unchanged() {
+        changed = false;
+    }
 
     public final void writeData(final MaplePacketLittleEndianWriter mplew) {
-		mplew.write(keymap.isEmpty() ? 1 : 0);
-		if (keymap.isEmpty()) {
-			return;
-		}
+        mplew.write(keymap.isEmpty() ? 1 : 0);
+        if (keymap.isEmpty()) {
+            return;
+        }
         Pair<Byte, Integer> binding;
         for (int x = 0; x < 89; x++) {
             binding = keymap.get(Integer.valueOf(x));
@@ -57,32 +57,39 @@ public class MapleKeyLayout implements Serializable {
             return;
         }
         try (Connection con = DatabaseConnection.getConnection()) {
-            try (PreparedStatement ps = con.prepareStatement("DELETE FROM keymap WHERE characterid = ?")) {
-                ps.setInt(1, charid);
-                ps.execute();
-            }
-            if (keymap.isEmpty()) {
-                return;
-            }
-            boolean first = true;
-            StringBuilder query = new StringBuilder();
+            saveKeys(charid, con);
+        }
+    }
 
-            for (Entry<Integer, Pair<Byte, Integer>> keybinding : keymap.entrySet()) {
-                if (first) {
-                    first = false;
-                    query.append("INSERT INTO keymap VALUES (");
-                } else {
-                    query.append(",(");
-                }
-                query.append("DEFAULT,");
-                query.append(charid).append(",");
-                query.append(keybinding.getKey().intValue()).append(",");
-                query.append(keybinding.getValue().getLeft().byteValue()).append(",");
-                query.append(keybinding.getValue().getRight().intValue()).append(")");
+    public final void saveKeys(final int charid, final Connection con) throws SQLException {
+        if (!changed) {
+            return;
+        }
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM keymap WHERE characterid = ?")) {
+            ps.setInt(1, charid);
+            ps.execute();
+        }
+        if (keymap.isEmpty()) {
+            return;
+        }
+        boolean first = true;
+        StringBuilder query = new StringBuilder();
+
+        for (Entry<Integer, Pair<Byte, Integer>> keybinding : keymap.entrySet()) {
+            if (first) {
+                first = false;
+                query.append("INSERT INTO keymap VALUES (");
+            } else {
+                query.append(",(");
             }
-            try (PreparedStatement ps = con.prepareStatement(query.toString())) {
-                ps.execute();
-            }
+            query.append("DEFAULT,");
+            query.append(charid).append(",");
+            query.append(keybinding.getKey().intValue()).append(",");
+            query.append(keybinding.getValue().getLeft().byteValue()).append(",");
+            query.append(keybinding.getValue().getRight().intValue()).append(")");
+        }
+        try (PreparedStatement ps = con.prepareStatement(query.toString())) {
+            ps.execute();
         }
     }
 }

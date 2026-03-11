@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112000.js: Zakum Party Quest Chest - drops an item (elixir)
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	8-2區域
+	描述:	280010081
 */
 
-function act(){
-    rm.dropItems();
+function act() {
+	rm.dropItems();
 }
+
+
+//2000004		特殊藥水

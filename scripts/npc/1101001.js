@@ -1,15 +1,11 @@
- /* 
-	NPC Name: 		Divine Bird
-	Map(s): 		Erev
-	Description: 		Buff
+/*
+	名字:	神獸
+	地圖:	耶雷弗
+	描述:	130000000
 */
-importPackage(Packages.tools.packet);
-function start() {
-    //cm.useItem(2022458);
-    //cm.sendOk("Don't stop training. Every ounce of your energy is required to protect the world of Maple....");
-    CWvsContext.serverNotice(0, 0, "String message", true);
-}
 
-function action(mode, type, selection) {
-    cm.dispose();
+function start() {
+	if (cm.getPlayer().getJob() >= 1000 && cm.getPlayer().getJob() < 2000) cm.useItem(2022458);
+		cm.sendOk("To become stronger, for Maple World...");
+		cm.dispose();
 }

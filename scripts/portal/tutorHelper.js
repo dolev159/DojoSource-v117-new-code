@@ -1,8 +1,14 @@
+/*
+	名字:	皇后之路
+	地圖:	開始之森林1
+	描述:	130030000
+*/
+
 function enter(pi) {
-    if (pi.getQuestStatus(20021) == 0) {
-	pi.playerSummonHint(true);
-	pi.summonMsg("Welcome to the world of Maple! My name is Koo, and I will be your guide! I will be here to answer your questions and guide you until you reach Level 10 and become a Knight-in-Training. If you have any questions, double-click me!");
-//	pi.forceCompleteQuest(20100);
-	pi.forceCompleteQuest(20021);
-    }
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(20022)).getStatus() != 1) {
+		Packages.server.quest.MapleQuest.getInstance(20022).forceStart(pi.getPlayer(), 0, 1);
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonHelper(true));
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonMessage("Welcome to Maple World! I'm Mimo. I'm in charge of guiding you until you reach Lv.10 and become a Knight-in-Training. Double-click for further information!"));
+		}
+		return true;
 }

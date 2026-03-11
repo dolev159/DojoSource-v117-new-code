@@ -1,7 +1,16 @@
+/*
+	名字:	彩虹之地
+	地圖:	楓葉村
+	描述:	1000000
+*/
+
 function enter(pi) {
-	if (pi.isQuestFinished(1008))
-		pi.ShowWZEffect("UI/tutorial.img/22");
-	else if (pi.isQuestFinished(1020))
-		pi.ShowWZEffect("UI/tutorial.img/27");
-	return false;
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1008)).getStatus() == 1) {
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("UI/tutorial.img/22"));
+		return true;
+		}
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1020)).getStatus() == 1) {
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("UI/tutorial.img/27"));
+		}
+		return false;
 }

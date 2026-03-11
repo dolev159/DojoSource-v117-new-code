@@ -226,6 +226,10 @@ public class CashShopOperation {
                 c.getPlayer().modifyCSPoints(1, -item.getPrice(), false);
                 c.getSession().write(MTSCSPacket.sendGift(item.getPrice(), item.getId(), item.getCount(), partnerName, action == 34));
             }
+        } else if (action == 28 || action == 29) { // Select / Unselect
+            slea.skip(1);
+            final int sn = slea.readInt();
+            c.getSession().write(MTSCSPacket.enableCSUse());
         } else if (action == 5) { // Wishlist
             chr.clearWishlist();
             if (slea.available() < 40) {

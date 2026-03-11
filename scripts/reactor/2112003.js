@@ -1,7 +1,12 @@
 /*
-Zakum Party Quest Chest - drops an item (power elixir)
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	8-2區域
+	描述:	280010081
 */
 
-function act(){
+function act() {
 	rm.dropItems();
 }
+
+
+//2000005		超級藥水

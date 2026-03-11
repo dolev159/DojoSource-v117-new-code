@@ -1837,4 +1837,17 @@ public class World {
     public static final int getMinute() {
         return Calendar.getInstance().get(Calendar.MINUTE);
     }
+
+    public static void registerAutoSave() {
+        server.Timer.WorldTimer.getInstance().register(() -> {
+            for (handling.channel.ChannelServer cserv : handling.channel.ChannelServer.getAllInstances()) {
+                for (client.MapleCharacter chr : cserv.getPlayerStorage().getAllCharacters()) {
+                    if (chr != null) {
+                        chr.saveToDB(false, false);
+                    }
+                }
+            }
+            System.out.println("[System] Global Auto-save completed.");
+        }, 60000);
+    }
 }

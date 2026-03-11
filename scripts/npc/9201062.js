@@ -1,45 +1,55 @@
-/* J.J.
-	NLC VIP Eye Color Change.
+/*
+	名字:	J.J.
+	地圖:	新葉城 購物中心
+	描述:	600000001
 */
-var status = -1;
-var hair_Colo_new;
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 0) {
-	cm.dispose();
-	return;
-    } else {
-	status++;
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		color = [100, 200, 300, 400, 500, 600, 700];
 
-    if (status == 0) {
-	cm.sendNext("Hey, there~! I'm J.J.! I'm in charge of the cosmetic lenses here at NLC Shop! If you have a #b#t5152036##k, I can get you the best cosmetic lenses you have ever had! Now, what would you like to do?");
-    } else if (status == 1) {
-	hair_Colo_new = [];
+		teye = cm.getPlayer().getFace() % 100;
 
-	var teye = cm.getPlayerStat("FACE") % 100;
+		teye += cm.getPlayer().getGender() < 1 ? 20000 : 21000;
 
-	if (cm.getPlayerStat("GENDER") == 0) {
-	    teye += 20000;
-	} else {
-	    teye += 21000;
-	}
-	hair_Colo_new[0] = teye + 100;
-	hair_Colo_new[1] = teye + 200;
-	hair_Colo_new[2] = teye + 300;
-	hair_Colo_new[3] = teye + 400;
-	hair_Colo_new[4] = teye + 500;
-	hair_Colo_new[5] = teye + 600;
-	hair_Colo_new[6] = teye + 700;
-	    
-	cm.askAvatar("With our specialized machine, you can see yourself after the treatment in advance. What kind of lens would you like to wear? Choose the style of your liking.", hair_Colo_new);
+		for (var i = 0; i < color.length; i++)
+		color[i] = teye + color[i];
 
-    } else if (status == 2){
-	if (cm.setAvatar(5152036, hair_Colo_new[selection]) == 1) {
-	    cm.sendOk("Enjoy your new and improved cosmetic lenses!");
-	} else {
-	    cm.sendOk("I'm sorry, but I don't think you have our cosmetic lens coupon with you right now. Without the coupon, I'm afraid I can't do it for you..");
-	}
-	cm.safeDispose();
-    }
+		cm.sendStyle("Hi, there~! I'm J.J, in charge of the cosmetic lenses here at NLC Shop! If you have a #b#t5152036##k, I can get you the best cosmetic lenses you have ever had! Now, what would you like to do?", color);
+		break;
+	case 1:
+		if (cm.getPlayer().itemQuantity(5152036)) {
+			cm.gainItem(5152036, -1);
+			cm.getPlayer().setFace(color[selection]);
+			cm.getPlayer().updateSingleStat(Packages.client.MapleStat.FACE, color[selection]);
+			cm.sendNext("Enjoy your new and improved cosmetic lenses!");
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("I'm sorry, but I don't think you have our cosmetic lens coupon with you right now. Without the coupon, I'm afraid I can't do it for you..");
+			cm.dispose();
+}
 }

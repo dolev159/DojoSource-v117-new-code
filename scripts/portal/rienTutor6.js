@@ -1,6 +1,10 @@
+/*
+	名字:	瑞恩島
+	地圖:	寒冷的森林5
+	描述:	140090500
+*/
+
 function enter(pi) {
-    if (pi.getInfoQuest(21019).equals("helper=clear")) {
-	pi.updateInfoQuest(21019, "miss=o;helper=clear");
-	pi.playerSummonHint(false);
-    }
+	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonHelper(false));
+	return false;
 }

@@ -1,8 +1,16 @@
-/* @Author Lerk
- * 
- * 2002000.js: Orbis Box - drops meso, orange/white pots, and Empty Potion Bottles (quest item)
+/*
+	名字:	天空路
+	地圖:	天空之城
+	描述:	200000000
 */
 
 function act() {
-	rm.dropItems(true, 2, 60, 80);
+	rm.dropItems();
 }
+
+
+//4031198		空的藥水瓶
+//2000000		紅色藥水
+//2000001		橘色藥水
+//2000002		白色藥水
+//2000003		藍色藥水

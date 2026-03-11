@@ -1,7 +1,12 @@
 /*
-Zakum Party Quest Chest - drops a document
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	16區域之5
+	描述:	280011005
 */
 
-function act(){
+function act() {
 	rm.dropItems();
 }
+
+
+//4001015		回家卷軸秘笈

@@ -1,28 +1,15 @@
 /*
-	Machine Apparatus - Origin of Clocktower(220080001)
+	名字:	機械裝置
+	地圖:	動力室
+	描述:	220080001
 */
 
-var status = -1;
-
 function start() {
-	action(1, 0, 0);
+	cm.sendYesNo("Beep beep! You can exit to a safe place through me. Beep beep! Would you like to leave now?");
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	status--;
-    }
-    if (status == 0) {
-	cm.sendYesNo("Beep... beep... you can make your escape to a safer place through me. Beep... beep... would you like to leave this place?");
-    } else if (status == 1) {
-	cm.warp(220080000);
-	if (cm.getPlayerCount(220080001) == 0) {
-		cm.getMap(220080000).resetReactors();
-	}
-	cm.dispose();
-    } else {
-	cm.dispose();
-	}
+	if (mode > 0)
+		cm.getPlayer().changeMap(cm.getMap(220080000), cm.getMap(220080000).getPortal(0));
+		cm.dispose();
 }

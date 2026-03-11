@@ -1,191 +1,172 @@
-var mapz = Array(100, 200, 300, 400, 500, 510, 520, 521, 522, 530, 540, 550, 600, 700, 800);
-var a = Array("a", "b", "c", "d", "e", "f", "g", "h", "i");
 /*
-a1,3,6
-b1-7
-c1,3,6
-d1-7
-e1-7
-f1,3,6
-g1-7
-h1,3,6
-i1-7
+	名字:	杰克恩
+	地圖:	通往秘密的大厅
+	描述:	610030020
 */
 
-var pos_x = Array(944,401,28,-332,-855);
-var pos_y = Array(-204,-384,-504,-384,-204);
-var pos_y2 = Array(-144, -444, -744, -1044, -1344, -1644);
-
-function init() {
-em.setProperty("state", "0");
-	em.setProperty("leader", "true");
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function setup(eim, leaderid) {
-em.setProperty("state", "1");
-	em.setProperty("leader", "true");
-	em.setProperty("current_instance", "0");
-	em.setProperty("glpq1", "0");
-	em.setProperty("glpq2", "0");
-	em.setProperty("glpq3", "0");
-	em.setProperty("glpq4", "0");
-	em.setProperty("glpq5", "0");
-	em.setProperty("glpq6", "0");
-    var eim = em.newInstance("CWKPQ" + leaderid);
-	for (var i = 0; i < mapz.length; i++) {
-		var map = eim.setInstanceMap(610030000 + mapz[i]);
-		if (map != null) {
-			map.resetFully();
-			if (map.getId() == 610030400) {
-				map.setReactorState(); //because everything is at 0 =[
-				map.limitReactor(6109016, 1);
-				map.limitReactor(6109017, 1);
-				map.limitReactor(6109018, 1);
-				map.limitReactor(6109019, 1);
-				map.limitReactor(6109020, 1);
-				map.shuffleReactors(6109016, 6109020);
-				map.destroyReactors(6108000, 6108005); //destroy the fake ones, non-GMS like or is this necessary
+function setup(channel) {//開始事件，時間
+	em.setProperty("state", 1);
 
-				//add environments
-				for (var x = 0; x < a.length; x++) {
-					for (var y = 1; y <= 7; y++) {
-						if (x == 1 || x == 3 || x == 4 || x == 6 || x == 8) {
-							if (y != 2 && y != 4 && y != 5 && y != 7) {
-								map.moveEnvironment(a[x] + "" + y, 1);
-							}
-						} else {
-							map.moveEnvironment(a[x] + "" + y, 1);
-						}
-					}
-				}
-			} else if (map.getId() == 610030510) { //warrior room, crimson guardians
-				for (var z = 0; z < pos_y2.length; z++) {
-					var mob = em.getMonster(9400582);
-					eim.registerMonster(mob);
-					map.spawnMonsterOnGroundBelow(mob, new java.awt.Point(0, pos_y2[z]));
-				}
-			//skipping mage room, ehh
-			} else if (map.getId() == 610030540) { //bowman room, spawn master guardians
-				for (var z = 0; z < pos_x.length; z++) {
-					var mob = em.getMonster(9400594);
-					eim.registerMonster(mob);
-					map.spawnMonsterOnGroundBelow(mob, new java.awt.Point(pos_x[z], pos_y[z]));
-				}
-			} else if (map.getId() == 610030550) {
-				map.shuffleReactors(); //pirate room
-			}
+	eim = em.newInstance("CWKPQ");
+
+	eim.setProperty("boss", 0);
+
+	eim.setInstanceMap(610030100).resetFully();
+	eim.setInstanceMap(610030200).resetFully();
+	eim.setInstanceMap(610030300).resetFully();
+	eim.setInstanceMap(610030400).resetFully();
+	eim.setInstanceMap(610030500).resetFully();
+	eim.setInstanceMap(610030510).resetFully();
+	eim.setInstanceMap(610030520).resetFully();
+	eim.setInstanceMap(610030521).resetFully();
+	eim.setInstanceMap(610030522).resetFully();
+	eim.setInstanceMap(610030530).resetFully();
+	eim.setInstanceMap(610030540).resetFully();
+	eim.setInstanceMap(610030550).resetFully();
+	eim.setInstanceMap(610030600).resetFully();
+	eim.setInstanceMap(610030700).resetFully();
+	eim.setInstanceMap(610030800).resetFully();
+
+	eim.setInstanceMap(610030400).getReactorByName("4skill0a").forceHitReactor(1);//攻擊一次顯示出反應堆
+	eim.setInstanceMap(610030400).getReactorByName("4skill1a").forceHitReactor(1);
+	eim.setInstanceMap(610030400).getReactorByName("4skill2a").forceHitReactor(1);
+	eim.setInstanceMap(610030400).getReactorByName("4skill3a").forceHitReactor(1);
+	eim.setInstanceMap(610030400).getReactorByName("4skill4a").forceHitReactor(1);
+
+	eim.registerMonster(em.getMonster(9400594));
+
+	eim.setInstanceMap(610030540).spawnMonsterOnGroundBelow(em.getMonster(9400594), new java.awt.Point(944, -204));
+	eim.setInstanceMap(610030540).spawnMonsterOnGroundBelow(em.getMonster(9400594), new java.awt.Point(401, -384));
+	eim.setInstanceMap(610030540).spawnMonsterOnGroundBelow(em.getMonster(9400594), new java.awt.Point(28, -504));
+	eim.setInstanceMap(610030540).spawnMonsterOnGroundBelow(em.getMonster(9400594), new java.awt.Point(-332, -384));
+	eim.setInstanceMap(610030540).spawnMonsterOnGroundBelow(em.getMonster(9400594), new java.awt.Point(-855, -204));
+
+	eim.setInstanceMap(610030550).shuffleReactors();
+
+	//add environments添加環境
+	var a = Array("a", "b", "c", "d", "e", "f", "g", "h", "i");
+
+	for (var x = 0; x < a.length; x++) {
+	for (var y = 1; y <= 7; y++) {
+	if (x == 1 || x == 3 || x == 4 || x == 6 || x == 8) {
+	if (y != 2 && y != 4 && y != 5 && y != 7) {
+		eim.setInstanceMap(610030400).moveEnvironment(a[x] + "" + y, 1);
 		}
-	}
-    eim.startEventTimer(300000); //5 MIN for first stg
-    eim.schedule("spawnGuardians", 60000);
-    return eim;
+		}
+	if (x == 0 || x == 2 || x == 5 || x == 7) {
+		eim.setInstanceMap(610030400).moveEnvironment(a[x] + "" + y, 1);
+		}
+		}
+		}
+		eim.startEventTimer(3 * 60000);//初入地圖時間
+
+		eim.schedule("spawnGuardians", 30 * 1000);//30秒後啟動指定事件
+
+		return eim;
 }
 
-function playerEntry(eim, player) {
-    eim.broadcastPlayerMsg(5, "[Expedition] " + player.getName() + " has entered the map.");
-    var map = eim.getMapInstance(610030100 + (parseInt(em.getProperty("current_instance")) * 100));
-    player.changeMap(map, map.getPortal(0));
+
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(610030100), eim.getMapInstance(610030100).getPortal(0));
 }
 
-function spawnGuardians(eim) {
-    var map = eim.getMapInstance(0);
-    if (map.getCharactersSize() <= 0) {
-	return;
-    }
-    eim.broadcastPlayerMsg(5, "[CloudMS MSG] The Master Guardians have detected you.");
-    for (var i = 0; i < 20; i++) { //spawn 20 guardians
-	var mob = em.getMonster(9400594);
-	eim.registerMonster(mob);
-	map.spawnMonsterOnGroundBelow(mob, new java.awt.Point(1000, 336));
-    }
+function spawnGuardians(eim) {//指定时间事件
+	if (eim.getMapInstance(610030100).getCharacters().size() < 1) {//地圖人數條件
+		return;
+		}
+		eim.getMapInstance(610030100).getReactorByName("mob0").forceHitReactor(1);//給予條件
+		eim.getMapInstance(610030100).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "Your whereabouts have been discovered, please find the entrance as soon as possible."));
+	for (var i = 0; i < 20; i++) {
+
+		eim.getMapInstance(610030100).spawnMonsterOnGroundBelow(em.getMonster(9400594), new java.awt.Point(130 + (Math.random() * 1000), 336));
+}
 }
 
-function playerRevive(eim, player) {
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 9400589 || mob.getId() == 9400590 || mob.getId() == 9400591 || mob.getId() == 9400592 || mob.getId() == 9400593) {
+		var boss = parseInt(eim.getProperty("boss")) + 1;
+		eim.setProperty("boss", boss);
+	if (eim.getProperty("boss") > 4) {
+		eim.startEventTimer(3 * 60000);//60000 = 1分鐘
+		eim.getMapInstance(610030600).broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
+		eim.getMapInstance(610030600).broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+		}
+		}
+		return 1;
 }
 
-function scheduledTimeout(eim) {
-    end(eim);
-}
-
-function changedMap(eim, player, mapid) {
-    if (mapid < 610030100 || mapid > 610030800) {
-	playerExit(eim,player);
-    } else {
+function changedMap(eim, chr, mapid) {//不在此地圖中事件結束
 	switch(mapid) {
-	    case 610030200:
-		if (em.getProperty("current_instance").equals("0")) {
-		    eim.restartEventTimer(600000); //10 mins
-		    em.setProperty("current_instance", "1");
-		}
-		break;
-	    case 610030300:
-		if (em.getProperty("current_instance").equals("1")) {
-		    eim.restartEventTimer(600000); //10 mins
-		    em.setProperty("current_instance", "2");
-		}
-		break;
-	    case 610030400:
-		if (em.getProperty("current_instance").equals("2")) {
-		    eim.restartEventTimer(600000); //10 mins
-		    em.setProperty("current_instance", "3");
-		}
-		break;
-	    case 610030500:
-		if (em.getProperty("current_instance").equals("3")) {
-		    eim.restartEventTimer(1200000); //20 mins
-		    em.setProperty("current_instance", "4");
-		}
-		break;
-	    case 610030600:
-		if (em.getProperty("current_instance").equals("4")) {
-		    eim.restartEventTimer(3600000); //1 hr
-		    em.setProperty("current_instance", "5");
-		}
-		break;
-	    case 610030800:
-		if (em.getProperty("current_instance").equals("5")) {
-		    eim.restartEventTimer(60000); //1 min
-		    em.setProperty("current_instance", "6");
-		}
-		break;
-        }
-    }
+	case 610030200:
+		if (eim.getProperty("time2") == null) {
+			eim.restartEventTimer(10 * 60000); //10 mins
+			eim.setProperty("time2", 1);
+			}
+			break;
+	case 610030300:
+		if (eim.getProperty("time3") == null) {
+			eim.restartEventTimer(20 * 60000); //20 mins
+			eim.setProperty("time3", 1);
+			}
+			break;
+	case 610030400:
+		if (eim.getProperty("time4") == null) {
+			eim.restartEventTimer(20 * 60000); //20 mins
+			eim.setProperty("time4", 1);
+			}
+			break;
+	case 610030500:
+		if (eim.getProperty("time5") == null) {
+			eim.restartEventTimer(20 * 60000); //20 mins
+			eim.setProperty("time5", 1);
+			}
+			break;
+	case 610030600:
+		if (eim.getProperty("time6") == null) {
+			eim.restartEventTimer(60 * 60000); //60 mins
+			eim.setProperty("time6", 1);
+			}
+			break;
+	case 610030800:
+		if (eim.getProperty("time8") == null) {
+			eim.restartEventTimer(1 * 60000); //1 mins
+			eim.setProperty("time8", 1);
+			}
+			break;
+	default:
+		if (mapid < 610030100 || mapid > 610030800) {
+			playerExit(eim, chr);
+}
+}
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 610030020);
 }
 
-function monsterValue(eim, mobId) {
-    return 1;
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
 }
 
-function playerExit(eim, player) {
-    eim.broadcastPlayerMsg(5, "[Expedition] " + player.getName() + " has left the map.");
-    eim.unregisterPlayer(player);
-
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-	}
+function playerExit(eim, player) {//角色退出時觸發
+	eim.unregisterPlayer(player);
+	if (eim.disposeIfPlayerBelow(0, 0)) {
+		em.setProperty("state", 0);
+}
 }
 
-function end(eim) {
-    eim.disposeIfPlayerBelow(100, 610030010);
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function clearPQ(eim) {
-    end(eim);
-}
+function leftParty(eim, player) {}//離開小組觸發
 
-function allMonstersDead(eim) {
-}
+function disbandParty(eim) {}//小組退出時觸發
 
-function leftParty (eim, player) {
-}
-function disbandParty (eim) {
-}
-function playerDead(eim, player) {}
-function cancelSchedule() {}
+function playerDead(eim, player) {}//玩家死亡時觸發
+
+function playerRevive(eim, player) {}//玩家角色复時觸發
+
+function cancelSchedule() {}//清除事件

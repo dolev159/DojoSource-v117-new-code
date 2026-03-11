@@ -131,7 +131,7 @@ public class StatsHandling {
                     return;
             }
             chr.setRemainingAp((short) (chr.getRemainingAp() - 1));
-            statupdate.put(MapleStat.AVAILABLEAP, (int) 0);
+            statupdate.put(MapleStat.AVAILABLEAP, (int) chr.getRemainingAp());
             c.getSession().write(CWvsContext.updatePlayerStats(statupdate, true, chr));
         }
     }
@@ -279,8 +279,8 @@ public class StatsHandling {
                     c.getSession().write(CWvsContext.enableActions());
                     return;
             }
-            chr.setRemainingAp((short)0);
-            statupdate.put(MapleStat.AVAILABLEAP, (int) 0);
+            chr.setRemainingAp((chr.getRemainingAp() - (amount + amount2)));
+            statupdate.put(MapleStat.AVAILABLEAP, (int) chr.getRemainingAp());
             c.getSession().write(CWvsContext.updatePlayerStats(statupdate, true, chr));
         }
     }

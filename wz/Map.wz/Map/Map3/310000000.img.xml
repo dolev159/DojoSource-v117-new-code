@@ -944,19 +944,6 @@
             <int name="rx1" value="-181"/>
             <string name="limitedname" value="lucci"/>
         </imgdir>
-        <imgdir name="50">
-            <string name="type" value="n"/>
-            <string name="id" value="9102002"/>
-            <int name="x" value="465"/>
-            <int name="y" value="444"/>
-            <int name="mobTime" value="0"/>
-            <int name="f" value="0"/>
-            <int name="hide" value="0"/>
-            <int name="fh" value="715"/>
-            <int name="cy" value="448"/>
-            <int name="rx0" value="415"/>
-            <int name="rx1" value="515"/>
-        </imgdir>
         <imgdir name="38">
             <string name="type" value="n"/>
             <string name="id" value="9000017"/>

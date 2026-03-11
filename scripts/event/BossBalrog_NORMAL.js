@@ -1,190 +1,121 @@
-var fullhp = 2000000000;
+/*
+	名字:	武英
+	地圖:	神殿底層
+	描述:	105100100
+*/
 
-function init() {
-em.setProperty("state", "0");
-em.setProperty("balrogState", "0");
-	em.setProperty("leader", "true");
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function setup(eim, leaderid) {
-em.setProperty("state", "1");
-em.setProperty("balrogState", "0");
-	em.setProperty("leader", "true");
-    // Setup the instance when invoked, EG : start PQ
-    var eim = em.newInstance("BossBalrog_NORMAL" + leaderid);
-	var map = eim.setInstanceMap(105100300);
-	map.resetFully();
-	eim.setInstanceMap(105100301).resetFully();
+function setup(level, lobbyid) {//開始事件，時間
+	em.setProperty("state", 1);
 
-    var mob = em.getMonster(8830000);
-    var mob2 = em.getMonster(8830004); //left hand is invincible at first
-    var mob3 = em.getMonster(8830002);
-    var modified = em.newMonsterStats();
-modified.setOHp(fullhp); //so they cant possibly kill this
-modified.setOMp(mob.getMobMaxMp());
-modified.setOExp(0);
-    var modified2 = em.newMonsterStats();
-modified2.setOHp(fullhp); //so they cant possibly kill this
-modified2.setOMp(mob2.getMobMaxMp());
-modified2.setOExp(0);
-    var modified3 = em.newMonsterStats();
-modified3.setOHp(fullhp); //so they cant possibly kill this
-modified3.setOMp(mob3.getMobMaxMp());
-modified3.setOExp(0);
-	mob.setOverrideStats(modified);
-	mob2.setOverrideStats(modified2);
-	mob3.setOverrideStats(modified3);
-    eim.registerMonster(mob);
-    eim.registerMonster(mob2);
-    eim.registerMonster(mob3);
-    map.spawnMonsterOnGroundBelow(mob, new java.awt.Point(416, 258));
-    map.spawnMonsterOnGroundBelow(mob2, new java.awt.Point(416, 258));
-    map.spawnMonsterOnGroundBelow(mob3, new java.awt.Point(416, 258));
-    eim.startEventTimer(1800000);
-	eim.schedule("checkHP", 600000);
-    return eim;
+	eim = em.newInstance("BossBalrog_NORMAL");
+
+	eim.setInstanceMap(105100400).resetFully();
+	eim.setInstanceMap(105100401).resetFully();
+
+	eim.schedule("BossBalrog", 3 * 1000);//加載指定時間
+	eim.schedule("releaseLeftClaw", 1 * 60000);//加載指定時間
+
+	eim.startEventTimer(60 * 60000);
+
+	return eim;
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapInstance(0);
-	map.startSpeedRun(); //loll
-    player.changeMap(map, map.getPortal(0));
-    eim.applyBuff(player, 2022536);
-    if (player.haveItem(1302014)) {
-	eim.applyBuff(player, 2022537);
-    }
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(105100400), eim.getMapInstance(105100400).getPortal(0));
 }
 
-function changedMap(eim, player, mapid) {
-    if (mapid != 105100300 && mapid != 105100301) {
-	playerExit(eim,player);
-    }
+function BossBalrog(eim) {//刷出BOSS如果不這樣設置 無法正常顯示主體
+
+	//eim.getMapInstance(105100400).spawnFakeMonsterOnGroundBelow(em.getMonster(8830000), new java.awt.Point(412, 258));//刷出假怪無法正常顯示
+
+	eim.getMapInstance(105100400).spawnMonsterOnGroundBelow(em.getMonster(8830003), new java.awt.Point(412, 258));
+	eim.getMapInstance(105100400).spawnMonsterOnGroundBelow(em.getMonster(8830002), new java.awt.Point(412, 258));
+	eim.getMapInstance(105100400).spawnMonsterOnGroundBelow(em.getMonster(8830006), new java.awt.Point(412, 258));
 }
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
-	player.dispelBuff(2022536);
-	player.dispelBuff(2022537);
-    	if (eim.disposeIfPlayerBelow(0, 0)) {
-		em.setProperty("state", "0");
-	em.setProperty("leader", "true");
-em.setProperty("balrogState", "0");
-	}
+function releaseLeftClaw(eim) {//指定時間秒殺怪物釋放左爪
+	eim.getMapInstance(105100400).killMonster(8830006);
+	eim.schedule("releaseLeftClaw1", 2 * 1000);//加載指定時間
 }
 
-function scheduledTimeout(eim) {
-    end(eim);
+function releaseLeftClaw1(eim) {//刷出左爪
+	eim.getMapInstance(105100400).spawnMonsterOnGroundBelow(em.getMonster(8830001), new java.awt.Point(412, 258));
 }
 
-function allMonstersDead(eim) {
+function releaseLeftClaw2(eim) {//刷出消滅後的左爪
+	eim.getMapInstance(105100400).spawnMonsterOnGroundBelow(em.getMonster(8830004), new java.awt.Point(412, 258));
 }
 
-
-function warpWinnersOut(eim) {
-	var party = eim.getPlayers();
-	var map = eim.getMapInstance(1);
-	for (var i = 0; i < party.size(); i++) {
-		party.get(i).changeMap(map, map.getPortal(0));
-		party.get(i).dispelBuff(2022536);
-		party.get(i).dispelBuff(2022537);
-		party.get(i).forceCompleteQuest(2241);
-		party.get(i).forceCompleteQuest(2242);
-		party.get(i).forceCompleteQuest(2243);
-		party.get(i).forceCompleteQuest(2244);
-		party.get(i).forceCompleteQuest(2245);
-	}
+function releaserightClaw2(eim) {//刷出消灭后右爪
+	eim.getMapInstance(105100400).spawnMonsterOnGroundBelow(em.getMonster(8830005), new java.awt.Point(412, 258));
 }
 
-function playerDead(eim, player) {
-    // Happens when player dies
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 105100100);
 }
 
-function playerRevive(eim, player) {
-    // Happens when player's revived.
-    // @Param : returns true/false
-	return false;
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 8830002) {//右爪被消滅後
+		eim.schedule("releaserightClaw2", 3 * 1000);//加載指定時間
+		}
+	if (mob.getId() == 8830001) {//左爪被消滅後釋放主體
+		eim.getMapInstance(105100400).killMonster(8830003);
+
+		eim.getMapInstance(105100400).spawnMonsterOnGroundBelow(em.getMonster(8830000), new java.awt.Point(412, 258));
+		eim.schedule("releaseLeftClaw2", 3 * 1000);//加載指定時間
+		}
+	if (mob.getId() == 8830000) {//主體被消滅
+		eim.schedule("SealedBalrog", 10 * 1000);//加載指定時間
+		eim.startEventTimer(3 * 60000);
+
+		Qa = player.getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2244)).getCustomData();
+
+	if (player.getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2244)).getStatus() == 1) {
+		player.getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2244)).setCustomData(Qa == null ? 1 : parseInt(Qa) + 1);
+		}
+
+	if (player.getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2239)).getStatus() == 1) {
+		player.mobKilled(9101003, 1);//添加任務怪物計數
+		}
+		}
+		return 1;
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
-    // return 0 - Deregister player normally Dispose instance if there are zero player left
-    // return x that is > 0 - Deregister player normally + Dispose instance if there x player or below
-    // return x that is < 0 - Deregister player normally + Dispose instance if there x player or below, if it's leader = boot all
+function SealedBalrog(eim) {//主體被消滅後的指定時間
+	for (var i = 0; i < eim.getPlayers().size(); i++) {
+		eim.getPlayers().get(i).changeMap(105100401, 0);
+}
 }
 
-function monsterValue(eim, mobid) {
-    // Invoked when a monster that's registered has been killed
-    // return x amount for this player - "Saved Points"
-	if (em.getProperty("balrogState").equals("1") && eim.getMapInstance(0).getMonsterById(8830000) == null && eim.getMapInstance(0).getMonsterById(8830001) == null && eim.getMapInstance(0).getMonsterById(8830002) == null) {
-		eim.broadcastPlayerMsg(6, "Balrog has been beaten!");
-		eim.getMapInstance(0).changeEnvironment("balog/clear/stone", 3);
-    		eim.restartEventTimer(605000); //10 mins + 5 sec
-    		eim.schedule("warpWinnersOut", 5000);
-	}
-	return 1;
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
 }
 
-function leftParty(eim, player) {
-    // Happens when a player left the party
+function changedMap(eim, chr, mapid) {//不在此地圖中事件結束
+	if (mapid != 105100400 && mapid != 105100401) {
+		playerExit(eim, chr);
+}
 }
 
-function disbandParty(eim, player) {
-    // Happens when the party is disbanded by the leader.
+function playerExit(eim, player) {//角色退出時觸發
+	eim.unregisterPlayer(player);
+	if (eim.disposeIfPlayerBelow(0, 0)) {
+		em.setProperty("state", 0);
+}
 }
 
-function end(eim) {
-    eim.disposeIfPlayerBelow(100, 105100100);
-	em.setProperty("state", "0");
-	em.setProperty("leader", "true");
-em.setProperty("balrogState", "0");
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function clearPQ(eim) {
-    end(eim);
-}
+function leftParty(eim, player) {}//離開小組觸發
 
-function removePlayer(eim, player) {
-    // Happens when the funtion NPCConversationalManager.removePlayerFromInstance() is invoked
-}
+function disbandParty(eim) {}//小組退出時觸發
 
-function registerCarnivalParty(eim, carnivalparty) {
-    // Happens when carnival PQ is started. - Unused for now.
-}
+function playerDead(eim, player) {}//玩家死亡時觸發
 
-function onMapLoad(eim, player) {
-    // Happens when player change map - Unused for now.
-}
+function playerRevive(eim, player) {}//玩家角色复時觸發
 
-function cancelSchedule() {
-}
-
-function checkHP(eim) {
-	var map = eim.getMapInstance(0);
-	var mobs = map.getAllMonstersThreadsafe();
-	var hpDone = 0;
-	for (var i = 0; i < mobs.size(); i++) {
-		hpDone += (fullhp - mobs.get(i).getHp());
-	}
-	if (hpDone > 120000) { //advance
-    		var mob = em.getMonster(8830006);
-		eim.registerMonster(mob);
-		map.spawnMonsterOnGroundBelow(mob, new java.awt.Point(416, 258));
-		map.killMonster(8830004);
-		map.killMonster(8830006);
-		var mob1 = em.getMonster(8830000); //purple state not used
-    		var mob2 = em.getMonster(8830001);
-    		var mob3 = em.getMonster(8830002);
-		eim.registerMonster(mob1);
-		eim.registerMonster(mob2);
-		eim.registerMonster(mob3);
-		map.killMonster(8830000);
-		map.killMonster(8830002);
-		map.spawnMonsterOnGroundBelow(mob1, new java.awt.Point(416, 258));
-		map.spawnMonsterOnGroundBelow(mob2, new java.awt.Point(416, 258));
-		map.spawnMonsterOnGroundBelow(mob3, new java.awt.Point(416, 258));
-em.setProperty("balrogState", "1");
-	} else {
-		eim.broadcastPlayerMsg(6, "Balrog was too strong and has overcome you.");
-		end(eim);
-	}
-}
+function cancelSchedule() {}//清除事件

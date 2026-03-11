@@ -1,8 +1,10 @@
+/*
+	名字:	墮落廣場
+	地圖:	墮落廣場站
+	描述:	103020020
+*/
+
 function enter(pi) {
-    try {
-	pi.warp(103000000,0);
-    } catch(e) {
-	pi.playerMessage(5, "Error: " + e);
-	e.printStackTrace();
-    }
+	pi.getPlayer().changeMap(pi.getMap(103020000), pi.getMap(103020000).getPortal(2)); //地鐵售票處
+	return true;
 }

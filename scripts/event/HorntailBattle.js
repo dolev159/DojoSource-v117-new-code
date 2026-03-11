@@ -1,72 +1,92 @@
-function init() {
-    // 0 = Not started, 1 = started, 2 = first head defeated, 3 = second head defeated
-    em.setProperty("state", "0");
-	em.setProperty("leader", "true");
+/*
+	名字:	生命之穴
+	地圖:	闇黑龍王洞穴入口
+	描述:	240050400
+*/
+
+function init() {//服務端讀取
+	em.setProperty("state", 0);
 }
 
-function setup(eim, leaderid) {
-    em.setProperty("state", "1");
-    em.setProperty("preheadCheck", "0");
-	em.setProperty("leader", "true");
+function setup(level, lobbyid) {//開始事件，時間
+	em.setProperty("state", 1);
 
-    var eim = em.newInstance("HorntailBattle");
+	eim = em.newInstance("HorntailBattle");
 
-    eim.setInstanceMap(240060200).resetFully();
+	eim.setProperty("stage", 0);
 
-    eim.startEventTimer(4500000); //now changed to 1 hour 15 mins
-    return eim;
+	eim.setInstanceMap(240060000).resetFully();
+	eim.setInstanceMap(240060100).resetFully();
+	eim.setInstanceMap(240060200).resetFully();
+
+	eim.startEventTimer(60 * 60000);
+
+	return eim;
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapFactory().getMap(240060200);
-    player.changeMap(map, map.getPortal(0));
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(240060000), eim.getMapInstance(240060000).getPortal(1));
 }
 
-function changedMap(eim, player, mapid) {
-    switch (mapid) {
-	case 240060200:
-	    return;
-    }
-    eim.unregisterPlayer(player);
-
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-    }
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 240050000);
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	if (mob.getId() == 8810000) {
+		eim.getMapInstance(240060000).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "You can continue along the channel."));
+		}
+	if (mob.getId() == 8810001) {
+		eim.getMapInstance(240060100).broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "You can continue along the channel."));
+		}
+	if (mob.getId() == 8810002 || mob.getId() == 8810003 || mob.getId() == 8810004 || mob.getId() == 8810005 || mob.getId() == 8810006 || mob.getId() == 8810007 || mob.getId() == 8810008 || mob.getId() == 8810009) {
+		var stage = parseInt(eim.getProperty("stage")) + 1;
+		eim.setProperty("stage", stage);
+		}
+	if (eim.getProperty("stage") == 8) {
+		eim.startEventTimer(3 * 60000);
+		eim.schedule("Clear", 3 * 1000);//加載指定時間
+		}
+		return 1;
 }
 
-function scheduledTimeout(eim) {
-    eim.disposeIfPlayerBelow(100, 240050400);
-    em.setProperty("state", "0");
-		em.setProperty("leader", "true");
+function Clear(eim) {//清除主體
+	eim.getMapInstance(240060200).killAllMonsters(true);
+
+	for (var i = 0; i < eim.getPlayers().size(); i++) {
+		eim.applyBuff(eim.getPlayers().get(i), 2022108);//加載Buff內容
+
+	if (eim.getPlayers().get(i).getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3707)).getStatus() == 1) {
+		eim.getPlayers().get(i).mobKilled(8810018, 1);//添加任務怪物計數
+}
+}
 }
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
-
-    if (eim.disposeIfPlayerBelow(0, 0)) {
-	em.setProperty("state", "0");
-		em.setProperty("leader", "true");
-    }
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
 }
 
-function monsterValue(eim, mobId) {
-    return 1;
+function changedMap(eim, chr, mapid) {//不在此地圖中事件結束
+	if (!(mapid == 240060000 || mapid == 240060100 || mapid == 240060200)) {
+		playerExit(eim, chr);
+}
 }
 
-function allMonstersDead(eim) {
+function playerExit(eim, player) {//角色退出時觸發
+	eim.unregisterPlayer(player);
+	if (eim.disposeIfPlayerBelow(0, 0)) {
+		em.setProperty("state", 0);
+}
 }
 
-function playerRevive(eim, player) {
-    return false;
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function clearPQ(eim) {}
-function leftParty (eim, player) {}
-function disbandParty (eim) {}
-function playerDead(eim, player) {}
-function cancelSchedule() {}
+function leftParty(eim, player) {}//離開小組觸發
+
+function disbandParty(eim) {}//小組退出時觸發
+
+function playerDead(eim, player) {}//玩家死亡時觸發
+
+function playerRevive(eim, player) {}//玩家角色复時觸發
+
+function cancelSchedule() {}//清除事件

@@ -41,10 +41,12 @@ public class EventScriptManager extends AbstractScriptManager {
             this.iv = iv;
             this.em = em;
         }
+
         public String script;
         public Invocable iv;
         public EventManager em;
     }
+
     private final Map<String, EventEntry> events = new LinkedHashMap<String, EventEntry>();
     private static final AtomicInteger runningInstanceMapId = new AtomicInteger(0);
 
@@ -74,8 +76,11 @@ public class EventScriptManager extends AbstractScriptManager {
     }
 
     public final void init() {
+        System.out.println("Initializing " + events.size() + " event scripts for Channel "
+                + ChannelServer.getAllInstances().size());
         for (final EventEntry entry : events.values()) {
             try {
+                System.out.println("Loading event script: " + entry.script);
                 ((ScriptEngine) entry.iv).put("em", entry.em);
                 entry.iv.invokeFunction("init", (Object) null);
             } catch (final Exception ex) {
@@ -83,6 +88,7 @@ public class EventScriptManager extends AbstractScriptManager {
                 FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Error initiating event: " + entry.script + ":" + ex);
             }
         }
+        System.out.println("Event scripts initialization complete.");
     }
 
     public final void cancel() {

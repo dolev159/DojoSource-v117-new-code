@@ -21,9 +21,11 @@ public class MaplePacketHandler extends SimpleChannelInboundHandler<byte[]> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         final String address = ctx.channel().remoteAddress().toString().split(":")[0];
 
-        // Standard OdinMS IVs for v117
-        final byte ivRecv[] = new byte[]{70, 114, 122, (byte) Randomizer.nextInt(255)};
-        final byte ivSend[] = new byte[]{82, 48, 120, (byte) Randomizer.nextInt(255)};
+        // Standard random IVs for GMS v117.2
+        final byte ivRecv[] = new byte[4];
+        final byte ivSend[] = new byte[4];
+        Randomizer.nextBytes(ivRecv);
+        Randomizer.nextBytes(ivSend);
 
         final MapleClient client = new MapleClient(
                 new MapleAESOFB(ivSend, (short) (0xFFFF - ServerConstants.MAPLE_VERSION)),

@@ -1,23 +1,29 @@
-var status = 0;
-var m;
+/*
+	名字:	怪物公園公車
+	地圖:	怪物公園
+	描述:	951000000
+*/
 
 function start() {
-    if (cm.getMapId() == 951000000) {
-        cm.sendYesNo("Would you like to go back?");
-        m = 1;
-        return;
-    }
-    cm.sendYesNo("Would you like to go to the Monster Park?");
+	map = cm.getPlayer().getSavedLocation(Packages.server.maps.SavedLocationType.fromString("MONSTER_PARK"));
+	if (map < 0) map = 100000000;
+	cm.sendYesNo(cm.getPlayer().getMap().getId() == 951000000 ? "Hey there! Need a lift back to town? That's what the Monster Park Shuttle is for!" : "Ah, our favorite customer! Would you like to go to Spiegelmann's Monster Park?");
 }
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-        if (m == 1) {
-            cm.warp(cm.getSavedLocation("MONSTER_PARK"));
-        } else {
-            cm.warp(951000000);
-            cm.saveReturnLocation("MONSTER_PARK");
-        }
-    }
-    cm.dispose();
+	switch (mode) {
+	case 0:
+		cm.sendNext(cm.getPlayer().getMap().getId() == 951000000 ? "Use the shuttle if you want to leave the Monster Park. A comfy ride every time, guaranteed!" : "The shuttle is always ready for you, so come back anytime.");
+		break;
+	case 1:
+		if (cm.getPlayer().getMap().getId() != 951000000) {
+			cm.getPlayer().saveLocation(Packages.server.maps.SavedLocationType.fromString("MONSTER_PARK"));
+			cm.getPlayer().changeMap(cm.getMap(951000000), cm.getMap(951000000).getPortal(0));
+			cm.dispose();
+			return;
+			}
+			cm.getPlayer().changeMap(cm.getMap(map), cm.getMap(map).getPortal(0));
+			cm.getPlayer().clearSavedLocation(Packages.server.maps.SavedLocationType.fromString("MONSTER_PARK"));
+			}
+			cm.dispose();
 }

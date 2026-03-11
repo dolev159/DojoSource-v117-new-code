@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112001.js: Zakum Party Quest Chest - drops an item (fried chicken)
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	4-1區域
+	描述:	280010040
 */
 
-function act(){
-    rm.dropItems();
+function act() {
+	rm.dropItems();
 }
+
+
+//2020001		炸雞

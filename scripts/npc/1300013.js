@@ -1,46 +1,32 @@
+/*
+	名字:	堵塞的入口
+	地圖:	最後城塔
+	描述:	106021402
+*/
+
+var map = 106021600;
+var num = 10;
+
 function start() {
-    cm.sendSimple("#b\r\n#L0#Yeti (Requires Party)#l\r\n#L1#Violetta#l#k");
+	cm.sendYesNo("You can enter the Wedding Hall using the Wedding Hall Key. Would you like to enter?");
 }
 
 function action(mode,type,selection) {
-    if (mode == 1) { //or 931000400 + selection..?
-	switch(selection) {
-	    case 0:
-	    if (cm.getPlayer().getParty() == null || !cm.isLeader()) {
-		cm.sendOk("The leader of the party must be here.");
-	    } else {
-		var party = cm.getPlayer().getParty().getMembers();
-		var mapId = cm.getPlayer().getMapId();
-		var next = true;
-		var size = 0;
-		var it = party.iterator();
-		while (it.hasNext()) {
-			var cPlayer = it.next();
-			var ccPlayer = cm.getPlayer().getMap().getCharacterById(cPlayer.getId());
-			if (ccPlayer == null) {
-				next = false;
-				break;
+	if (mode > 0) {
+		for (var i = 0; i < num; i++)
+		if (cm.getMap(map + i).getCharacters().size() < 1) {
+			cm.getMap(map + i).resetFully();
+			cm.getPlayer().changeMap(cm.getMap(map + i), cm.getMap(map + i).getPortal(1));
+			cm.getPlayer().startMapTimeLimitTask(600, cm.getMap(106021402));
+		if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2332)).getStatus() ==1) {
+			Packages.server.quest.MapleQuest.getInstance(2332).forceComplete(cm.getPlayer(), cm.getNpc());
+			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("<Where is Violetta?> Quest Complete 1/1"));
+			cm.gainExp(1600);
 			}
-			size += (ccPlayer.isGM() ? 4 : 1);
-		}	
-		if (next && (cm.getPlayer().isGM() || size >= 3)) {
-	    	    for(var i = 0; i < 10; i++) {
-			if (cm.getMap(106021500 + i).getCharactersSize() == 0) {
-		    		cm.warpParty(106021500 + i);
-				cm.dispose();
-		    		return;
+			cm.dispose();
+			return;
 			}
-	    	    }
-			cm.sendOk("Another party quest has already entered this channel.");
-		} else {
-			cm.sendOk("All 3+ members of your party must be here.");
-		}
-	    }
-		break;
-	    case 1:
-		cm.warp(106021401,0);
-		break;
-	}
-    }
-    cm.dispose();
+			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Try again soon."));
+			}
+			cm.dispose();
 }

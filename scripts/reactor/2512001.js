@@ -1,7 +1,18 @@
+/*
+	名字:	隱藏地圖
+	地圖:	深山人蔘的領域1
+	描述:	925100201
+*/
+
 function act() {
-	var em = rm.getEventManager("Pirate");
-	if (em != null) {
-		rm.mapMessage(6, "One of the boxes have been activated.");
-		em.setProperty("stage5", parseInt(em.getProperty("stage5")) + 1);
-	}
+	rand = Math.floor(Math.random() * 3);
+	if (rand < 1) rand = 1;
+
+	for (var i = 0; i<rand; i++) {
+	rm.dropItems(true, 1, 30, 60, 15);
+	rm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(5, "One of the boxes have been activated."));
 }
+}
+
+
+//4031551		金勾海賊王的寶物

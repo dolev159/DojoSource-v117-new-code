@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112011.js: Zakum Party Quest Rock - drops a key
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	16區域之5
+	描述:	280011005
 */
 
-function act(){
-    rm.dropItems();
+function act() {
+	rm.dropItems();
 }
+
+
+//4001016		寶箱鑰匙

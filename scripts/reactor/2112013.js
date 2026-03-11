@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112013.js: Zakum Party Quest Rock - drops an item (~100 meso bundle in Global)
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	不知名的廢礦
+	描述:	280010000
 */
 
-function act(){
-    rm.dropItems(true, 1, 125, 175);
+function act() {
+	rm.dropItems();
 }
+
+
+//2022001		小豆粥

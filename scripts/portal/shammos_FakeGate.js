@@ -1,9 +1,14 @@
+/*
+	名字:	冰雪峽谷
+	地圖:	冰雪峽谷1
+	描述:	921120005
+*/
+
 function enter(pi) {
-        if (pi.getPlayer().getParty() != null && pi.getMap().getAllMonstersThreadsafe().size() == 0 && pi.isLeader()) {
-                //pi.warpParty_Instanced(921120600);
-				pi.warpParty(921120100);
-                pi.playPortalSE();
-        } else {
-                pi.playerMessage(5,"This portal is not available. Destroy all monsters first.");
-        }
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(921120100), pi.getMap(921120100).getPortal(0)); //冰雪峽谷2
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
+		return false;
 }

@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112004.js: Zakum Party Quest Chest - drops a key
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	9-2區域
+	描述:	280010091
 */
 
-function act(){
-    rm.dropItems();
+function act() {
+	rm.dropItems();
 }
+
+
+//4001016		寶箱鑰匙

@@ -40,21 +40,17 @@ public class LoginWorker {
         }
 
         if (System.currentTimeMillis() - lastUpdate > 600000) { // Update once every 10 minutes
-            lastUpdate = System.currentTimeMillis();
             final Map<Integer, Integer> load = ChannelServer.getChannelLoad();
-            int usersOn = 0;
-            if (load == null || load.size() <= 0) { // In an unfortunate event that client logged in before load
-                lastUpdate = 0;
-                c.getSession().write(LoginPacket.getLoginFailed(7));
-                return;
+            if (load != null && !load.isEmpty()) {
+                int usersOn = 0;
+                final double loadFactor = 1200 / ((double) LoginServer.getUserLimit() / load.size());
+                for (Entry<Integer, Integer> entry : load.entrySet()) {
+                    usersOn += entry.getValue();
+                    load.put(entry.getKey(), Math.min(1200, (int) (entry.getValue() * loadFactor)));
+                }
+                LoginServer.setLoad(load, usersOn);
+                lastUpdate = System.currentTimeMillis();
             }
-            final double loadFactor = 1200 / ((double) LoginServer.getUserLimit() / load.size());
-            for (Entry<Integer, Integer> entry : load.entrySet()) {
-                usersOn += entry.getValue();
-                load.put(entry.getKey(), Math.min(1200, (int) (entry.getValue() * loadFactor)));
-            }
-            LoginServer.setLoad(load, usersOn);
-            lastUpdate = System.currentTimeMillis();
         }
 
         if (c.finishLogin() == 0) {

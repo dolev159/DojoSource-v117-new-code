@@ -1,23 +1,23 @@
+/*
+	名字:	皇后之路
+	地圖:	修煉森林2
+	描述:	130010100
+*/
+
+var quest = [20301, 20302, 20303, 20304, 20305];
+
 function enter(pi) {
-    if (pi.getQuestStatus(20301) == 1 ||
-	pi.getQuestStatus(20302) == 1 ||
-	pi.getQuestStatus(20303) == 1 ||
-	pi.getQuestStatus(20304) == 1 ||
-	pi.getQuestStatus(20305) == 1) {
-	if (pi.getPlayerCount(913002200) == 0) {
-	    if (pi.haveItem(4032179, 1)) {
-		pi.removeNpc(913002200, 1104100);
-		var map = pi.getMap(913002200);
-		map.killAllMonsters(false);
-		map.spawnNpc(1104100, new java.awt.Point(263, 88));
-		pi.warp(913002200, 0);
-	    } else {
-		pi.playerMessage("You do not have the Erev Search Warrent to do so, please get it from Nineheart.");
-	    }
-	} else {
-	    pi.playerMessage("The forest is already being searched by someone else. Better come back later.");
-	}
-    } else {
-	pi.warp(130010110, 0);
-    }
+	for (var i = 0; i < quest.length; i ++)
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(quest[i])).getStatus() == 1) {
+	if (pi.getMap(913002200).getCharacters().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		return false;
+		}
+		pi.getMap(913002200).resetFully();
+		pi.getPlayer().changeMap(pi.getMap(913002200), pi.getMap(913002200).getPortal(1)); //提姆森林
+		pi.getPlayer().getMap().spawnNpc(1104100, new java.awt.Point(250, 88));
+		return true;
+		}
+		pi.getPlayer().changeMap(pi.getMap(130010110), pi.getMap(130010110).getPortal(2)); //提姆森林
+		return true;
 }

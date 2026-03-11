@@ -151,7 +151,11 @@ public class NPCScriptManager extends AbstractScriptManager {
                 c.getPlayer().setConversation(1);
                 c.setClickedNPC();
                 //System.out.println("NPCID started: " + npc + " startquest " + quest);
-                iv.invokeFunction("start", (byte) 1, (byte) 0, 0); // Start it off as something
+                try {
+                    iv.invokeFunction("start", (byte) 1, (byte) 0, 0); // Start it off as something
+                } catch (NoSuchMethodException nsme) {
+                    iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
+                }
             }
         } catch (final Exception e) {
             System.err.println("Error executing Quest script. (" + quest + ")..NPC ID: " + npc + ":" + e);
@@ -174,7 +178,11 @@ public class NPCScriptManager extends AbstractScriptManager {
                 dispose(c);
             } else {
                 c.setClickedNPC();
-                cm.getIv().invokeFunction("start", mode, type, selection);
+                try {
+                    cm.getIv().invokeFunction("start", mode, type, selection);
+                } catch (NoSuchMethodException nsme) {
+                    cm.getIv().invokeFunction("action", mode, type, selection);
+                }
             }
         } catch (Exception e) {
             System.err.println("Error executing Quest script. (" + cm.getQuest() + ")...NPC: " + cm.getNpc() + ":" + e);
@@ -205,7 +213,11 @@ public class NPCScriptManager extends AbstractScriptManager {
 
                 c.getPlayer().setConversation(1);
                 c.setClickedNPC();
-                iv.invokeFunction("end", (byte) 1, (byte) 0, 0); // Start it off as something
+                try {
+                    iv.invokeFunction("end", (byte) 1, (byte) 0, 0); // Start it off as something
+                } catch (NoSuchMethodException nsme) {
+                    iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
+                }
             }
         } catch (Exception e) {
             System.err.println("Error executing Quest script. (" + quest + ")..NPC ID: " + npc + ":" + e);
@@ -228,7 +240,11 @@ public class NPCScriptManager extends AbstractScriptManager {
                 dispose(c);
             } else {
                 c.setClickedNPC();
-                cm.getIv().invokeFunction("end", mode, type, selection);
+                try {
+                    cm.getIv().invokeFunction("end", mode, type, selection);
+                } catch (NoSuchMethodException nsme) {
+                    cm.getIv().invokeFunction("action", mode, type, selection);
+                }
             }
         } catch (Exception e) {
             System.err.println("Error executing Quest script. (" + cm.getQuest() + ")...NPC: " + cm.getNpc() + ":" + e);

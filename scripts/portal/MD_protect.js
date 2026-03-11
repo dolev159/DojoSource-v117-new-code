@@ -1,35 +1,23 @@
-var baseid = 240040520;
-var dungeonid = 240040900;
-var dungeons = 19;
+/*
+	名字:	神木村
+	地圖:	遭破壞的龍之巢穴
+	描述:	240040520
+*/
+
+var map = 240040520;
+var maps = 240040900; //蜥蜴保護區
+var num = 10;
 
 function enter(pi) {
-    if (pi.getMapId() == baseid) {
-	if (pi.getPlayer().getFame() < 10) {
-	    pi.playerMessage(5, "You need 10 Fame to enter.");
-	    return;
-	}
-	if (pi.getParty() != null) {
-	    if (pi.isLeader()) {
-		for (var i = 0; i < dungeons; i++) {
-		    if (pi.getPlayerCount(dungeonid + i) == 0) {
-			pi.warpParty(dungeonid + i);
-			return;
-		    }
+	if (pi.getPlayer().getMap().getId() != map) {
+		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(3));
+		return true;
 		}
-	    } else {
-		pi.playerMessage(5, "You are not the leader of the party.");
-	    }
-	} else {
-	    for (var i = 0; i < dungeons; i++) {
-		if (pi.getPlayerCount(dungeonid + i) == 0) {
-		    pi.warp(dungeonid + i);
-		    return;
+		for (var i = 0; i < num; i++)
+	if (pi.getMap(maps + i).getCharacters().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(maps + i), pi.getMap(maps + i).getPortal(1));
+		return true;
 		}
-	    }
-	}
-	pi.playerMessage(5, "All of the Mini-Dungeons are in use right now, please try again later.");
-    } else {
-	pi.playPortalSE();
-	pi.warp(baseid, "MD00");
-    }
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "All of the Mini-Dungeons are in use right now, please try again later."));
+		return false;
 }

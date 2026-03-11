@@ -1,7 +1,10 @@
+/*
+	名字:	隱藏地圖
+	地圖:	岩石山丘
+	描述:	260010401
+*/
+
 function enter(pi) {
-    if (pi.isQuestActive(3925)) {
-	pi.forceCompleteQuest(3925);
-	pi.playerMessage("Quest complete.");
-    }
-    pi.warp(260010402, 0);
+	pi.openNpc(2103008);
+	return true;
 }

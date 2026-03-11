@@ -1,4 +1,10 @@
-importPackage(net.sf.odinms.client);
+/*
+	名字:	雨揚
+	地圖:	雨揚的感謝
+	描述:	925100600
+*/
+
+var status;
 
 function start() {
 	status = -1;
@@ -6,121 +12,84 @@ function start() {
 }
 
 function action(mode, type, selection) {
-	if (mode == -1) {
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	} else {
-		if (status >= 2 && mode == 0) {
-			cm.sendOk("Alright, see you next time.");
+		return;
+	case 0:
+		if (type == 5) {
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+		eim = cm.getPlayer().getEventInstance();
+		reactor = 'action' + (cm.getPlayer().getMap().getId() == 925100500 ? 0 : 1);
+		eval(reactor)(mode, type, selection);
+}
+
+function action0(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("Thank you so much for rescuing me. We'll now be able to escape the evil wrath of Lord Pirate that has threatened to demolish the bellflowers in town. We'll now send you outside. Please talk to me again once you're out.");
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(925100600), cm.getMap(925100600).getPortal(0));
+		cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendSimple("What do you wish to do? \r\n#L2##bReceived a Lord Pirate Hat Fragment.#l\r\n#L3#Leave this place.#l");
+		break;
+	default:
+		if (status == 1 && type == 5) select = selection;
+		reactor = 'action' + select;
+		eval(reactor)(mode, type, selection);
+}
+}
+
+function action2(mode, type, selection) {
+	switch (status) {
+	case 1:
+		eim = cm.getPlayer().getEventInstance();
+		num = eim.getProperty(cm.getPlayer().getName());
+		if (num == -1) {
+			cm.sendOk("You have already received a Hat Fragment.");
 			cm.dispose();
 			return;
-		}
-		if (mode == 1) {
-			status++;
-		}
-		else {
-			status--;
-		}
-		if (status == 0) {
-			if (!cm.haveItem(5220001)) {
-				cm.gainItem(4310025, 5);
-				cm.gainExp(30000);
-				cm.warp(910000000, 0);
-				cm.dispose();
-				cm.sendOk("Sorry.. You must get #i 5220001# (1) for get a random item.\r\nI gave you #b5#k pieces of #b7th anniversary coins#k as a second present.\r\n\r\nYou have recived #b30,000#k experience too.");
-				
 			}
-			else {
-				var rand = 1 + Math.floor(Math.random() * 21);
-				if (rand == 1) {
-					cm.gainItem(2430000, 3); // GM Event Sack 1
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 2) {
-					cm.gainItem(4310025, 10); // GM Event Sack 2
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 3) {
-					cm.gainItem(4310025, 5); // GM Event Sack 3
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 4) {
-					cm.gainItem(2000005, 150); // 
-					cm.gainItem(5220001, -1); // 
-				}
-				else if (rand == 5) {
-					cm.gainItem(5062001, 3); // GM Event Sack 5
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 6) {
-					cm.gainItem(2022179, 5); //
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 7) {
-					cm.gainItem(2040513, 2); // GM Event Sack 7
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 8) {
-					cm.gainItem(2040506, 1); //
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 9) {
-					cm.gainItem(2043120, 1); // Monster Sack 1
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 10) {
-					cm.gainItem(2450043, 1); // Monster Sack 2
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 11) {
-					cm.gainItem(2100003, 1); // Monster Sack 3
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 12) {
-					cm.gainItem(2100004, 1); // Monster Sack 4
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 13) {
-					cm.gainItem(2100005, 1); // Monster Sack 5
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 14) {
-					cm.gainItem(2100006, 1); // Monster Sack 6
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 15) {
-					cm.gainItem(2100007, 1); // Monster Sack 7
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 16) {
-					cm.gainItem(2101013, 1); // Summon Showa Boss
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 17) {
-					cm.gainItem(2100013, 1); // Summoning Dark Lord's Clone
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 18) {
-					cm.gainItem(2100012, 1); // Summoning Athena Pierce's Clone
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 19) {
-					cm.gainItem(2101000, 1); // Summon Mushmom
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 20) {
-					cm.gainItem(2100011, 1); // Summoning Grendel the Really Old's Clone
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				else if (rand == 21) {
-					cm.gainItem(2100010, 1); // Summoning Dances with Balrog's Clone
-					cm.gainItem(5220001, -1); // Event Ticket
-				}
-				cm.warp(910000000, 0);
-			        cm.gainExp(30000);
-				cm.dispose();
-				cm.sendOk("Hello #h #, I gave you random Item for the #b#i 5220001##k which you got from the pq boss.\r\nLets see which random item I gave you.\r\n\r\nYou have recived #b30,000#k experience too.");
+		if (num < 10) {
+			cm.sendOk("You did not defeat the pirate enough times to receive a fragment. Please try harder.");
+			cm.dispose();
+			return;
 			}
-			cm.dispose();	
-		}
-	}
+			cm.sendNext("You have defeated a total of " + num + " monsters. I will give you " + parseInt(num / 10) + " Lord Pirate Hat Fragment.");
+			break;
+	case 2:
+		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.EQUIP).getNumFreeSlot() > 0) {
+			eim.setProperty(cm.getPlayer().getName(), -1);
+			cm.gainItem(4001455, parseInt(num / 10));
+			cm.dispose();
+			return;
+			}
+			cm.sendNextPrev("Your Inventory is full.Please make sure you have enoughroom in your ETC tabs.");
+			break;
+	case 3:
+		cm.dispose();
+}
+}
+
+function action3(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(925100700), cm.getMap(925100700).getPortal(0));
+		cm.dispose();
+}
 }

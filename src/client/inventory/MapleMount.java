@@ -54,14 +54,23 @@ public class MapleMount implements Serializable {
         if (!changed) {
             return;
         }
-        Connection con = DatabaseConnection.getConnection();
-        PreparedStatement ps = con.prepareStatement("UPDATE mountdata set `Level` = ?, `Exp` = ?, `Fatigue` = ? WHERE characterid = ?");
-        ps.setByte(1, level);
-        ps.setInt(2, exp);
-        ps.setByte(3, fatigue);
-        ps.setInt(4, charid);
-	ps.executeUpdate();
-        ps.close();
+        try (Connection con = DatabaseConnection.getConnection()) {
+            saveMount(charid, con);
+        }
+    }
+
+    public void saveMount(final int charid, final Connection con) throws SQLException {
+        if (!changed) {
+            return;
+        }
+        try (PreparedStatement ps = con
+                .prepareStatement("UPDATE mountdata set `Level` = ?, `Exp` = ?, `Fatigue` = ? WHERE characterid = ?")) {
+            ps.setByte(1, level);
+            ps.setInt(2, exp);
+            ps.setByte(3, fatigue);
+            ps.setInt(4, charid);
+            ps.executeUpdate();
+        }
     }
 
     public int getItemId() {
@@ -117,15 +126,15 @@ public class MapleMount implements Serializable {
     }
 
     public final boolean canTire(long now) {
-	return lastFatigue > 0 && lastFatigue + 30000 < now;
+        return lastFatigue > 0 && lastFatigue + 30000 < now;
     }
 
     public void startSchedule() {
-	lastFatigue = System.currentTimeMillis();
+        lastFatigue = System.currentTimeMillis();
     }
 
     public void cancelSchedule() {
-	lastFatigue = 0;
+        lastFatigue = 0;
     }
 
     public void increaseExp() {
@@ -145,7 +154,7 @@ public class MapleMount implements Serializable {
     public void update() {
         final MapleCharacter chr = owner.get();
         if (chr != null) {
-//	    cancelSchedule();
+            // cancelSchedule();
             chr.getMap().broadcastMessage(CWvsContext.updateMount(chr, false));
         }
     }

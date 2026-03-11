@@ -1,45 +1,69 @@
-var status = -1;
+/*
+	名字:	赫麗娜
+	地圖:	避難準備中
+	描述:	914000100
+*/
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (cm.getQuestStatus(21002) == 0) {
-	if (mode == 1) {
-	    status++;
-	} else {
-	    status--;
-	}
-	if (status == 0) {
-	    cm.sendNext("Oh Aran, you're awake! How's the injury?... What? Do you want to know what's going on right now?");
-	} else if (status == 1) {
-	    cm.sendNextPrev("We're all set and ready to leave this place. We have everyone on board in the ark, and the Divine Bird offered to protect our ark during the flight, so there's nothing you need to worry. Once we finalize everything, we'll go ahead and escape to Victoria Island.");
-	} else if (status == 2) {
-	    cm.sendNextPrev("Aran's comrades...? Well... they went over to battle the Black Wizard. They decided to take on the Black Wizard while we make the escape. What? You want to join them in the battle? No, no way! You're injured! You should get on board right now!");
-	} else if (status == 3) {
-	    cm.forceStartQuest(21002, "1");
-	    // Ahh, Oh No. The kid is missing
-	    cm.showWZEffect("Effect/Direction1.img/aranTutorial/Trio");
-	    cm.dispose();
-	}
-    } else {
-	if (mode == 1) {
-	    status++;
-	} else {
-	    status--;
-	}
-	if (status == 0) {
-	    cm.sendSimple("We're in a state of emergency. What would you like to know? \r #b#L0#Where's the Black Wizard?#l \r #b#L1#How's the preparation for the escape?#l \r #b#L2#How about the comrades?#l");
-	} else if (status == 1) {
-	    switch (selection) {
-		case 0:
-		    cm.sendOk("I hear that the Black Wizard is close to where we're right now. We can't even escape through the forest because of the dragons Black Wizard control. That's why we came up with the ark as our escape route. The only way we can leave this place is by flying towards Victoria Island.");
-		    break;
-		case 1:
-		    cm.sendOk("We have everyone on board in the ark, and we're all set and ready to escape this place. We just need a few more on board, and we're off to Victoria Island. During our flight, the Divine Bird offered protection, seeing that she has no one to protect at Erev at this point.");
-		    break;
-		case 2:
-		    cm.sendOk("Your comrades... left here to battle the Black Wizard by themselves, buying some time as we make the escape. They decided not to take you, since you are injured and all. Once we save the kid, you should get on board and leave with us, Aran!");
-		    break;
-	    }
-	    cm.safeDispose();
-	}
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		qm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+		reactor = 'action' + (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(21002)).getStatus() == 1 ? 1 : 0);
+		eval(reactor)(mode, type, selection);
+}
+
+function action0(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendNext("Aran, you're awake! How are you feeling? Hm? You want to know what's been going on?");
+		break;
+	case 1:
+		cm.sendNextPrev("We're almost done preparing for the escape. You don't have to worry. Everyone I could possibly find has boarded the ark, and Shinsoo has agreed to guide the way. We'll head to Victoria Island as soon as we finish the remaining preparations.");
+		break;
+	case 2:
+		cm.sendNextPrev("The other heroes? They've left to fight the Black Mage. They're buying us time to escape. What? You want to fight with them? No! You can't! You're hurt. You must leave with us!");
+		break;
+	case 3:
+		Packages.server.quest.MapleQuest.getInstance(21002).forceStart(cm.getPlayer(), 0, 1);
+		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction1.img/aranTutorial/Trio"));
+		cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 0:
+		cm.sendSimple("We're in a dire situation. What would you like to know? \r\n\r\n#b#L0#About the Black Mage#l\r\n#L1#About the preparations for the escape#l\r\n#L2#About the other heroes#l");
+		break;
+	case 1:
+		if (selection == 0)
+			cm.sendNext("I hear the Black Mage is very close. We can't even go into the forest because the dragons serving the Black Mage are there. Thar's why we're taking this route. We don't have any choice but to fly to Victoria Island, Aran...");
+		if (selection == 1)
+			cm.sendNext("We're almost ready to go. We can head over to Victoria Island as soon as the remaining few people board the ark. Shinsoo says there isn't anyone left in Ereve he needs to protect, so he's agreed to guide us.");
+		if (selection == 2) {
+			cm.sendOk("The other heroes... They've already left to fight the Black Mage. They're slowing the Black Mage down so the rest of us can escape. They didn't want to take you with them because you were injured. Escape with us, Aran, as soon as we rescue the child!");
+			}
+			break;
+	case 2:
+		cm.dispose();
+}
 }

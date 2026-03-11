@@ -1,27 +1,20 @@
 /*
-	Crystal of Roots - Leafre Cave of life
- */
+	名字:	樹根水晶
+	地圖:	闇黑龍王洞穴入口
+	描述:	240050400
+*/
 
-var status = -1;
+function start() {
+	cm.sendYesNo(cm.getPlayer().getMap().getId() == 240050400 ? "Do you want to return to #m240050000#?" : "Do you want to give up squad and quit?");
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	status--;
-    }
-    if (status == 0) {
-	if (cm.getMapId() == 240050400) {
-	    cm.sendYesNo("Do you want to go back to #m240050000#?");
-	} else {
-	    cm.sendYesNo("Do you want to go back to #m240050400#?");
-	}
-    } else if (status == 1) {
-	if (cm.getMapId() == 240050400) {
-	    cm.warp(240050000, 0);
-	} else {
-	    cm.warp(240050400, 0);
-	}
-	cm.dispose();
-    }
+	switch (mode) {
+	case 0:
+		cm.sendOk(cm.getPlayer().getMap().getId() == 240050400 ? "Think it over and talk to me again." : "Think again and talk to me.");
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(240050000), cm.getMap(240050000).getPortal(0));
+		}
+		cm.dispose();
 }

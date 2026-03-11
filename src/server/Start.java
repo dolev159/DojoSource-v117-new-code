@@ -72,6 +72,7 @@ public class Start {
         FileoutputUtil.logStartup("Zipangu is Active.");
         System.out.println("Zipangu is Active.");
         World.init();
+        handling.world.World.registerAutoSave();
         if (Boolean.parseBoolean(ServerProperties.getProperty("logpackets"))) {
             System.out.println("Logging Packets.");
         }

@@ -1,20 +1,13 @@
 /*
-Return from Free Market Script
+	名字:	隱藏地圖
+	地圖:	專業技術村 &amp;lt;梅斯特鎮&gt;
+	描述:	910001000
 */
 
 function enter(pi) {
-    var returnMap = pi.getSavedLocation("ARDENTMILL");
-    pi.clearSavedLocation("ARDENTMILL");
+	var map = pi.getPlayer().getSavedLocation(Packages.server.maps.SavedLocationType.fromString("ARDENTMILL"));
+	if (map < 0) map = 101000000; //魔法森林
 
-    if (returnMap < 0) {
-	returnMap = 100000000; // to fix people who entered the fm trough an unconventional way
-    }
-    var target = pi.getMap(returnMap);
-    var portal = target.getPortal("profession");
-    if (portal == null) {
-	portal = target.getPortal(0);
-    }
-    if (pi.getMapId() != target) {
-	pi.getPlayer().changeMap(target, portal);
-    }
+	pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal("profession"));
+	return true;
 }

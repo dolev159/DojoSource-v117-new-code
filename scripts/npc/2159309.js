@@ -1,43 +1,87 @@
-var status = -1;
+/*
+	名字:	阿卡伊農
+	地圖:	黑色魔法師的房前迴廊1
+	描述:	927000020
+*/
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-	if (cm.getMap().getAllMonstersThreadsafe().size() > 0) {
-		cm.dispose();	
-		return;
-	}
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (status == 0) {
-		cm.sendNextNoESC("Oh, look, it's #h0#? How was your trip? Was it worth disobeying orders? And how was your family? Heh heh...", 2159308);
-    } else if (status == 1) {
-		cm.sendPlayerToNpc("I don't have time for you. Move aside.");
-    } else if (status == 2) {
-		cm.sendDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/14");
-		cm.sendDirectionStatus(0, 325);
-		cm.showMapEffect("demonSlayer/31111003");
-		cm.sendDirectionInfo("Skill/3111.img/skill/31111003/effect");
-		cm.sendDirectionStatus(1, 1000);
-		cm.sendNextNoESC("Really? This is treason, you know! Are you really so weak that losing your family makes you do this? Pathetic!", 2159308);
-	} else if (status == 3) {
-		cm.sendDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/15");
-		cm.sendDirectionStatus(0, 365);
-		cm.showMapEffect("demonSlayer/31121001");
-		cm.sendDirectionInfo("Skill/3112.img/skill/31121001/effect");
-		cm.sendDirectionStatus(1, 1000);
-		cm.sendNextNoESC("You disappoint me. You don't understand the Black Mage! Eliminate the traitor!", 2159308);
-	} else if (status == 4) {
-		cm.sendDirectionStatus(4, 0);
-		cm.EnableUI(0);
-		cm.DisableUI(false);
-		cm.spawnMonster(9300455, 3);
-		cm.forceStartQuest(23205);
-		cm.showWZEffect("Effect/Direction6.img/DemonTutorial/Scene4");
+	switch (mode) {
+	case -1:
 		cm.dispose();
-	}
+		return;
+	case 0:
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendNextS("Oh, look, it's #h0#. How was your trip? I hope it was worth disobeying your orders. And how was your family? Are they looking well? Heh heh heh...", 1);
+		break;
+	case 1:
+		cm.sendNextPrevS("...I don't have time for you, #r#p2159309##k. Move, or I will MAKE you move.", 3);
+		break;
+	case 2:
+		cm.sendNextPrevS("Tsk, tsk... Leaving without approval, disobeying orders... And that rebellious look... No, I don't think I'll allow you to see the Black Mage.", 1);
+		break;
+	case 3:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/14", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("demonSlayer/31111003", 4));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(0, 373));//角色攻擊
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Skill/3111.img/skill/31111003/effect", 0, 100, 0, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159309, "teleportation"));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 570));
+		break;
+	case 4:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.removeNPCController(2159309));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1200));
+		break;
+	case 5:
+		cm.spawnNPCRequestController(2159309, 180, 50, 1);//設置角色方向
+		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159309, "summon"));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 360));
+		break;
+	case 6:
+		cm.sendNextS("Really? This is treason, you know! Are you really so weak that losing your family drives you to this? Pathetic!", 1);
+		break;
+	case 7:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/15", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 300));
+		break;
+	case 8:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("demonSlayer/31121001", 4));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(0, 370));//角色攻擊
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Skill/3112.img/skill/31121001/effect", 0, 100, 0, 50));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159309, "summon"));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		break;
+	case 9:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.removeNPCController(2159309));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 870));
+		break;
+	case 10:
+		cm.spawnNPCRequestController(2159309, 500, 50, 0);
+		cm.sendNextS("You are a disappointment to the cause. Guards! Crush this spineless traitor!", 1);
+		break;
+	case 11:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("demonSlayer/summonGuard", 4));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction6.img/DemonTutorial/Scene4"));
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		Packages.server.quest.MapleQuest.getInstance(23205).forceStart(cm.getPlayer(), 0, null);
+		Packages.server.quest.MapleQuest.getInstance(23204).forceComplete(cm.getPlayer(), 0);
+		for (var i = 0; i < 3; i++)
+		cm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9300455), new java.awt.Point(298, 71));
+		cm.dispose();
+}
 }

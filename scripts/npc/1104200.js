@@ -1,12 +1,18 @@
-function action(mode, type, selection) {
-	if (cm.getPlayerCount(913030000) == 0) {
-		cm.removeNpc(913030000, 1104002);
-		var map = cm.getMap(913030000);
-		map.killAllMonsters(false);
-		map.spawnNpc(1104002, new java.awt.Point(-430, 88));
-		cm.warp(913030000, 0);
-	} else {
-	    cm.playerMessage("The Black Witch is being fought by someone else.");
-	}
-	cm.dispose();
+/*
+	名字:	倒下的騎士
+	地圖:	黑暗魔女的洞穴
+	描述:	924010100
+*/
+
+function start() {
+	if (cm.getMap(913030000).getCharacters().size() < 1) {
+		cm.getMap(913030000).resetFully();
+		cm.getPlayer().changeMap(cm.getMap(913030000), cm.getMap(913030000).getPortal(0));
+		cm.getPlayer().getMap().spawnNpc(1104002, new java.awt.Point(-430, 88));
+		cm.getPlayer().startMapTimeLimitTask(1800, cm.getMap(924010100));
+		cm.dispose();
+		return;
+		}
+		cm.sendNext("#b(#p1103000# seems to have knocked out. Let's wait until he regains consciousness.");
+		cm.dispose();
 }

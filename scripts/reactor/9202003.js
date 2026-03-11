@@ -1,10 +1,12 @@
-/* @Author Lerk
- * 
- * 9202003.js: Guild Quest - Dining Hall Cover
- * Drops the Rotten Food (4001029)
- * 
+/*
+	名字:	威廉的古堡
+	地圖:	中央宴會聽
+	描述:	990000501
 */
 
 function act() {
 	rm.dropItems();
 }
+
+
+//4001029		過期的食物

@@ -6,7 +6,6 @@ import handling.channel.ChannelServer;
 import handling.login.LoginServer;
 import handling.world.World;
 import java.lang.management.ManagementFactory;
-import java.sql.SQLException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import server.Timer.BuffTimer;
@@ -81,10 +80,21 @@ public class ShutdownServer implements ShutdownServerMBean {
                     }
                 }
                 
+                // Shutdown LiveGuardEngine
+                server.LiveGuardEngine.getInstance().shutdown();
+                
                 // Shutdown Login and Cash Shop
                 LoginServer.shutdown();
                 CashShopServer.shutdown();
                 
+                // Emergency save all characters synchronously before DB closes
+                for (handling.channel.ChannelServer cs : handling.channel.ChannelServer.getAllInstances()) {
+                    for (client.MapleCharacter chr : cs.getPlayerStorage().getAllCharacters()) {
+                        if (chr != null) {
+                            chr.saveToDB(false, false);
+                        }
+                    }
+                }
                 // Close DB connections
                 DatabaseConnection.closeAll();
                 

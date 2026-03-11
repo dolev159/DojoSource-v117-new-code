@@ -1,8 +1,17 @@
-/* @Author Lerk
- * 
- * 1012000.js: Ellinia Plant - drops meso, tree branches, red pots, and Plant Samples (quest item)
+/*
+	名字:	大木林
+	地圖:	和風鄰近的地方
+	描述:	101020000
 */
 
 function act() {
-    rm.dropItems(true, 2, 20, 40);
+	rm.dropItems();
 }
+
+
+//4031150		植物標本
+//4033004		艾莉貝拉的果實
+//4032143		植物的果實
+//4032961		植物的細胞樣本
+//4000003		樹枝
+//2000000		紅色藥水

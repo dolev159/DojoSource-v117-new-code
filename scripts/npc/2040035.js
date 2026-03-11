@@ -1,10 +1,11 @@
-function action(mode, type, selection) {
-	cm.removeAll(4001022);
-	cm.removeAll(4001023);
-	cm.addTrait("will", 35);
-	cm.addTrait("charisma", 10);
-	cm.getPlayer().endPartyQuest(1202);//might be a bad implentation.. incase they dc or something
-	cm.gainNX(30);
-	cm.warp(221023300);
+/*
+	名字:	亞勒圖
+	地圖:	遺棄之塔&amp;lt;冒險之果實&gt;
+	描述:	922011100
+*/
+
+function start() {
 	cm.dispose();
+	cm.getPlayer().removeAll(4001454);
+	cm.getPlayer().changeMap(cm.getMap(221023300), cm.getMap(221023300).getPortal(0));
 }

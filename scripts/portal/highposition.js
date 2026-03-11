@@ -1,36 +1,34 @@
+/*
+	名字:	勇士之村
+	地圖:	勇士之村
+	描述:	102000000
+*/
+
+var map = Array(101020300, 102000000, 103000000, 120000000, 200080100);
+
 function enter(pi) {
-    if (pi.getPlayer().getLevel() < 15 || pi.isQuestFinished(29004)) {
-	return false;
-    }
-    if (!pi.isQuestActive(29004)) {
-	pi.forceStartQuest(29004);
-	pi.updateInfoQuest(27017, "enter=00000");
-	pi.forceStartQuest(27018, "0");
-    }
-    //nautilus, kerning, ellinia, perion, orbis in that order
-    var quest = pi.getInfoQuest(27017);
-    var number = parseInt(pi.getQuestRecord(27018).getCustomData());
-    var new_quest = "enter=";
-    var maps = Array(120000000, 103000000, 101020300, 102000000, 200080100);
-    var changedd = false;
-    for (var i = 0; i < maps.length; i++) {
-	var changed = false;
-	if (pi.getPlayer().getMapId() == maps[i]) {
-	    if (quest.substring(i+6, i+7).equals("0")) { //+6 for "enter="
-		new_quest += "1";
-		changed = true;
-		changedd = true;
-	    }
-	}
-	if (!changed) {
-	    new_quest += quest.substring(i+6, i+7);
-	}
-    }
-    if (changedd) {
-	pi.updateInfoQuest(27017, new_quest);
-	pi.forceStartQuest(27018, number+1, true);
-	pi.getPlayer().dropMessage(-1, (number+1) +"/5 completed");
-	pi.getPlayer().dropMessage(-1, "Currently taking on the Title - The One Who Stood On Top");
-	pi.showQuestMsg("Currently taking on the Title - The One Who Stood On Top " + (number+1) + "/5 completed");
-    }
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(29004)).getStatus() < 1) {
+		Packages.server.quest.MapleQuest.getInstance(27018).forceStart(pi.getPlayer(), 0, 0);
+		Packages.server.quest.MapleQuest.getInstance(29004).forceStart(pi.getPlayer(), 0, null);
+		pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(29004)).setCustomData("00000");
+		}
+	for (var i = 0; i < map.length; i++)
+	if (pi.getPlayer().getMap().getId() == map[i]) {
+		var slot = i;
+		}
+		var x = pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(29004)).getCustomData();
+		var y = pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(27018)).getCustomData();
+		var ch = x[slot];
+	if (ch == '0') {
+		var next = x.substr(0, slot) + '1' + x.substr(slot + 1);
+
+		pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(29004)).setCustomData(next);
+		pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(27018)).setCustomData(parseInt(y) + 1);
+		pi.getPlayer().updateQuest(pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(27018)), true);
+
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("" + (parseInt(y) + 1) + "/5 Regions Completed"));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("The One Who's Touched the Sky title in progress."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The One Who's Touched the Sky title in progress. " + (parseInt(y) + 1) + "/5 Regions Completed"));
+		}
+		return true;
 }

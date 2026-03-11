@@ -1,31 +1,23 @@
-var baseid = 100040400;
-var dungeonid = 100040500;
-var dungeons = 30;
+/*
+	名字:	石巨人寺院
+	地圖:	石巨人的寺院4
+	描述:	100040400
+*/
+
+var map = 100040400; //倒塌的石巨人聖地
+var maps = 100040500; //倒塌的石巨人聖地
+var num = 10;
 
 function enter(pi) {
-    if (pi.getMapId() == baseid) {
-	if (pi.getParty() != null) {
-	    if (pi.isLeader()) {
-		for (var i = 0; i < dungeons; i++) {
-		    if (pi.getPlayerCount(dungeonid + i) == 0) {
-			pi.warpParty(dungeonid + i);
-			return;
-		    }
+	if (pi.getPlayer().getMap().getId() != map) {
+		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(4));
+		return true;
 		}
-	    } else {
-		pi.playerMessage(5, "You are not the leader of the party.");
-	    }
-	} else {
-	    for (var i = 0; i < dungeons; i++) {
-		if (pi.getPlayerCount(dungeonid + i) == 0) {
-		    pi.warp(dungeonid + i);
-		    return;
+		for (var i = 0; i < num; i++)
+	if (pi.getMap(maps + i).getCharacters().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(maps + i), pi.getMap(maps + i).getPortal(3));
+		return true;
 		}
-	    }
-	}
-	pi.playerMessage(5, "All of the Mini-Dungeons are in use right now, please try again later.");
-    } else {
-	pi.playPortalSE();
-	pi.warp(baseid, "MD00");
-    }
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "All of the Mini-Dungeons are in use right now, please try again later."));
+		return false;
 }

@@ -1,208 +1,102 @@
-var status = -1;
+/*
+	名字:	傑克
+	地圖:	內部密室的大廳
+	描述:	610030020
+*/
+
+var status;
 
 function start() {
-	cm.removeAll(4001256);
-	cm.removeAll(4001257);
-	cm.removeAll(4001258);
-	cm.removeAll(4001259);
-	cm.removeAll(4001260);
-		if (!Packages.server.MaplePQManager.canEnter(cm.getPlayer(), Packages.server.MaplePQManager.PQType.CWKPQ)) {
-			cm.dispose();
-			return;
-		}
-		if (cm.getPlayer().getClient().getChannel() != 1) {
-			cm.sendOk("Crimsonwood Keep Party Quest may only be attempted on channel 1.");
-			cm.dispose();
-			return;
-		}
-    var em = cm.getEventManager("CWKPQ");
-
-    if (em == null) {
-	cm.sendOk("The event isn't started, please contact a GM.");
-	cm.dispose();
-	return;
-    }
-    var prop = em.getProperty("state");
-
-    if (prop == null || prop.equals("0")) {
-	var squadAvailability = cm.getSquadAvailability("CWKPQ");
-	if (squadAvailability == -1) {
-	    status = 0;
-	    cm.sendYesNo("Are you interested in becoming the leader of the expedition Squad?");
-
-	} else if (squadAvailability == 1) {
-	    // -1 = Cancelled, 0 = not, 1 = true
-	    var type = cm.isSquadLeader("CWKPQ");
-	    if (type == -1) {
-		cm.sendOk("The squad has ended, please re-register.");
-		cm.dispose();
-	    } else if (type == 0) {
-		var memberType = cm.isSquadMember("CWKPQ");
-		if (memberType == 2) {
-		    cm.sendOk("You been banned from the squad.");
-		    cm.dispose();
-		} else if (memberType == 1) {
-		    status = 5;
-		    cm.sendSimple("What do you want to do? \r\n#b#L0#Check out members#l \r\n#b#L1#Join the squad#l \r\n#b#L2#Withdraw from squad#l \r\n#b#L3#Check out jobs#l");
-		} else if (memberType == -1) {
-		    cm.sendOk("The squad has ended, please re-register.");
-		    cm.dispose();
-		} else {
-		    status = 5;
-		    cm.sendSimple("What do you want to do? \r\n#b#L0#Check out members#l \r\n#b#L1#Join the squad#l \r\n#b#L2#Withdraw from squad#l \r\n#b#L3#Check out jobs#l");
-		}
-	    } else { // Is leader
-		status = 10;
-		cm.sendSimple("What do you want to do? \r\n#b#L0#Check out members#l \r\n#b#L1#Remove member#l \r\n#b#L2#Edit restricted list#l \r\n#b#L3#Check out jobs#l \r\n#r#L4#Enter map#l");
-	    // TODO viewing!
-	    }
-	} else {
-			var eim = cm.getDisconnected("CWKPQ");
-			if (eim == null) {
-				var squd = cm.getSquad("CWKPQ");
-				if (squd != null) {
-					if (squd.getNextPlayer() != null) {
-						cm.sendOk("The squad's battle against the boss has already begun. The player to reserve the next spot is " + squd.getNextPlayer());
-						cm.safeDispose();
-					} else {
-						cm.sendYesNo("The squad's battle against the boss has already begun. Would you like to queue the next spot?");
-						status = 3;
-					}
-				} else {
-					cm.sendOk("The squad's battle against the boss has already begun.");
-					cm.safeDispose();
-				}
-			} else {
-				cm.sendYesNo("Ah, you have returned. Would you like to join your squad in the fight again?");
-				status = 1;
-			}
-	}
-    } else {
-			var eim = cm.getDisconnected("CWKPQ");
-			if (eim == null) {
-				var squd = cm.getSquad("CWKPQ");
-				if (squd != null) {
-					if (squd.getNextPlayer() != null) {
-						cm.sendOk("The squad's battle against the boss has already begun. The player to reserve the next spot is " + squd.getNextPlayer());
-						cm.safeDispose();
-					} else {
-						cm.sendYesNo("The squad's battle against the boss has already begun. Would you like to queue the next spot?");
-						status = 3;
-					}
-				} else {
-					cm.sendOk("The squad's battle against the boss has already begun.");
-					cm.safeDispose();
-				}
-			} else {
-				cm.sendYesNo("Ah, you have returned. Would you like to join your squad in the fight again?");
-				status = 1;
-			}
-    }
+	status = -1;
+	action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
-    switch (status) {
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
 	case 0:
-	    	if (mode == 1) {
-			if (!cm.haveItem(4032012, 1)) {
-				cm.sendOk("You need 1 Crimson Heart to continue.");
-			} else if (cm.registerSquad("CWKPQ", 5, " has been named the Leader of the squad. If you would you like to join please register for the Expedition Squad within the time period.")) {
-				cm.sendOk("You have been named the Leader of the Squad. For the next 5 minutes, you can add the members of the Expedition Squad.");
-			} else {
-				cm.sendOk("An error has occurred adding your squad.");
-			}
-	    	}
-	    cm.dispose();
-	    break;
-	case 1:
-		if (!cm.reAdd("CWKPQ", "CWKPQ")) {
-			cm.sendOk("Error... please try again.");
+		if (status < 1) {
+		cm.dispose();
+		return;
 		}
-		cm.safeDispose();
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendSimple("#e<Party Quest: Crimsonheart Altar>#n \r\nDefeat the Twisted Masters and bring peace to Crimsonheart Castle. Will you heed the call? \r\n#L0##bEnter Crimsonheart Altar.#l\r\n#L1#Learn more about the Crimsonheart Altar.#l\r\n#L2#Find party members.#l");
+		break;
+	default:
+		if (status == 1 && type == 5) select = selection;
+		reactor = 'action' + select;
+		eval(reactor)(mode, type, selection);
+}
+}
+
+function action0(mode, type, selection) {
+	switch (status) {
+	case 1:
+		if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+			cm.sendOk("Have the party leader talk to me.");
+			cm.dispose();
+			return;
+			}
+			party = cm.getPlayer().getParty().getMembers();
+			for (var i = 0; i < party.size(); i++)
+		if (party.size() < 5) {
+			cm.sendNext("Your party needs 5-6 people before you can enter.");
+			cm.dispose();
+			return;
+			}
+			for (var i = 0; i < party.size(); i++)
+		if (party.get(i).getMapid() != 610030020) {
+			cm.sendNext("Some of your party members are in a different map. Make sure they're all here!");
+			cm.dispose();
+			return;
+			}
+			for (var i = 0; i < party.size(); i++)
+		if (party.get(i).getLevel() < 100) {
+			cm.sendNext("Either you or one of your party members is below Lv. 100. Please fit the level requirement before proceeding.");
+			cm.dispose();
+			return;
+			}
+			var em = cm.getEventManager("CWKPQ");
+			var prop = em.getProperty("state");
+		if (prop == null || prop == 0) {
+			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
+			cm.dispose();
+			return;
+			}
+			cm.sendNext("Unable to apply for the quest.");
+			cm.dispose();
+}
+}
+
+function action1(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.sendNext("The Twisted Masters have scattered our armies and crushed our leader! Their powers are unimaginably terrifying. Now they have the legendary weapons of our heroes...");
+		break;
+	case 2:
+		cm.sendNextPrev("They have barricaded themselves inside Crimsonheart Castle to extract the powers of those weapons.");
 		break;
 	case 3:
-		if (mode == 1) {
-			var squd = cm.getSquad("CWKPQ");
-			if (squd != null && squd.getNextPlayer() == null) {
-				squd.setNextPlayer(cm.getPlayer().getName());
-				cm.sendOk("You have reserved the spot.");
-			}
-		}
-		cm.dispose();
+		cm.sendNextPrev("Once they succeed, all of Tynerum will fall under their complete control. You must break the barriers near the Seal Room, and defeat the Twisted Masters. \r\n\r\n#e- Level#n: 100 or higher #r(Recommended Level: 100 - 130)#k \r\n#e- Time Limit#n: 30 min. \r\n#e- Number of Participants#n: 5 to 6");
 		break;
-	case 5:
-	    if (selection == 0 || selection == 3) {
-		if (!cm.getSquadList("CWKPQ", selection)) {
-		    cm.sendOk("Due to an unknown error, the request for squad has been denied.");
-		}
-	    } else if (selection == 1) { // join
-		var ba = cm.addMember("CWKPQ", true);
-		if (ba == 2) {
-		    cm.sendOk("The squad is currently full, please try again later.");
-		} else if (ba == 1) {
-		    cm.sendOk("You have joined the squad successfully");
-		} else {
-		    cm.sendOk("You are already part of the squad.");
-		}
-	    } else {// withdraw
-		var baa = cm.addMember("CWKPQ", false);
-		if (baa == 1) {
-		    cm.sendOk("You have withdrawed from the squad successfully");
-		} else {
-		    cm.sendOk("You are not part of the squad.");
-		}
-	    }
-	    cm.dispose();
-	    break;
-	case 10:
-	    if (mode == 1) {
-		if (selection == 0 || selection == 3) {
-		    if (!cm.getSquadList("CWKPQ", selection)) {
-			cm.sendOk("Due to an unknown error, the request for squad has been denied.");
-		    }
-		    cm.dispose();
-		} else if (selection == 1) {
-		    status = 11;
-		    if (!cm.getSquadList("CWKPQ", 1)) {
-			cm.sendOk("Due to an unknown error, the request for squad has been denied.");
-			cm.dispose();
-		    }
-		} else if (selection == 2) {
-		    status = 12;
-		    if (!cm.getSquadList("CWKPQ", 2)) {
-			cm.sendOk("Due to an unknown error, the request for squad has been denied.");
-			cm.dispose();
-		    }
-		} else if (selection == 4) { // get insode
-		    if (cm.getSquad("CWKPQ") != null) {
-			if (cm.haveItem(4032012, 1)) {
-			    cm.gainItem(4032012, -1);
-			    var dd = cm.getEventManager("CWKPQ");
-			    dd.startInstance(cm.getSquad("CWKPQ"), cm.getMap());
-			} else {
-		 	    cm.sendOk("Where is my Crimson Heart?");
-			}
-		    } else {
-			cm.sendOk("Due to an unknown error, the request for squad has been denied.");
-		    }
-		    cm.dispose();
-		}
-	    } else {
+	case 4:
 		cm.dispose();
-	    }
-	    break;
-	case 11:
-	    cm.banMember("CWKPQ", selection);
-	    cm.dispose();
-	    break;
-	case 12:
-	    if (selection != -1) {
-		cm.acceptMember("CWKPQ", selection);
-	    }
-	    cm.dispose();
-	    break;
-	default:
-	    cm.dispose();
-	    break;
-    }
+}
+}
+
+function action2(mode, type, selection) {
+	switch (status) {
+	case 1:
+		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.sendUIWindow(7, 1));
+		cm.dispose();
+}
 }

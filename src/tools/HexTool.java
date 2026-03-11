@@ -82,6 +82,9 @@ public class HexTool {
      * @return The hexadecimal representation of <code>bytes</code>
      */
     public static final String toString(final byte[] bytes) {
+        if (bytes.length == 0) {
+            return "";
+        }
         StringBuilder hexed = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
             hexed.append(toString(bytes[i]));

@@ -1,8 +1,12 @@
-/* @Author Lerk
- * 
- * 2112014.js: Zakum Party Quest Giant Chest - drops a Fire Ore when 7 Keys are dropped in front of it
+/*
+	名字:	阿杜比斯的任務Ⅰ
+	地圖:	16區域之5
+	描述:	280011005
 */
 
 function act() {
-    rm.dropItems();
+	rm.dropItems();
 }
+
+
+//4001018		火石的母礦

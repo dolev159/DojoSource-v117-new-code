@@ -1,9 +1,14 @@
+/*
+	名字:	夢中
+	地圖:	夢現的森林
+	描述:	900010200
+*/
+
 function enter(pi) {
-	pi.MovieClipIntroUI(false);
-	if (pi.getEvanIntroState("dt00=o;dt01=o;mo00=o;mo01=o;mo10=o;mo02=o;mo11=o;mo20=o")) {
+	if (pi.getPlayer().getInfoQuest(22013).indexOf("mo20=o") != -1) {
 		return false;
-	}
-	pi.updateEvanIntroState("dt00=o;dt01=o;mo00=o;mo01=o;mo10=o;mo02=o;mo11=o;mo20=o");
-	pi.ShowWZEffect("Effect/OnUserEff.img/guideEffect/evanTutorial/evanBalloon20");
-	return true;
+		}
+		pi.getPlayer().updateInfoQuest(22013, pi.getPlayer().getInfoQuest(22013) + ";mo20=o");
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/guideEffect/evanTutorial/evanBalloon20"));
+		return true;
 }

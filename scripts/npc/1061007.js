@@ -1,32 +1,20 @@
-/* Crumbling Statue
-	1061007
+/*
+	名字:	坍塌的石像
+	地圖:	第5階段
+	描述:	910530200
 */
 
-var status = 0;
-var zones = 0;
-var selectedMap = -1;
-
 function start() {
-    status = -1;
-    action(1, 0, 0);
+	cm.sendYesNo("Once I lay my hand on the statue, a strange light covers me and it feels like I am being sucked into somewhere else. Will it be okay to go back to #m105000000#?");
 }
 
 function action(mode, type, selection) {
-    if (status >= 1 && mode == 0) {
-	cm.dispose();
-	return;
-    }
-    if (mode == 1)
-	status++;
-    else
-	status--;
-        
-    if (status == 0) {
-	cm.sendNext("The crumbling statue makes you sad :(");
-    } else if (status == 1) {
-	cm.sendYesNo("Would you like to escape the sadness?");
-    } else if (status == 2) {
-	cm.warp(105000000);
-	cm.dispose();
-    }
-}	
+	switch (mode) {
+	case 0:
+		cm.sendNext("Once I took my hand off the statue it got quiet, as if nothing happened.");
+		break;
+	case 1:
+		cm.getPlayer().changeMap(cm.getMap(105000000), cm.getMap(105000000).getPortal(0));
+		}
+		cm.dispose();
+}

@@ -1,11 +1,10 @@
-/**
-	Mr. Mohammed - El Nath : El Nath Market (211000100)
-**/
+/*
+	名字:	倉庫武老闆
+	地圖:	冰原雪域市集
+	描述:	211000100
+*/
 
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 2020004);
+	cm.dispose();
 }

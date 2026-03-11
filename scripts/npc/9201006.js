@@ -1,64 +1,73 @@
-var status = -1;
+/*
+	名字:	芭倫提娜修女
+	地圖:	結婚禮堂
+	描述:	680000200
+*/
 
-function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.dispose();
-	}
-	status--;
-    }
-    if (cm.getMapId() != 680000200) {
+function start() {
+	cm.sendOk("...");
 	cm.dispose();
-	return;
-    }
-    if (status == 0) {
-	cm.sendYesNo("Do you want to enter the Wedding Hall?");
-    } else if (status == 1) {
-
-	    var marr = cm.getQuestRecord(160001);
-	    var data = marr.getCustomData();
-	    if (data == null) {
-		marr.setCustomData("0");
-	        data = "0";
-	    }
-	    if (data.equals("1")) {
-		if (cm.getPlayer().getMarriageId() <= 0) {
-		    cm.sendOk("Something wrong has happened: you aren't engaged with anybody.");
-		    cm.dispose();
-		    return;
-		}
-	    	var chr = cm.getMap().getCharacterById(cm.getPlayer().getMarriageId());
-	    	if (chr == null) {
-		    cm.sendOk("Make sure your partner is in the map.");
-		    cm.dispose();
-		    return;
-	    	}
-		var maps = Array(680000210, 680000300, 680000401);
-		for (var i = 0; i < maps.length; i++) {
-		    if (cm.getMap(maps[i]).getCharactersSize() > 0) {
-			cm.sendNext("Someone is already having a wedding, please come later.");
-			cm.dispose();
-			return;
-		    }
-		}
-		var map = cm.getMap(680000210);
-		cm.getPlayer().changeMap(map, map.getPortal(0));
-		chr.changeMap(map, map.getPortal(0));
-		cm.worldMessage(5, "<Channel " + cm.getClient().getChannel() + "> " + cm.getPlayer().getName() + " and " + chr.getName() + "'s wedding is about to be started.");
-	    } else {
-		if (cm.getMap(680000210).getCharactersSize() == 0) {
-		    cm.sendNext("No one is already having a wedding, please come later.");
-		    cm.dispose();
-		    return;
-		}
-		if (cm.haveItem(4150000)) {
-		    cm.warp(680000210,0);
-		} else {
-		    cm.sendOk("You do not have a wedding invitation.");
-		}
-	    }
-	cm.dispose();
-    }
 }
+
+
+
+/*
+
+//Wedding Asistant Debbie
+script "watingCathedral" {
+field = self.field;
+if (field.id == 680000200 ) {
+	//wating room -> cathedral wedding hall
+    nRet = self.askYesNo( "Salutations! Would you like to get into the Wedding Hall? ");
+    if ( nRet == 0 ) self.say( "Ok, please let me know when you're ready to go in." );
+	  else {
+	   // user wants to go inside
+	   self.say( "Feel free to head inside now. Give my regards to the newlyweds!  ");
+ 	   if (field.id == 680000200 ) registerTransferField( 680000210, "" );
+	  }
+}
+else if (field.id == 680000210 ) {
+	if( target.isWeddingCouple == 1 and target.isInParty == 1 and getCurrentWeddingState == 2){
+			// asking if bride and groom want to move to Photomap
+    		nRet = self.askYesNo( "You two both look fantastic! Are you ready to go to the Photo Map? ");
+    		// bride and groom doesn't want to move to Photomap
+			if ( nRet == 0 ) self.say( "Ok, please remember that the Photo time will automatically start after the clock stops." );
+	  	else {
+			// bride and groom want to move to Photomap
+	   		self.say( "Sounds good, take some good pictures. Off you go!");
+	   		set = FieldSet( "Wedding30" );
+		     	result = set.enter( target.nCharacterID, 0 );
+ 		      
+			if ( result == 7) self.say ("I apologize, but the Wedding hasn't started yet. When it does, I'll be sure to let you in. ");
+ 		      	else if ( result == 8) self.say ("Sorry, but without an invitation, I can't let you in.");
+ 		      	else if ( result == 9) self.say ("Oh dear, looks like I can't find that information right now...I'm having a bit of trouble with my logbook, please try again later");
+
+	  	}
+ 		
+	}
+		// The wedding is not finished yet
+	else if (target.isWeddingCouple == 1 and target.isInParty == 1 and getCurrentWeddingState == 1) self.say("You both look fantastic! Please, wait the ceremony to end.");
+	else if (target.isWeddingCouple == 0) {
+	// for invited people
+	nRet = self.askYesNo( "Hi! Would you like to leave the Cathedral? ");
+    	  if ( nRet == 0 ) self.say( "Ok, please let me know when you're ready to go out." );
+	  else {
+	   // user wants to go out
+	   self.say( "Ok, I'll show you the way out...");
+ 	   if (field.id == 680000210 ){ 
+	   set = FieldSet( "Wedding2" );
+	   registerTransferField( 680000500, "" );
+	}
+}
+	  }
+  }
+  else if (field.id == 680000300 and target.isWeddingCouple == 0) {
+	// for invited people at the photomap
+      nRet = self.askYesNo( "Do you want to go back outside?");
+      if ( nRet == 0 ) self.say( "Ok, please let me know when you're ready to go!" );
+	    else {
+	      self.say( "Ok, I'll show you the way out. Have fun out there!");
+ 	      if (field.id == 680000300 ) registerTransferField( 680000500, "" );
+	    }
+  }
+} */

@@ -1,28 +1,18 @@
+/*
+	名字:	女皇之路
+	地圖:	演武场入口
+	描述:	130020000
+*/
+
+var map = [913000000, 913000100, 913000200];
+var quest = [20701, 20702, 20703];
+
 function enter(pi) {
-    var map = 0;
-    if (pi.getQuestStatus(20701) == 1) {
-	map = 913000000;
-    } else if (pi.getQuestStatus(20702) == 1) {
-	map = 913000100;
-    } else if (pi.getQuestStatus(20703) == 1) {
-	map = 913000200;
-    } else if (pi.getQuestStatus(20771) == 1) {
-	map = 913070300;
-    } else if (pi.getQuestStatus(20772) == 1) {
-	map = 913070310;
-    } else if (pi.getQuestStatus(20773) == 1) {
-	map = 913070320;
-    }
-    if (map > 0) {
-	if (pi.getPlayerCount(map) == 0) {
-	    var mapp = pi.getMap(map);
-	    mapp.resetFully();
-	    mapp.respawn(true);
-	    pi.warp(map, 0);
-	} else {
-	    pi.playerMessage("Someone is already in this map.");
-	}
-    } else {
-	pi.playerMessage("Hall #1 can only be entered if you're engaged in Kiku's Acclimation Training.");
-    }
+	for (var i = 0; i < quest.length; i ++)
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(quest[i])).getStatus() == 1) {
+		pi.getPlayer().changeMap(pi.getMap(map[i]), pi.getMap(map[i]).getPortal(1));
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The 1st Hall can only be entered if you're participating in Kiku's Acclimation Training."));
+		return false;
 }

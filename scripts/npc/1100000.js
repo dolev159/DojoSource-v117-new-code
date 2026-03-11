@@ -1,7 +1,10 @@
+/*
+	名字:	奇里翁
+	地圖:	耶雷弗岔道
+	描述:	130000200
+*/
+
 function start() {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 1100000);
+	cm.dispose();
 }

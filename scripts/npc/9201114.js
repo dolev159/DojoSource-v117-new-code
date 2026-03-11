@@ -1,12 +1,10 @@
-function start() {
-	cm.warp(610030020,0);
-	cm.removeAll(4001256);
-	cm.removeAll(4001257);
-	cm.removeAll(4001258);
-	cm.removeAll(4001259);
-	cm.removeAll(4001260);
-	cm.dispose();
-}
+/*
+	名字:	閘門
+	地圖:	大師的大廳
+	描述:	610030010
+*/
 
-function action(mode, type, selection) {
+function start() {
+	cm.getPlayer().changeMap(cm.getMap(610030020), cm.getMap(610030020).getPortal(3));
+	cm.dispose();
 }

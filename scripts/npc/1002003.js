@@ -1,39 +1,57 @@
-/* Author: Xterminator
-	NPC Name: 		Mr. Goldstein
-	Map(s): 		Victoria Road : Lith Harbour (104000000)
-	Description:		Extends Buddy List
+/*
+	名字:	智慧爺爺
+	地圖:	維多利亞港
+	描述:	104000000
 */
-var status = -1;
+
+var status;
+
+function start() {
+	status = -1;
+	action(1, 0, 0);
+}
 
 function action(mode, type, selection) {
-    if (mode == 1) {
-	status++;
-    } else {
-	if (status == 0) {
-	    cm.sendNext("I see... you don't have as many friends as I thought you would. Hahaha, just kidding! Anyway if you feel like changing your mind, please feel free to come back and we'll talk business. If you make a lot of friends, then you know ... hehe ...");
-	    cm.safeDispose();
-	    return;
-	} else if (status >= 1) {
-	    cm.sendNext("I see... I don't think you don't have as many friends as I thought you would. If not, you just don't have 250,000 mesos with you right this minute? Anyway, if you ever change your mind, come back and we'll talk business. That is, of course, once you have get some financial relief... hehe ...");
-	    cm.safeDispose();
-	    return;
-	}
-	status--;
-    }
-    if (status == 0) {
-	cm.sendYesNo("I hope I can make as much as yesterday... well, hello! Don't you want to extend your buddy list? You look like someone who'd have a whole lot of friends... well, what do you think? With some money I can make it happen for you. Remember, though, it only applies to one character at a time, so it won't affect any of your other characters on your account. Do you want to extend your buddy list?");
-    } else if (status == 1) {
-	cm.sendYesNo("Alright, good call! It's not that expensive actually. #b250,000 mesos and I'll add 5 more slots to your buddy list#k. And no, I won't be selling them individually. Once you buy it, it's going to be permanently on your buddy list. So if you're one of those that needs more space there, then you might as well do it. What do you think? Will you spend 250,000 mesos for it?");
-    } else if (status == 2) {
-	var capacity = cm.getBuddyCapacity();
-	if (capacity >= 100 || cm.getMeso() < 250000) {
-	    cm.sendNext("Hey... are you sure you have #b250,000 mesos#k? If so, then check and see if you have extended your buddy list to the max. Even if you pay up, the most you can have on your buddy list is #b100#k.");
-	} else {
-	    var newcapacity = capacity + 5;
-	    cm.gainMeso(-250000);
-	    cm.updateBuddyCapacity(newcapacity);
-	    cm.sendOk("Alright! Your buddy list will have 5 extra slots by now. Check and see for it yourself. And if you still need more room on your buddy list, you know who to find. Of course, it isn't going to be for free ... well, so long ...");
-	}
-	cm.safeDispose();
-    }
+	switch (mode) {
+	case -1:
+		cm.dispose();
+		return;
+	case 0:
+		if (status < 1) {
+		cm.sendNext("I see. More of a loner-type, huh? Going your own way? Following nobody's rules but your own?");
+		cm.dispose();
+		return;
+		}
+		if (status < 2) {
+		cm.sendNext("Are you broke, or just lonely?");
+		cm.dispose();
+		return;
+		}
+		status--;
+		break;
+	case 1:
+		status++;
+		break;
+		}
+	switch (status) {
+	case 0:
+		cm.sendYesNo("I'm hoping for lots of business today! Friendly business from people looking to expand their Buddy List! You look like you might be... mildly popular. Give me some mesos and you can have even MORE friends? Just you though, not anybody else on your account.");
+		break;
+	case 1:
+		cm.sendYesNo("You're lucky! I'm giving you a #rmassive discount#k. #bIt'll be 50000 Mesos to permanently add 5 slots to your Buddy List#k. That's a deal for somebody as popular as you are! What do you say?");
+		break;
+	case 2:
+		var capacity = cm.getPlayer().getBuddylist().getCapacity();
+		if (cm.getPlayer().getMeso() < 50000 || capacity > 199) {
+			cm.sendNext("Uh, you sure you got the money? It's #b50000 Mesos#k. Or maybe your Buddy List has already been fully expanded? No amount of money will make that list longer than #b200#k.");
+			cm.dispose();
+			return;
+			}
+			cm.gainMeso(-50000);
+			cm.getPlayer().setBuddyCapacity(capacity + 5);
+			cm.sendOk("You just got room for five more friends. I'll be here if you need to add more, but I'm not giving these things out for free.");
+			break;
+	case 3:
+		cm.dispose();
+}
 }

@@ -1,8 +1,14 @@
+/*
+	名字:	隱密之地
+	地圖:	茂盛的森林
+	描述:	900020110
+*/
+
 function enter(pi) {
-	if (pi.getEvanIntroState("egg=o;mo30=o;mo40=o;mo41=o;mo50=o;mo42=o;mo60=o")) {
+	if (pi.getPlayer().getInfoQuest(22013).indexOf("egg=o") != -1) {
 		return false;
-	}
-	pi.updateEvanIntroState("egg=o;mo30=o;mo40=o;mo41=o;mo50=o;mo42=o;mo60=o");
-    pi.evanTutorial("UI/tutorial/evan/8/0", -1);
-	return true;
+		}
+		pi.getPlayer().updateInfoQuest(22013, pi.getPlayer().getInfoQuest(22013) + ";egg=o");
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.getEvanTutorial("UI/tutorial/evan/8/0"));
+		return true;
 }

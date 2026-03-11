@@ -1,19 +1,27 @@
+/*
+	名字:	隱藏地圖
+	地圖:	專業技術村 &amp;lt;梅斯特鎮&gt;
+	描述:	910001000
+*/
+
+var ticket = [4001480, 4001481, 4001482, 4001483];
+var map = [910001005, 910001006, 910001003, 910001004];
+
 function enter(pi) {
-    if (pi.haveItem(4001480)) {
-	pi.warp(910001005,0);
-	pi.gainItem(4001480, -1);
-    } else if (pi.haveItem(4001481)) {
-	pi.warp(910001006, 0);
-	pi.gainItem(4001481, -1);
-    } else if (pi.haveItem(4001482)) {
-	pi.warp(910001003, 0);
-	pi.gainItem(4001482, -1);
-    } else if (pi.haveItem(4001483)) {
-	pi.warp(910001004, 0);
-	pi.gainItem(4001483, -1);
-    } else if (pi.isQuestActive(3197) || pi.isQuestActive(3198)) {
-	pi.warp(910001002, 0);
-    } else if (pi.isQuestActive(3195) || pi.isQuestActive(3196)) {
-	pi.warp(910001001, 0);
-    }
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3197)).getStatus() == 1 || pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3198)).getStatus() == 1) {
+		pi.getPlayer().changeMap(pi.getMap(910001002), pi.getMap(910001002).getPortal(1)); //諾本的礦山
+		return true;
+		}
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3195)).getStatus() == 1 || pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3196)).getStatus() == 1) {
+		pi.getPlayer().changeMap(pi.getMap(910001001), pi.getMap(910001001).getPortal(1)); //斯塔切的藥草田
+		return true;
+		}
+	for (var i = 0; i < ticket.length; i ++)
+	if (pi.getPlayer().itemQuantity(ticket[i])) {
+		pi.gainItem(ticket[i], -1);
+		pi.getPlayer().changeMap(pi.getMap(map[i]), pi.getMap(map[i]).getPortal(1));
+		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Collecting area requires carrying corresponding entry tickets."));
+		return false;
 }

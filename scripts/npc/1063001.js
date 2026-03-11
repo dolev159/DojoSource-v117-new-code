@@ -1,46 +1,21 @@
-var status;
+/*
+	名字:	蓝花簇
+	地圖:	第4階段
+	描述:	910530101
+*/
 
 function start() {
-status = -1;
-action(1, 0, 0);
-}
-
-function action(mode, type, selection) {
-
-if (mode == -1) {
-cm.dispose();
-}
-else {
-if (status == 0 && mode == 0) {
-cm.dispose();
-return;
-    }
-}
-
-if (mode == 1) 
-   status++;
-
-else 
-   status--;
-    if (status == 0) { 
-cm.sendAcceptDecline("You have completed the Jumping Quest. Click accept to receive:\r\n\r\n#b1) #i 4310025# (10)\r\n2) 6 Jumping Quest Point#k.");
-}else if (status == 1) {
-if (cm.haveItem(4032024, 1)) {
- var map = cm.getPlayer().getMapId();
- var mapname = "Unknown MapID";
- if (map == 910530200) {
- mapname = "Forest of Tenacity : Stage 5 - 7";
- } else if (map === 910130100) {
- mapname = "Forest of Forest of Endurance : Stage 3 - 5";
- }
-    cm.warp(910000000,0);
-	cm.gainItem(4032024, -1);
-	cm.gainJQPoints(6);
-	cm.gainItem(4310025, 10);
-	cm.dispose();
-} else {
-	cm.msiMessage("[Jumping Quest Notice] Congratulations to "+cm.getPlayer().getName()+" for trying to beat the Jumping Quest without the required item.");
-	cm.dispose();
-}
-}
+	if (cm.getPlayer().getPosition().y > -1755) {
+		cm.sendOk("You can't see the inside of the pile of flowers very well because you're too far. Go a little closer.");
+		cm.dispose();
+		return;
+		}
+	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Etc item inventory is full."));
+		cm.dispose();
+		return;
+		}
+		cm.gainItem(4031026, 20);
+		cm.getPlayer().changeMap(cm.getMap(105000000), cm.getMap(105000000).getPortal(0)); //奇幻村
+		cm.dispose();
 }

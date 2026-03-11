@@ -1,76 +1,70 @@
-var minPlayers = 1;
+/*
+	名字:	怪物公園
+	地圖:	怪物公園
+	描述:	951000000
+*/
 
-function init() {
-}
+function setup(mapid) {//開始事件，時間
+	eim = em.newInstance("MonsterPark" + mapid);
 
-function setup(mapid) {
-    var eim = em.newInstance("MonsterPark" + mapid);
-	var map = parseInt(mapid);
-	var max = (map / 1000000 == 952 ? 5 : 6);
+	map = parseInt(mapid);
+
+	max = (map / 1000000 == 952 ? 5 : 6);
+
 	eim.setProperty("max", "" + max);
-	eim.setProperty("boss", "0");
+
+	eim.setProperty("boss", 0);
+
 	for (var i = 0; i < max; i++) {
-            eim.setInstanceMap(map + (i * 100)).resetFully();
-	    eim.setProperty("map" + i, "" + (map + (i * 100)));
-	}
-    eim.startEventTimer(1200000); //20 mins
-    return eim;
+		eim.setInstanceMap(map + (i * 100)).resetFully();
+		eim.setProperty("map" + i, "" + (map + (i * 100)));
+		}
+
+	eim.startEventTimer(1200000); //20 mins
+
+	return eim;
 }
 
-function playerEntry(eim, player) {
-    var map = eim.getMapInstance(0);
-    player.changeMap(map, map.getPortal(0));
+function playerEntry(eim, player) {//傳送進事件地圖
+	player.changeMap(eim.getMapInstance(0), eim.getMapInstance(0).getPortal(0));
 }
 
-function playerRevive(eim, player) {
+function monsterValue(eim, player, mob) {//殺怪後觸發
+	return 1;
 }
 
-function scheduledTimeout(eim) {
-    end(eim);
+function scheduledTimeout(eim) {//規定時間結束
+	eim.disposeIfPlayerBelow(100, 951000000);
 }
 
-function changedMap(eim, player, mapid) {
-    for (var i = 0; i < parseInt(eim.getProperty("max")); i++) {
+function changedMap(eim, player, mapid) {//進入地圖觸發
+	for (var i = 0; i < parseInt(eim.getProperty("max")); i++) {
 	if (mapid == parseInt(eim.getProperty("map" + i))) {
-	    return;
-	}
-    }
+		return;
+		}
+		}
+		playerExit(eim, player);
+}
+
+function playerDisconnected(eim, player) {//活動中角色斷開連接觸發
+	playerExit(eim, player);
+}
+
+function playerExit(eim, player) {//角色退出時觸發
 	eim.unregisterPlayer(player);
-
-	eim.disposeIfPlayerBelow(0, 0);
+	eim.disposeIfPlayerBelow(0, 0)
 }
 
-function playerDisconnected(eim, player) {
-    return 0;
-}
+function init() {}//服務端讀取
 
-function monsterValue(eim, mobId) {
-    return 1;
-}
+function allMonstersDead(eim) {}//怪物死亡觸發和刪除這個怪在活動中的資訊
 
-function playerExit(eim, player) {
-    eim.unregisterPlayer(player);
+function leftParty(eim, player) {}//離開小組觸發
 
-	eim.disposeIfPlayerBelow(0, 0);
-}
+function disbandParty(eim) {}//小組退出時觸發
 
-function end(eim) {
-    eim.disposeIfPlayerBelow(100, 951000000);
-}
+function playerDead(eim, player) {}//玩家死亡時觸發
 
-function clearPQ(eim) {
-    end(eim);
-}
+function playerRevive(eim, player) {}//玩家角色复時觸發
 
-function allMonstersDead(eim) {
-}
-
-function leftParty (eim, player) {
-    // If only 2 players are left, uncompletable:
-	end(eim);
-}
-function disbandParty (eim) {
-	end(eim);
-}
-function playerDead(eim, player) {}
-function cancelSchedule() {}
+function cancelSchedule() {}//清除事件

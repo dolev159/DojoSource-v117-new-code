@@ -1,11 +1,10 @@
 /*
-	Mr. Gong - Herb Town : Herb Town (251000000)
+	名字:	公大爺
+	地圖:	靈藥幻境
+	描述:	251000000
 */
 
-function action(mode, type, selection) {
-    	if (cm.getPlayer().getLevel() <= 39) {
-	cm.sendOk("You must be level 40 for using me");
- } else 
-    cm.sendStorage();
-    cm.dispose();
+function start() {
+	cm.getPlayer().getStorage().sendStorage(cm.getClient(), 2093003);
+	cm.dispose();
 }
