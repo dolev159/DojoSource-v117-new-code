@@ -5,16 +5,20 @@
 */
 
 function enter(pi) {
-	var em = pi.getEventManager("EmperorToad");
+	var em = pi.getEventManager("NinjaBoss");
 	var prop = em.getProperty("state");
 	if (prop == null || prop == 0) {
 	if (pi.getPlayer().getParty() == null) {
 		em.startInstance(pi.getPlayer());
 		return true;
 		}
+	if (pi.getPlayer().getParty().getLeader().getId() != pi.getPlayer().getId()) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Only party leaders can initiate entry."));
+		return false;
+		}
 		em.startInstance(pi.getPlayer().getParty(), pi.getPlayer().getMap(), 200);
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Another party is already inside."));
 		return false;
 }

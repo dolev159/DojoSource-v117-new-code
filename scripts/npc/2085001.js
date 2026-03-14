@@ -50,53 +50,25 @@ function action1(mode, type, selection) {
 			cm.sendOk("Join a party, then try again.");
 			cm.dispose();
 			return;
-			}
+		}
 		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
 			cm.sendOk("Only the Party Leader can attempt to enter.");
 			cm.dispose();
 			return;
-			}
-			party = cm.getPlayer().getParty().getMembers();
-			for (var i = 0; i < party.size(); i++)
-		if (party.size() < 3) {
-			cm.sendOk("You must have a minimum of 3 people to enter Crimson Sky.");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getMapid() != 240080000) {
-			cm.sendOk("Some of your party members are not in the same map. The entire party must be present to enter.");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getLevel() < 120) {
-			cm.sendOk("Someone in your party isn't Lv. 120 yet. You must be Lv. 120 or higher to enter the Crimson Sky!");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (cm.getPlayer().getMap().getCharacterById(party.get(i).getId()).getSkillLevel(party.get(i).getJobId() < 1000 ? 1026 : party.get(i).getJobId() < 2000 ? 10001026 : party.get(i).getJobId() < 2200 ? 20001026 : party.get(i).getJobId() < 2300 ? 20011026 : party.get(i).getJobId() < 2400 ? 20021026 : party.get(i).getJobId() < 3200 ? 30011026 : 30001026) < 1) {
-			cm.sendOk("You need to learn the Soaring skill before entering Crimson Sky. Please make sure that all the members of your party have learned the Soaring skill.");
-			cm.dispose();
-			return;
-			}
-			var em = cm.getEventManager("Dragonica");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("Another party is already fighting on the other side. Wait a moment and try again.");
-			cm.dispose();
-}
+		}
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Dragon Rider", cm)) {
+			// Failed condition or another party is inside. Handled partially by cm inside handler, or we can send a default if not handled.
+			// Actually the boolean return is false if requirements fail or already full.
+		}
+		cm.dispose();
+		break;
+	}
 }
 
 function action2(mode, type, selection) {
 	switch (status) {
 	case 1:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.sendUIWindow(7, 1));
+		cm.sendPartyWindow();
 		cm.dispose();
 }
 }

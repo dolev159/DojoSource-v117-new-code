@@ -21,9 +21,9 @@ function playerEntry(eim, player) {//傳送進事件地圖
 function scheduledTimeout(eim) {//規定時間結束
 }
 
-function monsterValue(eim, player, mob) {//殺怪後觸發
-	if (mob.getId() == 9300506) {
-		player.changeMap(eim.getMapInstance(player.getMap().getId()), eim.getMapInstance(player.getMap().getId()).getPortal(0));
+function monsterValue(eim, mobId) {//殺怪後觸發
+	if (mobId == 9300506) {
+		eim.getPlayers().get(0).changeMap(eim.getMapInstance(eim.getPlayers().get(0).getMap().getId()), eim.getMapInstance(eim.getPlayers().get(0).getMap().getId()).getPortal(0));
 		}
 		return 1;
 }

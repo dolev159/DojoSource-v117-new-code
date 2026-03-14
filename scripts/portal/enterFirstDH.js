@@ -4,8 +4,8 @@
 	描述:	130020000
 */
 
-var map = [913000000, 913000100, 913000200];
-var quest = [20701, 20702, 20703];
+var map = [913000000, 913000100, 913000200, 913070300, 913070310, 913070320];
+var quest = [20701, 20702, 20703, 20771, 20772, 20773];
 
 function enter(pi) {
 	for (var i = 0; i < quest.length; i ++)
@@ -13,6 +13,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(map[i]), pi.getMap(map[i]).getPortal(1));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The 1st Hall can only be entered if you're participating in Kiku's Acclimation Training."));
+		pi.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The 1st Hall can only be entered if you're participating in Kiku's Acclimation Training."));
 		return false;
 }

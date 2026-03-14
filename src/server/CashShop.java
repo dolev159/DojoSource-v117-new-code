@@ -51,9 +51,19 @@ public class CashShop implements Serializable {
     private List<Integer> uniqueids = new ArrayList<Integer>();
 
     public CashShop(int accountId, int characterId, int jobType) throws SQLException {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            init(accountId, characterId, jobType, con);
+        }
+    }
+
+    public CashShop(int accountId, int characterId, int jobType, Connection con) throws SQLException {
+        init(accountId, characterId, jobType, con);
+    }
+
+    private void init(int accountId, int characterId, int jobType, Connection con) throws SQLException {
         this.accountId = accountId;
         this.characterId = characterId;
-        for (Pair<Item, MapleInventoryType> item : factory.loadItems(false, accountId).values()) {
+        for (Pair<Item, MapleInventoryType> item : factory.loadItems(con, accountId, false).values()) {
             inventory.add(item.getLeft());
         }
     }

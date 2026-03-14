@@ -10,6 +10,6 @@ function enter(pi) {
 		}
 		pi.getPlayer().updateInfoQuest(21002, pi.getPlayer().getInfoQuest(21002) + ";cmd=o");
 		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("aran/tutorialGuide3", 3));
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You can use a Command Attack by pressing both the arrow key and the attack key after a Consecutive Attack."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You can use a Command Attack by pressing both the arrow key and the attack key after a Consecutive Attack."));
 		return false;
 }

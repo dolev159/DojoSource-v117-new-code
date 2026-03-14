@@ -104,15 +104,20 @@ public class BuddyList implements Serializable {
     }
 
     public void loadFromDb(int characterId) throws SQLException {
-        Connection con = DatabaseConnection.getConnection();
-        PreparedStatement ps = con.prepareStatement("SELECT b.buddyid, b.pending, c.name as buddyname, b.groupname FROM buddies as b, characters as c WHERE c.id = b.buddyid AND b.characterid = ?");
-        ps.setInt(1, characterId);
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-	    put(new BuddylistEntry(rs.getString("buddyname"), rs.getInt("buddyid"), rs.getString("groupname"), -1, rs.getInt("pending") != 1));
+        try (Connection con = DatabaseConnection.getConnection()) {
+            loadFromDb(con, characterId);
         }
-        rs.close();
-        ps.close();
+    }
+
+    public void loadFromDb(Connection con, int characterId) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement("SELECT b.buddyid, b.pending, c.name as buddyname, b.groupname FROM buddies as b, characters as c WHERE c.id = b.buddyid AND b.characterid = ?")) {
+            ps.setInt(1, characterId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    put(new BuddylistEntry(rs.getString("buddyname"), rs.getInt("buddyid"), rs.getString("groupname"), -1, rs.getInt("pending") != 1));
+                }
+            }
+        }
     }
 
     public void addBuddyRequest(MapleClient c, int cidFrom, String nameFrom, int channelFrom, int levelFrom, int jobFrom) {

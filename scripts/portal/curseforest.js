@@ -6,16 +6,16 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2224)).getStatus() < 1) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You cannot access this area."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "A dark force is preventing you from going forward."));
 		return false;
 		}
-	cal = java.util.Calendar.getInstance();
-	hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
-	map = pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2227)).getStatus() > 1 ? 910100001 : 910100000;
+		cal = java.util.Calendar.getInstance();
+		hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
+		map = pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2227)).getStatus() > 1 ? 910100001 : 910100000;
 	if (hour < 7 || hour > 16) {
 		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(1));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You cannot access this area right now."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "A dark force is preventing you from going forward."));
 		return false;
 }

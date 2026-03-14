@@ -9,6 +9,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(272000300), pi.getMap(272000300).getPortal(1)); //燃燒的神木村3
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Starling is injured and needs to be helped as soon as possible."));
+		pi.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.getNPCTalk(2144004, 0, "Please eliminate any nearby monsters before proceeding to the next area.", "00 00", 0));
 		return false;
 }

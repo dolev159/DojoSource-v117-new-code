@@ -5,14 +5,10 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getId() == 271040000) {
+	if (pi.getPlayer().getMap().getId() != 271040000 && pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Battle is in progress. Click the portal if you would like to exit."));
+		return false;
+		}
 		pi.openNpc(2143004);
 		return true;
-		}
-	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
-		return false;
-		}
-		pi.getPlayer().changeMap(pi.getMap(271040210), pi.getMap(271040210).getPortal(0)); //西格諾斯後院
-		return false;
 }

@@ -65,17 +65,26 @@ public class MapleStorage implements Serializable {
     }
 
     public static MapleStorage loadStorage(int id) {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            return loadStorage(id, con);
+        } catch (SQLException ex) {
+            FileoutputUtil.logDatabaseError("SELECT storages WHERE accountid=" + id, ex);
+            System.err.println("[Storage] Error loading storage for account " + id + ": " + ex.getMessage());
+        }
+        return null;
+    }
+
+    public static MapleStorage loadStorage(int id, Connection con) {
         MapleStorage ret = null;
         int storeId;
-        try (Connection con = DatabaseConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement("SELECT * FROM storages WHERE accountid = ?")) {
+        try (PreparedStatement ps = con.prepareStatement("SELECT * FROM storages WHERE accountid = ?")) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     storeId = rs.getInt("storageid");
                     ret = new MapleStorage(storeId, rs.getByte("slots"), rs.getInt("meso"), id);
 
-                    for (Pair<Item, MapleInventoryType> mit : ItemLoader.STORAGE.loadItems(false, id).values()) {
+                    for (Pair<Item, MapleInventoryType> mit : ItemLoader.STORAGE.loadItems(con, id, false).values()) {
                         ret.items.add(mit.getLeft());
                     }
                 } else {

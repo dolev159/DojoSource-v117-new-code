@@ -5,7 +5,7 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2866)).getStatus() == 1) {
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2866)).getStatus() < 2) {
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Hunt all the Shades and check out the hat."));
 		return false;
 		}

@@ -17,25 +17,24 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(927000200), pi.getMap(927000200).getPortal(1)); //回憶中的休息處3
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
-	for (var i = 0; i < inmap.length; i ++)
+		for (var i = 0; i < inmap.length; i ++)
 	if (pi.getPlayer().getMap().getId() == inmap[i])
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(quest[i])).getStatus() == 2) {
 		pi.getPlayer().changeMap(pi.getMap(tomap[i]), pi.getMap(tomap[i]).getPortal("out00"));
 		return true;
 		}
 	if (pi.getPlayer().getMap().getId() == 270040000) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3521)).getStatus() > 1) {
+	if (pi.getPlayer().itemQuantity(4032002)) {
 		pi.getPlayer().changeMap(pi.getMap(270040100), pi.getMap(270040100).getPortal("out00"));
+		pi.gainItem(4032002, -1);
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Unable to proceed further, it's as if a force is preventing anyone from entering."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Something seems to be blocking you from entering."));
 		return false;
 		}
-		map = pi.getPlayer().getMap().getId() > 270030000 ? 270030000 : pi.getPlayer().getMap().getId() > 270020000 ? 270020000 : 270010000;
-		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal("in00"));
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Instruders are unable to reverse the current that originates from the temple, and are sent back to their previous spots."));
-		return false;
+		pi.openNpc(2140000);
+		return true;
 }

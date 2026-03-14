@@ -65,7 +65,7 @@ function action1(mode, type, selection) {
 	case 2:
 		cm.dispose();
 		cm.getPlayer().updateInfoQuest(23007, cm.getPlayer().getInfoQuest(23007) + ";vel01=3");
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/guideEffect/aranTutorial/tutorialArrow1"));
 }
 }
 

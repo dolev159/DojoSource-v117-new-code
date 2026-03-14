@@ -9,6 +9,6 @@ function enter(pi) {
 		return false;
 		}
 		pi.getPlayer().updateInfoQuest(21019, pi.getPlayer().getInfoQuest(21019) + ";miss=o");
-		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonMessage("Just a little bit more, and you'll reach the town. I'll head over there first, since I also have some things to take care of. There's no need to rush, Aran. I'll see you there."));
-		return true;
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonMessage("You're very close to town. I'll head over there first since I have somethings to take care of. You take your time."));
+		return false;
 }

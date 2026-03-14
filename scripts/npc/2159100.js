@@ -42,8 +42,8 @@ function action(mode, type, selection) {
 	case 5:
 		cm.removeNpc(cm.getPlayer().getMap().getId(), cm.getNpc());
 		cm.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9001031), new java.awt.Point(181, -14));
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Defeat Schiller and take the Report!"));
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("Defeat Schiller and take the Report!"));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Defeat Schiller and take the Report!"));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("Defeat Schiller and take the Report!"));
 		cm.dispose();
 }
 }

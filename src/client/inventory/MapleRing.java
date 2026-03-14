@@ -36,8 +36,16 @@ public class MapleRing
   }
 
   public static MapleRing loadFromDb(int ringId, boolean equipped) {
-    try (Connection con = DatabaseConnection.getConnection();
-         PreparedStatement ps = con.prepareStatement("SELECT * FROM rings WHERE ringId = ?")) {
+    try (Connection con = DatabaseConnection.getConnection()) {
+      return loadFromDb(con, ringId, equipped);
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+    return null;
+  }
+
+  public static MapleRing loadFromDb(Connection con, int ringId, boolean equipped) {
+    try (PreparedStatement ps = con.prepareStatement("SELECT * FROM rings WHERE ringId = ?")) {
       ps.setInt(1, ringId);
 
       try (ResultSet rs = ps.executeQuery()) {

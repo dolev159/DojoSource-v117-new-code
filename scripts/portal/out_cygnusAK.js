@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(272030300), pi.getMap(272030300).getPortal(3)); //黑暗的祭壇入口
+	pi.getPlayer().changeMap(pi.getMap(272030300), pi.getMap(272030300).getPortal(0)); //黑暗的祭壇入口
 	return true;
 }

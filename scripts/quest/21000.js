@@ -28,7 +28,7 @@ function start(mode, type, selection) {
 		qm.sendAcceptDecline("Oh, no! I think there's still a child in the forest! Aran, I'm very sorry, but could you rescue the child? I know you're injured, but I don't have anyone else to ask!");
 		break;
 	case 1:
-		Packages.server.quest.MapleQuest.getInstance(21000).forceStart(qm.getPlayer(), qm.getNpc(), null);
+		qm.forceStartQuest(21000);
 		qm.sendNext("#bThe child is probably lost deep inside the forest!#k We have to escape before the Black Mage finds us. You must rush into the forest and bring the child back with you!");
 		break;
 	case 2:

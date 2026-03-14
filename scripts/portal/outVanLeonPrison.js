@@ -10,6 +10,6 @@ function enter(pi) {
 		pi.getPlayer().removeAll(4032860);
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The channel has been closed, need to find the key to the prison to open it."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You cannot escape the prison without a key. Search the boxes nearby."));
 		return false;
 }

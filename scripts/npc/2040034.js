@@ -41,40 +41,22 @@ function action(mode, type, selection) {
 function action0(mode, type, selection) {
 	switch (status) {
 	case 1:
-		if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+		if (cm.getPlayer().getParty() == null) {
 			cm.sendOk("From here on above, this place is full of dangerous objects and monsters, so I can't let you make your way up anymore. If you're interested in saving us and bring peace back into Ludibrium, however, that's a different story. If you want to defeat a powerful creature residing at the very top, then please gather up your party members. It won't be easy, but ... I think you can do it.");
 			cm.dispose();
 			return;
-			}
-			party = cm.getPlayer().getParty().getMembers();
-			for (var i = 0; i < party.size(); i++)
-		if (party.size() < 3) {
-			cm.sendNext("You cannot participate in the quest because you do not have at least 3 party members.");
+        }
+		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+			cm.sendOk("From here on above, this place is full of dangerous objects and monsters, so I can't let you make your way up anymore. If you're interested in saving us and bring peace back into Ludibrium, however, that's a different story. If you want to defeat a powerful creature residing at the very top, then please gather up your party members. It won't be easy, but ... I think you can do it.");
 			cm.dispose();
 			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getMapid() != 221023300) {
-			cm.sendNext("Some of your party members are in a different map. Make sure they're all here!");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getLevel() < 30) {
-			cm.sendNext("Either you or one of your party members is below Lv. 30. Please fit the level requirement before proceeding.");
-			cm.dispose();
-			return;
-			}
-			var em = cm.getEventManager("LudiPQ");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("Another party is already fighting on the other side. Wait a moment and try again.");
-			cm.dispose();
-}
+		}
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Dimensional Crack", cm)) {
+            cm.sendNext("Your party does not meet the requirements or another party is already attempting this quest. Please try again later.");
+		}
+		cm.dispose();
+		return;
+	}
 }
 
 function action1(mode, type, selection) {

@@ -18,7 +18,7 @@ function action(mode, type, selection) {
 		return;
 	case 0:
 		if (type == 5) {
-		cm.dispose();
+		qm.dispose();
 		return;
 		}
 		status--;

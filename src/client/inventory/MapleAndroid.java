@@ -34,8 +34,16 @@ public class MapleAndroid
   }
 
   public static final MapleAndroid loadFromDb(int itemid, int uid) {
-    try (Connection con = DatabaseConnection.getConnection();
-         PreparedStatement ps = con.prepareStatement("SELECT * FROM androids WHERE uniqueid = ?")) {
+    try (Connection con = DatabaseConnection.getConnection()) {
+      return loadFromDb(con, itemid, uid);
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+    return null;
+  }
+
+  public static final MapleAndroid loadFromDb(Connection con, int itemid, int uid) {
+    try (PreparedStatement ps = con.prepareStatement("SELECT * FROM androids WHERE uniqueid = ?")) {
       MapleAndroid ret = new MapleAndroid(itemid, uid);
       ps.setInt(1, uid);
 

@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The entrance has been blocked."));
-	return true;
+	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It's very quiet. You can't hear a thing."));
+	return false;
 }

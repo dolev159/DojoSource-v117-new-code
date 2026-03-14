@@ -5,7 +5,10 @@
 */
 
 function enter(pi) {
-	var map = pi.getPlayer().itemQuantity(4032922) ? 271030000 : 271030010; //要塞入口
-	pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(1));
-	return true;
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31125)).getStatus() > 1) {
+		pi.getPlayer().changeMap(pi.getMap(271030000), pi.getMap(271030000).getPortal(1)); //要塞入口
+		return true;
+		}
+		pi.getPlayer().changeMap(pi.getMap(271030010), pi.getMap(271030010).getPortal(1));
+		return true;
 }

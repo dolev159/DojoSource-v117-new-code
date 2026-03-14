@@ -5,12 +5,10 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31178)).getStatus() > 1) {
-		pi.getPlayer().changeMap(pi.getMap(272020000), pi.getMap(272020000).getPortal(2)); //扭曲時間神殿1
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31167)).getStatus() > 0 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31178)).getStatus() < 2) {
+		pi.getPlayer().changeMap(pi.getMap(272000100), pi.getMap(272000100).getPortal(1)); //燃燒的神木村1
 		return true;
 		}
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31167)).getStatus() > 0) {
-		pi.getPlayer().changeMap(pi.getMap(272000100), pi.getMap(272000100).getPortal(1)); //燃燒的神木村1
-		}
-		return false;
+		pi.openNpc(2144017);
+		return true;
 }

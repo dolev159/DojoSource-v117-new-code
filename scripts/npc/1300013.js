@@ -18,11 +18,6 @@ function action(mode,type,selection) {
 			cm.getMap(map + i).resetFully();
 			cm.getPlayer().changeMap(cm.getMap(map + i), cm.getMap(map + i).getPortal(1));
 			cm.getPlayer().startMapTimeLimitTask(600, cm.getMap(106021402));
-		if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2332)).getStatus() ==1) {
-			Packages.server.quest.MapleQuest.getInstance(2332).forceComplete(cm.getPlayer(), cm.getNpc());
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("<Where is Violetta?> Quest Complete 1/1"));
-			cm.gainExp(1600);
-			}
 			cm.dispose();
 			return;
 			}

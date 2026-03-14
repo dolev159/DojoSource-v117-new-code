@@ -15,7 +15,7 @@ function start() {
 
 function action(mode, type, selection) {
 	switch (mode) {
-	case -1:
+	case - 1:
 		cm.dispose();
 		return;
 	case 0:

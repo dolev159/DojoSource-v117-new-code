@@ -7,7 +7,7 @@
 function enter(pi) {
 	var em = pi.getEventManager("q24071");
 	var prop = em.getProperty("state");
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24071)).getStatus() == 1 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24095)).getCustomData() != 1) {
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24071)).getStatus() == 1) {
 	if (prop == null || prop == 0) {
 		em.startInstance(pi.getPlayer());
 		return false;

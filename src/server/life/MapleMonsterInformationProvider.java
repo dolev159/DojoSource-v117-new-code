@@ -81,7 +81,7 @@ public class MapleMonsterInformationProvider {
 
     private void loadGlobalDrops() {
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM drop_data_global WHERE chance > 0");
+             PreparedStatement ps = con.prepareStatement("SELECT itemid, chance, continent, dropType, minimum_quantity, maximum_quantity, questid FROM drop_data_global WHERE chance > 0");
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -102,74 +102,97 @@ public class MapleMonsterInformationProvider {
     private void loadAllDrops() {
         Map<Integer, List<MonsterDropEntry>> tempDrops = new HashMap<>();
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        
+        List<TempDropEntry> toProcess = new ArrayList<>();
+
+        // Step 1: Fetch ALL data and close connection immediately to free the pool slot
         try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM drop_data ORDER BY dropperid");
+             PreparedStatement ps = con.prepareStatement("SELECT dropperid, itemid, chance, minimum_quantity, maximum_quantity, questid FROM drop_data");
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                int monsterId = rs.getInt("dropperid");
-                int itemId = rs.getInt("itemid");
-                
-                // Validation: Skip invalid items
-                if (itemId != 0 && !ii.itemExists(itemId)) {
-                    continue;
-                }
-
-                int chance = rs.getInt("chance");
-                if (GameConstants.getInventoryType(itemId) == MapleInventoryType.EQUIP) {
-                    chance *= 10;
-                }
-
-                MonsterDropEntry entry = new MonsterDropEntry(
-                        itemId,
-                        chance,
+                toProcess.add(new TempDropEntry(
+                        rs.getInt("dropperid"),
+                        rs.getInt("itemid"),
+                        rs.getInt("chance"),
                         rs.getInt("minimum_quantity"),
                         rs.getInt("maximum_quantity"),
-                        rs.getInt("questid"));
+                        rs.getInt("questid")
+                ));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching drops from database: " + e);
+            return;
+        }
 
-                // Interning: share identical drop entries
-                MonsterDropEntry shared = interner.get(entry);
-                if (shared == null) {
-                    interner.put(entry, entry);
-                    shared = entry;
-                }
+        // Step 2: In-memory processing (Safe for Lazy Loading in MapleItemInformationProvider)
+        for (TempDropEntry tmp : toProcess) {
+            int monsterId = tmp.dropperId;
+            int itemId = tmp.itemId;
 
-                tempDrops.computeIfAbsent(monsterId, k -> new ArrayList<>()).add(shared);
+            // Validation: Skip invalid items (may trigger loadItemData -> opens NEW connection)
+            if (itemId != 0 && !ii.itemExists(itemId)) {
+                continue;
             }
 
-            // Post-processing: Add mesos if missing
-            for (Map.Entry<Integer, List<MonsterDropEntry>> entry : tempDrops.entrySet()) {
-                int monsterId = entry.getKey();
-                List<MonsterDropEntry> mobDrops = entry.getValue();
-                
-                boolean hasMeso = false;
-                for (MonsterDropEntry d : mobDrops) {
-                    if (d.itemId == 0) {
-                        hasMeso = true;
-                        break;
-                    }
+            int chance = tmp.chance;
+            if (GameConstants.getInventoryType(itemId) == MapleInventoryType.EQUIP) {
+                chance *= 10;
+            }
+
+            MonsterDropEntry entry = new MonsterDropEntry(
+                    itemId,
+                    chance,
+                    tmp.min,
+                    tmp.max,
+                    tmp.questId);
+
+            // Interning: share identical drop entries
+            MonsterDropEntry shared = interner.get(entry);
+            if (shared == null) {
+                interner.put(entry, entry);
+                shared = entry;
+            }
+
+            tempDrops.computeIfAbsent(monsterId, k -> new ArrayList<>()).add(shared);
+        }
+
+        // Step 3: Post-processing and instance binding
+        for (Map.Entry<Integer, List<MonsterDropEntry>> entry : tempDrops.entrySet()) {
+            int monsterId = entry.getKey();
+            List<MonsterDropEntry> mobDrops = entry.getValue();
+
+            boolean hasMeso = false;
+            for (MonsterDropEntry d : mobDrops) {
+                if (d.itemId == 0) {
+                    hasMeso = true;
+                    break;
                 }
-                
-                if (!hasMeso) {
-                    MapleMonsterStats stats = MapleLifeFactory.getMonsterStats(monsterId);
-                    if (stats != null) {
-                        addMeso(stats, mobDrops);
-                    }
-                }
-                List<MonsterDropEntry> unmodifiableDrops = Collections.unmodifiableList(mobDrops);
-                drops.put(monsterId, unmodifiableDrops);
-                
+            }
+
+            if (!hasMeso) {
                 MapleMonsterStats stats = MapleLifeFactory.getMonsterStats(monsterId);
                 if (stats != null) {
-                    stats.setDrops(unmodifiableDrops);
+                    addMeso(stats, mobDrops);
                 }
             }
+            List<MonsterDropEntry> unmodifiableDrops = Collections.unmodifiableList(mobDrops);
+            drops.put(monsterId, unmodifiableDrops);
 
-        } catch (SQLException e) {
-            System.err.println("Error loading all drops: " + e);
+            MapleMonsterStats stats = MapleLifeFactory.getMonsterStats(monsterId);
+            if (stats != null) {
+                stats.setDrops(unmodifiableDrops);
+            }
         }
     }
+
+    // Temporary helper class for memory-safe loading
+    private static class TempDropEntry {
+        int dropperId, itemId, chance, min, max, questId;
+        TempDropEntry(int d, int i, int c, int mn, int mx, int q) {
+            this.dropperId = d; this.itemId = i; this.chance = c; this.min = mn; this.max = mx; this.questId = q;
+        }
+    }
+
 
     public List<MonsterDropEntry> retrieveDrop(final int monsterId) {
         return drops.get(monsterId);

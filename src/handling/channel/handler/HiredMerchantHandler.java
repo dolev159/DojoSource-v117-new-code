@@ -201,7 +201,7 @@ public class HiredMerchantHandler {
                 }
                 chr.gainMeso(pack.getMesos(), false);
                 for (Item item : pack.getItems()) {
-                    MapleInventoryManipulator.addFromDrop(c, item, false);
+                    MapleInventoryManipulator.addFromDrop(c, item, false, false);
                 }
                 c.getSession().write(PlayerShopPacket.merchItem_Message(32));
                 chr.setConversation(0);

@@ -47,7 +47,7 @@ function start(mode, type, selection) {
 			qm.gainItem(1052444, 1);
 			qm.gainItem(1302077, 1);
 			qm.resetStats(35, 4, 4, 4);
-			qm.getPlayer().gainSP(1, 0);
+			qm.getPlayer().gainSP(1, 3);
 			qm.gainEquip(1098000, -10);
 			qm.getPlayer().changeJob(5100);
 			Packages.server.quest.MapleQuest.getInstance(20036).forceComplete(qm.getPlayer(), qm.getNpc());

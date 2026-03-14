@@ -7,6 +7,8 @@
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(21745)).getStatus() > 1 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(21747)).getStatus() < 2) {
 		pi.getPlayer().changeMap(pi.getMap(925040000), pi.getMap(925040000).getPortal(2)); //武陵道場後路
+		return true;
 		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It's a nondescript green flag."));
 		return false;
 }

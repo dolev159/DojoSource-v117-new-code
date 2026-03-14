@@ -12,10 +12,14 @@ function enter(pi) {
 		em.startInstance(pi.getPlayer());
 		return false;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "This field has already been taken by someone. Please try again later, or try a different channel."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23210)).getStatus() > 1) {
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23210)).getStatus() > 1 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23211)).getStatus() < 2) {
+		pi.getPlayer().changeMap(pi.getMap(931050110), pi.getMap(931050110).getPortal(1)); //艾德斯塔公園噴水台附近2
+		return true;
+		}
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23213)).getStatus() > 0) {
 		pi.getPlayer().changeMap(pi.getMap(931050110), pi.getMap(931050110).getPortal(1)); //艾德斯塔公園噴水台附近2
 		return true;
 		}

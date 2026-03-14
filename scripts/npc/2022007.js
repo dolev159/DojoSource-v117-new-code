@@ -10,7 +10,7 @@ function start() {
 		return;
 		}
 	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.USE).getNumFreeSlot() < 1) {
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Use item inventory is full."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "Use item inventory is full."));
 		cm.dispose();
 		return;
 		}
@@ -21,7 +21,7 @@ function action(mode, type, selection) {
 	if (mode > 0) {
 		cm.gainItem(4032649, -1);
 		cm.gainItem(2022698, 1);
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("Ancient Glacial Water Obtained 1/1"));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("Ancient Glacial Water Obtained 1/1"));
 		}
 		cm.dispose();
 }

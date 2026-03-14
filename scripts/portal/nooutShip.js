@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "I shouldn't go this way."));
-	return false;
+	pi.getPlayer().changeMap(pi.getMap(914000420), pi.getMap(914000420).getPortal(1)); //燃燒的森林1
+	return true;
 }

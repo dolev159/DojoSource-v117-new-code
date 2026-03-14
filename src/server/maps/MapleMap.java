@@ -24,6 +24,7 @@ import client.MapleBuffStat;
 import client.MapleCharacter;
 import client.MapleClient;
 import client.MonsterFamiliar;
+import java.util.List;
 import client.MonsterStatus;
 import client.MonsterStatusEffect;
 import client.inventory.Equip;
@@ -52,7 +53,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -138,6 +138,9 @@ public final class MapleMap {
     private Map<String, Integer> environment = new LinkedHashMap<String, Integer>();
     private WeakReference<MapleCharacter> changeMobOrigin = null;
     private server.events.EventInstance eventInstance = null;
+    private long lastPlayerLeftTime = 0;
+    private static final java.util.concurrent.atomic.AtomicInteger itemsClearedGlobal = new java.util.concurrent.atomic.AtomicInteger(0);
+    private static long lastCleanupLogTime = System.currentTimeMillis();
 
     public MapleMap(final int mapid, final int channel, final int returnMapId, final float monsterRate) {
         this.mapid = mapid;
@@ -616,6 +619,12 @@ public final class MapleMap {
         monster.killed();
         if (monster.getStats().isBoss() && eventInstance != null) {
             server.events.RewardManager.getInstance(eventInstance).startProtectionTimer();
+        }
+        if (instanceid != -1) {
+            server.pqs.MaplePQInstance pqi = handling.world.World.getPQEngine().getInstance(instanceid);
+            if (pqi != null) {
+                pqi.getHandler().onMonsterKilled(pqi, monster);
+            }
         }
         final MapleSquad sqd = getSquadByMap();
         final boolean instanced = sqd != null || monster.getEventInstance() != null || getEMByMap() != null;
@@ -1126,16 +1135,81 @@ public final class MapleMap {
      * Managed by ServerTickManager.
      */
     public void updateMapItems(long now) {
+        if (ChannelServer.getInstance(channel).isShutdown()) {
+            return; // Safety Lock during maintenance/shutdown
+        }
+
+        final int playerSize = getCharactersSize();
+        if (playerSize == 0) {
+            if (lastPlayerLeftTime > 0 && (now - lastPlayerLeftTime) > 60000) {
+                // Deep Clean: If map is empty for 60s, reset it (mobs, reactors, drops)
+                resetFully(true);
+                lastPlayerLeftTime = 0; // Prevent repeated deep clean
+                return;
+            }
+        }
+
+        // Periodic Cleanup Logging (every 60 mins)
+        if (now - lastCleanupLogTime > 3600000) {
+            int cleared = itemsClearedGlobal.getAndSet(0);
+            tools.FileoutputUtil.logToFile("cleanup.log", "Total items cleared in the last 60 minutes: " + cleared + "\r\n");
+            lastCleanupLogTime = now;
+        }
+
         final List<MapleMapItem> items = getAllItemsThreadsafe();
         if (items.isEmpty()) {
             return;
         }
+
         for (MapleMapItem item : items) {
-            if (item.shouldExpire(now)) {
-                item.expire(this);
-            } else if (item.shouldFFA(now)) {
-                item.setDropType((byte) 2);
-                broadcastMessage(CField.dropItemFromMapObject(item, null, item.getTruePosition(), (byte) 2));
+            item.getLock().lock();
+            try {
+                if (item.isPickedUp()) {
+                    continue;
+                }
+
+                // FFA Handling (Private -> Public)
+                if (item.shouldFFA(now)) {
+                    item.setDropType((byte) 2); // Public drop
+                    broadcastMessage(CField.dropItemFromMapObject(item, null, item.getTruePosition(), (byte) 2));
+                    item.registerFFA(0); // Stop FFA checks
+                }
+
+                boolean shouldRemove = false;
+                long age = now - (item.nextExpiry - 120000); // Approximate spawn time
+
+                if (item.isBossDrop()) {
+                    continue; // Boss Rewards: Exempt
+                }
+
+                if (playerSize > 0) {
+                    if (item.isRarePlus()) {
+                        continue; // Rare/Epic/Unique/Scrolls: Never clear while players present
+                    }
+                    if (item.isPlayerDrop()) {
+                        if (age > 120000) { // Player-Dropped: 2 minutes
+                            shouldRemove = true;
+                        }
+                    } else if (item.isCommon()) {
+                        if (age > 180000) { // Common Drops: 3 minutes
+                            shouldRemove = true;
+                        }
+                    }
+                } else {
+                    // 0 players: wait for deep clean cycle or standard expiry
+                    if (item.shouldExpire(now)) {
+                        shouldRemove = true;
+                    }
+                }
+
+                if (shouldRemove) {
+                    item.setPickedUp(true);
+                    broadcastMessage(CField.removeItemFromMap(item.getObjectId(), 0, 0));
+                    removeMapObject(item);
+                    itemsClearedGlobal.incrementAndGet();
+                }
+            } finally {
+                item.getLock().unlock();
             }
         }
     }
@@ -2039,6 +2113,9 @@ public final class MapleMap {
                 c.getSession().write(CField.dropItemFromMapObject(mdrop, dropper.getTruePosition(), position, (byte) 1));
             }
         });
+        if (dropper instanceof MapleMonster && ((MapleMonster) dropper).getStats().isBoss()) {
+            mdrop.setBossDrop(true);
+        }
 
         mdrop.registerExpire(120000);
         if (droptype == 0 || droptype == 1) {
@@ -2060,6 +2137,9 @@ public final class MapleMap {
                 }
             }
         });
+        if (mob != null && mob.getStats().isBoss()) {
+            mdrop.setBossDrop(true);
+        }
 //	broadcastMessage(CField.dropItemFromMapObject(mdrop, mob.getTruePosition(), dropPos, (byte) 0));
 
         mdrop.registerExpire(120000);
@@ -2153,7 +2233,7 @@ public final class MapleMap {
                 final MapleReactor react = (MapleReactor) o;
 
                 if (react.getReactorType() == 100) {
-                    if (item.getItemId() == GameConstants.getCustomReactItem(react.getReactorId(), react.getReactItem().getLeft()) && react.getReactItem().getRight() == item.getQuantity()) {
+                    if (item.getItemId() == GameConstants.getCustomReactItem(react.getReactorId(), (int) react.getReactItem().getLeft(), getId()) && react.getReactItem().getRight() == item.getQuantity()) {
                         if (react.getArea().contains(drop.getTruePosition())) {
                             if (!react.isTimerActive()) {
                                 MapTimer.getInstance().schedule(new ActivateItemReactor(drop, react, c), 5000);
@@ -2222,7 +2302,7 @@ public final class MapleMap {
                 if (item.getMeso() > 0) {
                     chr.gainMeso(item.getMeso(), false);
                 } else {
-                    MapleInventoryManipulator.addFromDrop(chr.getClient(), item.getItem(), false);
+                    MapleInventoryManipulator.addFromDrop(chr.getClient(), item.getItem(), false, false);
                 }
                 removeMapObject(item);
             }
@@ -2294,6 +2374,7 @@ public final class MapleMap {
         } finally {
             charactersLock.writeLock().unlock();
         }
+        lastPlayerLeftTime = 0; // Reset deep clean timer
         chr.setChangeTime();
         if (GameConstants.isTeamMap(mapid) && !chr.inPVP()) {
             chr.setTeam(getAndSwitchTeam() ? 0 : 1);
@@ -2831,6 +2912,9 @@ public final class MapleMap {
                 }
             }
             chr.leaveMap(this);
+        }
+        if (getCharactersSize() == 0) {
+            lastPlayerLeftTime = System.currentTimeMillis();
         }
     }
 

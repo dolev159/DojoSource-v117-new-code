@@ -5,6 +5,7 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(220030400), pi.getMap(220030400).getPortal(0)); //玩具工廠&amp;lt;B工程4&gt;
+	pi.getPlayer().removeAll(4031092);
+	pi.getPlayer().changeMap(pi.getMap(220020000), pi.getMap(220020000).getPortal(0)); //玩具工廠&amp;lt;B工程4&gt;
 	return true;
 }

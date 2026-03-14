@@ -6,9 +6,15 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(21734)).getStatus() == 1) {
-		pi.getPlayer().changeMap(pi.getMap(910510100), pi.getMap(910510100).getPortal(1)); //傀儡師秘密通路
-		return true;
+		var em = pi.getEventManager("q21734");
+		var prop = em.getProperty("state");
+	if (prop == null || prop == 0) {
+		em.startInstance(pi.getPlayer());
+		return false;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Something seems to be blocking its way."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "This place looks really dark and damp... Maybe you should try later."));
+		return false;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It seems to be locked. You can't get in."));
 		return false;
 }

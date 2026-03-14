@@ -52,6 +52,7 @@ public class CWvsContext {
         for (final Entry<MapleStat, Integer> statupdate : mystats.entrySet()) {
             switch (statupdate.getKey()) {
                 case SKIN:
+                case LEVEL:
                 case FATIGUE:
                 case BATTLE_RANK:
                 case ICE_GAGE:
@@ -62,7 +63,6 @@ public class CWvsContext {
                 case DEX:
                 case INT:
                 case LUK:
-                case LEVEL:
                     mplew.writeShort(((Integer) statupdate.getValue()).shortValue());
                     break;
                 case AVAILABLEAP:

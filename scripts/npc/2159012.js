@@ -53,8 +53,8 @@ function action(mode, type, selection) {
 		break;
 	case 9:
 		cm.dispose();
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroLock(1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.trembleEffect(0, 500));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction4.img/Resistance/TalkInLab"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroLock(1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.trembleEffect(0, 500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction4.img/Resistance/TalkInLab"));
 }
 }

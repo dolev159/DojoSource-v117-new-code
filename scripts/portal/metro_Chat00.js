@@ -6,5 +6,5 @@
 
 function enter(pi) {
 	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction2.img/metro/Im"));
-	return true;
+	return false;
 }

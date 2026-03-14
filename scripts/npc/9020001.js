@@ -57,7 +57,7 @@ function action2(mode, type, selection) {
 			return;
 			}
 			cm.sendNext("Congratulations on clearing this stage! I will create a portal that will lead you to the next one. You're on a time limit, so please hurry! Good luck!");
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("gate", 2));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("gate", 2));
 			eim.setProperty("stage1", 1);
 			cm.dispose();
 }
@@ -91,14 +91,14 @@ function action3(mode, type, selection) {
 			y = x;
 		if (y == eim.getProperty("stage2b")) {
 			eim.setProperty("stage2", 1);
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("gate", 2));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("gate", 2));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("quest/party/clear", 3));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("Party1/Clear", 4));
 			cm.dispose();
 			return;
 			}
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/wrong_kor", 3));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Failed", 4));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("quest/party/wrong_kor", 3));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("Party1/Failed", 4));
 			cm.dispose();
 }
 }
@@ -127,9 +127,9 @@ function action4(mode, type, selection) {
 
 		if (y == eim.getProperty("stage3b")) {
 			eim.setProperty("stage3", 1);
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("gate", 2));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("gate", 2));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("quest/party/clear", 3));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("Party1/Clear", 4));
 			cm.dispose();
 			return;
 			}
@@ -138,10 +138,10 @@ function action4(mode, type, selection) {
 		if (eim.getProperty("stage3b")[i] == 1 && eim.getProperty("stage3b")[i] == y[i]) {
 			hui++;
 			}
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.serverNotice(6, "Currently, you've selected " + hui + " answer platforms."));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.getTopMsg("Currently, you've selected " + hui + " answer platforms."));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/wrong_kor", 3));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Failed", 4));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Currently, you've selected " + hui + " answer platforms."));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.MaplePacketCreator.getTopMsg("Currently, you've selected " + hui + " answer platforms."));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("quest/party/wrong_kor", 3));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("Party1/Failed", 4));
 			cm.dispose();
 			return;
 			}
@@ -262,13 +262,13 @@ function action13(mode, type, selection) {
 			cm.getPlayer().removeAll(4001007);
 
 			eim.setProperty("stage1b", eim.getProperty("stage1b") == null ? 1 : parseInt(eim.getProperty("stage1b")) + 1);
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CWvsContext.getTopMsg("You've completed " + parseInt(eim.getProperty("stage1b")) + " passes."));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.MaplePacketCreator.getTopMsg("You've completed " + parseInt(eim.getProperty("stage1b")) + " passes."));
 
 		if (eim.getProperty("stage1b") == cm.getPlayer().getMap().getCharacters().size() - 1) {
 			eim.setProperty("stage1a", 2);
 			cm.getPlayer().getMap().startMapEffect("All of the individual missions have been cleared. The Party Leader should come talk to me.", 5120017);
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("quest/party/clear", 3));
-			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.CField.environmentChange("Party1/Clear", 4));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("quest/party/clear", 3));
+			cm.getPlayer().getMap().broadcastMessage(Packages.tools.packet.EtcPacket.environmentChange("Party1/Clear", 4));
 			}
 			cm.dispose();
 			return;

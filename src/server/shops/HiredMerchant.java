@@ -147,7 +147,7 @@ public class HiredMerchant extends AbstractPlayerStore {
                 if (saveItems()) {
                     // DB Successful: Finalize memory updates for player
                     player.gainMeso(-totalCost, false);
-                    MapleInventoryManipulator.addFromDrop(c, newItem, false);
+                    MapleInventoryManipulator.addFromDrop(c, newItem, false, false);
                     bought.add(new BoughtItem(newItem.getItemId(), quantity, totalCost, player.getName()));
 
                     MapleCharacter owner = getMCOwnerWorld();

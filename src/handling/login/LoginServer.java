@@ -12,11 +12,11 @@ GNU Affero General Public License.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package handling.login;
 
@@ -241,5 +241,29 @@ public class LoginServer {
     public static final void setOn() {
         finishedShutdown = false;
     }
-    
+
+    public static void forceDisconnect(final int accId) {
+        for (ChannelServer cs : ChannelServer.getAllInstances()) {
+            MapleCharacter chr = cs.getPlayerStorage().getCharacterByAccountId(accId);
+            if (chr != null) {
+                chr.getClient().disconnect(true, false);
+                chr.getClient().getSession().close();
+            }
+        }
+        if (CashShopServer.getPlayerStorage() != null) {
+            MapleCharacter chr = CashShopServer.getPlayerStorage().getCharacterByAccountId(accId);
+            if (chr != null) {
+                chr.getClient().disconnect(true, false);
+                chr.getClient().getSession().close();
+            }
+        }
+        // Reset loggedin state in DB for this account
+        try (Connection con = DatabaseConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement("UPDATE accounts SET loggedin = 0 WHERE id = ?")) {
+            ps.setInt(1, accId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
+        }
+    }
 }

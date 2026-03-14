@@ -147,7 +147,8 @@ public class MonsterStatusEffect {
 		return 2311005;
 	    case NINJA_AMBUSH: // Not used
 		return 4121004;
-
+            default:
+                break;
 	}
 	return 0;
     }

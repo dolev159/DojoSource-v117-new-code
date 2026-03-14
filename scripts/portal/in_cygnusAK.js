@@ -5,10 +5,6 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(20757)).getStatus() == 1 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(20757)).getMobKills(9300304) < 1) {
-		pi.openNpc(1104209);
-		return true;
-		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You cannot access this area."));
-		return false;
+	pi.openNpc(1104209);
+	return true;
 }

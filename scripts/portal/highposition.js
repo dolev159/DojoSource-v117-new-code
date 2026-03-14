@@ -4,7 +4,7 @@
 	描述:	102000000
 */
 
-var map = Array(101020300, 102000000, 103000000, 120000000, 200080100);
+var map = [101020300, 102000000, 103000000, 120000000, 200080100];
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(29004)).getStatus() < 1) {
@@ -26,9 +26,14 @@ function enter(pi) {
 		pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(27018)).setCustomData(parseInt(y) + 1);
 		pi.getPlayer().updateQuest(pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(27018)), true);
 
+	if (y < 4) {
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("" + (parseInt(y) + 1) + "/5 Regions Completed"));
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("The One Who's Touched the Sky title in progress."));
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The One Who's Touched the Sky title in progress. " + (parseInt(y) + 1) + "/5 Regions Completed"));
+		return false;
 		}
-		return true;
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("Earned The One Who's Touched the Sky title!"));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You have earned <The One Who's Touched the Sky> title. Please see NPC Dalair to receive your Medal."));
+		}
+		return false;
 }

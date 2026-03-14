@@ -4,23 +4,16 @@ import client.MapleClient;
 import handling.MapleServerHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateEvent;
+import constants.ServerConstants;
 import tools.MapleAESOFB;
 import server.Randomizer;
 import tools.packet.LoginPacket;
-import constants.ServerConstants;
-import io.netty.util.AttributeKey;
 
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        // Start IP checking (simplified for now, mimicking
-        // MapleServerHandler.sessionOpened)
-        String address = ctx.channel().remoteAddress().toString().split(":")[0];
-        // In a real implementation, you'd integrate the tracker/BlockedIP logic here.
+        String address = ctx.channel().remoteAddress().toString();
 
         final byte ivRecv[] = new byte[] { (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255),
                 (byte) Randomizer.nextInt(255), (byte) Randomizer.nextInt(255) };
@@ -30,7 +23,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         final MapleClient client = new MapleClient(
                 new MapleAESOFB(ivSend, (short) (0xFFFF - ServerConstants.MAPLE_VERSION)),
                 new MapleAESOFB(ivRecv, ServerConstants.MAPLE_VERSION),
-                null // We'll need to update MapleClient to handle Netty Channel or null-Mina Session
+                (io.netty.channel.Channel) ctx.channel()
         );
         client.setNettyChannel(ctx.channel());
 
@@ -70,26 +63,15 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         MapleClient client = ctx.channel().attr(MapleClient.CLIENT_KEY).get();
 
         if (client != null) {
-            // Processing packet using the existing logic in MapleServerHandler
-            // We might need to refactor handlePacket slightly or just call it
             MapleServerHandler.handlePacket(packet, client);
         }
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
-            IdleStateEvent e = (IdleStateEvent) evt;
-            if (e.state() == IdleState.READER_IDLE || e.state() == IdleState.WRITER_IDLE) {
-                ctx.close();
-            }
-        }
-    }
-
-    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.err.println("[Netty] SILENT EXCEPTION CAUGHT:");
-        cause.printStackTrace();
+        if (!(cause instanceof java.io.IOException)) {
+            // cause.printStackTrace();
+        }
         ctx.close();
     }
 }

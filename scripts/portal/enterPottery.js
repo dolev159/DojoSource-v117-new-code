@@ -6,10 +6,10 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(22408)).getStatus() != 1) {
-		return true;
+		return false;
 		}
 	if (pi.getMap(925110000).getCharacters().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
 		pi.getMap(925110000).resetFully();

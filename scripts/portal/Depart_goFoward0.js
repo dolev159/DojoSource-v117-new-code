@@ -5,7 +5,6 @@
 */
 
 function enter(pi) {
-	var map = pi.getPlayer().getMap().getId() + 10;
-	pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(1));
+	pi.getPlayer().changeMap(pi.getMap(pi.getPlayer().getMap().getId() + 10), pi.getMap(pi.getPlayer().getMap().getId() + 10).getPortal(1));
 	return true;
 }

@@ -1,20 +1,16 @@
+/*
+	名字:	女皇之路
+	地圖:	演武场入口
+	描述:	130020000
+*/
+
+var map = [913070330, 913070340, 913070340];
+var quest = [20774, 20775, 20776];
+
 function enter(pi) {
-    var map = 0;
-    if (pi.getQuestStatus(20774) == 1) {
-        map = 913070330;
-    } else if (pi.getQuestStatus(20775) == 1 || pi.getQuestStatus(20776) == 1) {
-        map = 913070340;
-    }
-    if (map > 0) {
-        if (pi.getPlayerCount(map) == 0) {
-            var mapp = pi.getMap(map);
-            mapp.resetFully();
-            mapp.respawn(true);
-            pi.warp(map, 0);
-        } else {
-            pi.playerMessage("Someone is already in this map.");
-        }
-    } else {
-        pi.playerMessage("You may not enter yet.");
-    }
+	for (var i = 0; i < quest.length; i ++)
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(quest[i])).getStatus() == 1) {
+		pi.getPlayer().changeMap(pi.getMap(map[i]), pi.getMap(map[i]).getPortal(1));
+		}
+		return false;
 }

@@ -35,7 +35,7 @@ function action0(mode, type, selection) {
 	case 1:
 		if (cm.getText() == "Francis is a genius Puppeteer!") {
 		if (cm.getMap(910510000).getCharacters().size() > 0) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Cannot enter the Puppeteer's Cave. Better try again a little later."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Cannot enter the Puppeteer's Cave. Better try again a little later."));
 			cm.dispose();
 			return;
 			}

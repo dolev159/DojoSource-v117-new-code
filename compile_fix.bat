@@ -1,5 +1,5 @@
 @echo off
-set cp=dist\*;dist\asm-util-9.7.jar
+set cp=dist\*;dist\lib\*;dist\asm-util-9.7.jar
 if not exist "out\classes" mkdir "out\classes"
 echo Compiling modified Java files...
 javac -encoding UTF-8 -d out\classes -cp "%cp%;src" src\client\MapleClient.java src\handling\login\handler\CharLoginHandler.java src\handling\channel\handler\InterServerHandler.java src\tools\packet\CField.java src\tools\packet\LoginPacket.java src\handling\netty\NettyServerHandler.java src\handling\login\handler\AutoRegister.java

@@ -41,33 +41,21 @@ function action(mode, type, selection) {
 function action0(mode, type, selection) {
 	switch (status) {
 	case 1:
-		if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
-			cm.sendOk("You can't enter alone. lf you want to enter, the party leader must talk to me. Ask your party leader to do so.");
+		if (cm.getPlayer().getParty() == null) {
+			cm.sendOk("You can't enter alone. You need a party.");
 			cm.dispose();
 			return;
-			}
-			party = cm.getPlayer().getParty().getMembers();
-			for (var i = 0; i < party.size(); i++)
-		if (party.size() < 3 || party.get(i).getLevel() < 70) {
-			cm.sendNext("You cannot enter because your party doesn't have 3 members. You need 3 party members at Lv.70 or higher to enter, so double-check and talk to me again.");
+		}
+		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+			cm.sendOk("The party leader must talk to me.");
 			cm.dispose();
 			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getMapid() != 200080101) {
-			cm.sendOk("One of your party members is in a different map. All party members must start together.");
-			cm.dispose();
-			return;
-			}
-			var em = cm.getEventManager("OrbisPQ");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("Someone is already attempting the PQ. Please wait for them to finish, or find another channel.");
-			cm.dispose();
+		}
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Remnant of the Goddess", cm)) {
+			cm.sendNext("Your party does not meet the requirements or someone is already attempting the PQ.");
+		}
+		cm.dispose();
+		break;
 }
 }
 

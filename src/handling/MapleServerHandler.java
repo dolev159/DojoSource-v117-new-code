@@ -84,6 +84,13 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
     private static final HashMap<String, FileWriter> logIPMap = new HashMap<String, FileWriter>();
  // Note to Zero: Use an enumset. Don't iterate through an array.
     private static final EnumSet<RecvPacketOpcode> blocked = EnumSet.noneOf(RecvPacketOpcode.class), sBlocked = EnumSet.noneOf(RecvPacketOpcode.class);
+    private static final Map<Short, RecvPacketOpcode> recvOpcodeMap = new HashMap<>();
+
+    static {
+        for (RecvPacketOpcode recv : RecvPacketOpcode.values()) {
+            recvOpcodeMap.put(recv.getValue(), recv);
+        }
+    }
 
     public static void reloadLoggedIPs() {
 //        IPLoggingLock.writeLock().lock();
@@ -102,8 +109,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
             }
         }
         logIPMap.clear();
-        try {
-            Scanner sc = new Scanner(loggedIPs);
+        try (Scanner sc = new Scanner(loggedIPs)) {
             while (sc.hasNextLine()) {
                 String line = sc.nextLine().trim();
                 if (line.length() > 0) {
@@ -293,35 +299,39 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
     public void sessionOpened(final IoSession session) throws Exception {
         // Start of IP checking
         final String address = session.getRemoteAddress().toString().split(":")[0];
+        final String IP = address.substring(address.indexOf('/') + 1, address.length());
 
-        if (BlockedIP.contains(address)) {
-            session.close();
-            return;
-        }
-        final Pair<Long, Byte> track = tracker.get(address);
-
-        byte count;
-        if (track == null) {
-            count = 1;
+        if (IP.equals("127.0.0.1") || IP.equals("localhost") || IP.equals("0:0:0:0:0:0:0:1")) {
+             // Localhost Whitelist: Omni-bypass for security filters
         } else {
-            count = track.right;
 
-            final long difference = System.currentTimeMillis() - track.left;
-            if (difference < 2000) { // Less than 2 sec
-                count++;
-            } else if (difference > 20000) { // Over 20 sec
-                count = 1;
-            }
-            if (count >= 10) {
-                BlockedIP.add(address);
-                tracker.remove(address); // Cleanup
+            if (BlockedIP.contains(address)) {
                 session.close();
                 return;
             }
+            byte count;
+            final Pair<Long, Byte> track = tracker.get(address);
+            if (track == null) {
+                count = 1;
+            } else {
+                count = track.right;
+
+                final long difference = System.currentTimeMillis() - track.left;
+                if (difference < 2000) { // Less than 2 sec
+                    count++;
+                } else if (difference > 20000) { // Over 20 sec
+                    count = 1;
+                }
+                if (count >= 10) {
+                    BlockedIP.add(address);
+                    tracker.remove(address); // Cleanup
+                    session.close();
+                    return;
+                }
+            }
+            tracker.put(address, new Pair<Long, Byte>(System.currentTimeMillis(), count));
         }
-        tracker.put(address, new Pair<Long, Byte>(System.currentTimeMillis(), count));
         // End of IP checking.
-        String IP = address.substring(address.indexOf('/') + 1, address.length());
         if (LoginServer.isShutdown()) {
             session.close();
             return;
@@ -432,37 +442,27 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
     }
 
     public static void handlePacket(final byte[] message, final MapleClient c) {
-        // [Anti-Flood] 1. Immediately drop the packet and disconnect the violator natively at the pipeline level
-        if (c.checkPacketSpam()) {
-            System.err.println("[Anti-DC] Packet Injection/Flooding detected from " + (c.getAccountName() != null ? c.getAccountName() : "Unknown Account"));
-            c.getSession().close();
-            return;
-        }
-
         final LittleEndianAccessor slea = new LittleEndianAccessor(new ByteArrayByteStream(message));
         if (slea.available() < 2) {
             return;
         }
         final short header_num = slea.readShort();
+        final RecvPacketOpcode recv = recvOpcodeMap.get(header_num);
 
-        for (final RecvPacketOpcode recv : RecvPacketOpcode.values()) {
-            if (recv.getValue() == header_num) {
-                if (recv.NeedsChecking()) {
-                    if (!c.isLoggedIn()) {
-                        return;
-                    }
+        if (recv != null) {
+            if (recv.NeedsChecking()) {
+                if (!c.isLoggedIn()) {
+                    return;
                 }
-                try {
-                    handlePacket(recv, slea, c);
-                } catch (Throwable t) { // [Anti-DC] 2. Upgraded to Throwable to trap unhandled critical JVM errors
-                    FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, t);
-                    FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Packet: " + header_num + "\n" + slea.toString(true));
+            }
+            try {
+                handlePacket(recv, slea, c);
+            } catch (Throwable t) {
+                FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, t);
+                FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Packet: " + header_num + "\n" + slea.toString(true));
 
-                    // [Anti-DC] 3. Disconnect Malicious Clients
-                    System.err.println("[Anti-DC] Malformed packet (DC Hack) caused exception. Disconnecting " + (c.getAccountName() != null ? c.getAccountName() : "Unknown Account"));
-                    c.getSession().close();
-                }
-                return;
+                System.err.println("[Anti-DC] Malformed packet caused exception. Disconnecting " + c.getSessionIPAddress());
+                c.getSession().close();
             }
         }
     }
@@ -507,8 +507,17 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                 CharLoginHandler.ServerListRequest(c);
                 break;
             case CLIENT_HELLO:
-                if (slea.readByte() != 8 || slea.readShort() != ServerConstants.MAPLE_VERSION || !String.valueOf(slea.readShort()).equals(ServerConstants.MAPLE_PATCH)) {
-                    c.getSession().close();
+                final byte locale = slea.readByte();
+                final short version = slea.readShort();
+                final String patch = String.valueOf(slea.readShort());
+                System.out.println("[DEBUG] CLIENT_HELLO locale: " + locale + ", version: " + version + ", patch: " + patch);
+                if (locale != 8 || version != ServerConstants.MAPLE_VERSION || !patch.equals(ServerConstants.MAPLE_PATCH)) {
+                    if (c.isLocalhost()) {
+                        System.out.println("[Security] Localhost Handshake Slack: Proceeding despite version/locale mismatch.");
+                    } else {
+                        System.out.println("[DEBUG] CLIENT_HELLO failed validation. Expected locale 8, version " + ServerConstants.MAPLE_VERSION + ", patch " + ServerConstants.MAPLE_PATCH);
+                        c.getSession().close();
+                    }
                 }
                 break;
             case CHARLIST_REQUEST:

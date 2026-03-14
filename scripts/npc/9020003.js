@@ -41,32 +41,21 @@ function action(mode, type, selection) {
 function action0(mode, type, selection) {
 	switch (status) {
 	case 1:
-		if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+		if (cm.getPlayer().getParty() == null) {
 			cm.sendOk("Creatures on the Aqua Road have become enraged. It's not safe to go in by yourself. Have your party leader speak to me if you want to enter as a group.");
 			cm.dispose();
 			return;
-			}
-			party = cm.getPlayer().getParty().getMembers();
-		if (party.size() < 2) {
-			cm.sendNext("You cannot enter because your party doesn't have 2 members. You need 2 party members at Lv. 120 or higher to enter, so double-check and talk to me again.");
+		}
+		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+			cm.sendOk("Creatures on the Aqua Road have become enraged. It's not safe to go in by yourself. Have your party leader speak to me if you want to enter as a group.");
 			cm.dispose();
 			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getMapid() != 923040000) {
-			cm.sendOk("One of your party members is in a different map. All party members must go together.");
-			cm.dispose();
-			return;
-			}
-			var em = cm.getEventManager("Kenta");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("Some other party has already gotten in to try clearing the quest. Please try again later.");
-			cm.dispose();
+		}
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Kenta in Danger", cm)) {
+			cm.sendNext("Your party does not meet the requirements or another party is already attempting this quest. Please try again later.");
+		}
+		cm.dispose();
+		break;
 }
 }
 

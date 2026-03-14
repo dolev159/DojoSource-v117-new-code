@@ -72,8 +72,6 @@ function action1(mode, type, selection) {
 		if (cm.getPlayer().getMeso() > 5000) {
 			cm.gainMeso(-5000);
 			cm.giveBuff(selection < 1 ? 80001027 : 80001028, 1);
-			cm.getMap(200110001).setTimeLimit(selection < 1 ? 20 : 10);
-			cm.getMap(200110001).setForcedReturnMap(104020110);
 			cm.getPlayer().changeMap(cm.getMap(200110001), cm.getMap(200110001).getPortal(0));
 			cm.dispose();
 			return;

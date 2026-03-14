@@ -1,40 +1,43 @@
-var status = 0;
+/*
+	名字:	楊恩
+	地圖:	黃金寺廟
+	描述:	950100000
+*/
 
 function start() {
-	status = -1;
-	action(1, 0, 0);
+	var chat = "歡迎來到黃金寺廟，你是否已持有參觀卷，我這裡可以提供優惠的價格。#b";
+	chat += "\r\n#L0#\t\t使用10张#z4032605#兌換#z4001431#";
+	chat += "\r\n#L1##v4001431##t4001431##k#b1000000楓幣";
+	chat += "\r\n#L2##v4001432##t4001432##k#b3000000楓幣（1小時內無限制入場）";
+	cm.sendSimple(chat);
 }
 
 function action(mode, type, selection) {
-	if (mode != 1) {
-		cm.dispose();
-	} else {
-		status++;
-		if(status == 0){
-			cm.sendSimple("Welcome to Golden Temple! I can issue you a Golden Ticket.\r\n\r\n#b#L0#Golden Ticket for 2,000,000 meso (one time use)#l\r\n#L1#Premium Golden Ticket for 50,000,000 meso#l#k");
-		} else if (status == 1) {
-			if (selection == 0) {
-				if (cm.getMeso() < 2000000) {
-					cm.sendOk("You do not have enough meso.");
-				} else if (!cm.canHold(4001431) || cm.haveItem(4001431)) {
-					cm.sendOk("Either you have this already or can't hold it.");
-				} else {
-					cm.gainMeso(-2000000);
-					cm.gainItem(4001431,1);
-					cm.sendOk("Thank you.");
-				}
-			} else {
-				if (cm.getMeso() < 50000000) {
-					cm.sendOk("You do not have enough meso.");
-				} else if (!cm.canHold(4001432) || cm.haveItem(4001432)) {
-					cm.sendOk("Either you have this already or can't hold it.");
-				} else {
-					cm.gainMeso(-50000000);
-					cm.gainItem(4001432,1);
-					cm.sendOk("Thank you.");
-				}
+	if (mode > 0) {
+		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "其它道具視窗的欄位不足"));
+			cm.dispose();
+			return;
+			}
+		if (selection == 0) {
+			if (cm.getPlayer().itemQuantity(4032605) < 10) {
+			cm.sendOk("很抱歉，兌換#t4001431#需要10張#t4001431#。");
+			cm.dispose();
+			return;
+			}
+			cm.gainItem(4032605, -10);
+			cm.gainItem(4001431, 1);
+			cm.sendOk("謝謝惠顧，希望你的旅途愉快。");
+			return;
+			}
+		if (cm.getPlayer().getMeso() < (selection == 1 ? 1000000 : 3000000)) {
+			cm.sendOk("很抱歉，請確定一下您有足夠的楓幣嗎？");
+			cm.dispose();
+			return;
+			}
+			cm.gainMeso(-(selection == 1 ? 1000000 : 3000000));
+			cm.gainItem(selection == 1 ? 4001431 : 4001432, 1, selection == 1 ? -1 : 1);
+			cm.sendOk("謝謝惠顧，希望你的旅途愉快。");
 			}
 			cm.dispose();
-		}
-	}
 }

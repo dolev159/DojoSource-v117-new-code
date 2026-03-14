@@ -6,12 +6,9 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Battle is in progress. Click the portal if you would like to exit."));
 		return false;
 		}
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31013)).getStatus() == 1) {
-		Packages.server.quest.MapleQuest.getInstance(31018).forceStart(pi.getPlayer(), 0, 1);
-		}
-		pi.getPlayer().changeMap(pi.getMap(200101400), pi.getMap(200101400).getPortal(1)); //進入競技場內部
+		pi.openNpc(2170007);
 		return true;
 }

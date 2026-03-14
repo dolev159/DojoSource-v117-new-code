@@ -5,10 +5,10 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getId() != 211070100) {
-		pi.openNpc(2161005);
-		return true;
+	if (pi.getPlayer().getMap().getId() != 211070000 && pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Battle is in progress. Click the portal if you would like to exit."));
+		return false;
 		}
-		pi.getPlayer().changeMap(pi.getMap(211060801), pi.getMap(211060801).getPortal(1)); //第五座塔樓
+		pi.openNpc(2161005);
 		return true;
 }

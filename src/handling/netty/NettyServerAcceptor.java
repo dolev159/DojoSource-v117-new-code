@@ -11,7 +11,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import java.net.InetSocketAddress;
 
 public class NettyServerAcceptor {
 
@@ -40,15 +39,16 @@ public class NettyServerAcceptor {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            // The Netty Pipeline Pipeline: Decoder -> Encoder -> Handler
+                            // Removed ReadTimeoutHandler per user request to prevent accidental disconnections
                             ch.pipeline().addLast("decoder", new NettyPacketDecoder());
                             ch.pipeline().addLast("encoder", new NettyPacketEncoder());
                             ch.pipeline().addLast("handler", new MaplePacketHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true) // Maintain persistent connection
-                    .childOption(ChannelOption.TCP_NODELAY, true); // Send packets immediately (disable Nagle)
+                    .childOption(ChannelOption.ALLOCATOR, io.netty.buffer.PooledByteBufAllocator.DEFAULT)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true);
 
             channelFuture = b.bind(port).sync();
             System.out.println("[Netty] Server listening on port " + port + (useEpoll ? " (using Native Epoll)" : " (using NIO)"));

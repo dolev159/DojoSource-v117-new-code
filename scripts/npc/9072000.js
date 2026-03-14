@@ -52,7 +52,7 @@ function action0(mode, type, selection) {
 		if ((selection < 2 && cm.getPlayer().getSkillLevel(80001027) != 1) || (selection > 1 && cm.getPlayer().getSkillLevel(80001028) != 1)) {
 			cm.getPlayer().changeSingleSkillLevel(Packages.client.SkillFactory.getSkill(selection < 2 ? 80001027 : 80001028), 1, 1, cm.getCurrentTime() + (((selection == 0 || selection == 2) ? 1 : 7) * 24 * 60 * 60 * 1000));
 			cm.gainMeso(-(selection < 1 ? 10000 : selection < 2 ? 50000 : selection < 3 ? 30000 : 150000));
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg(selection < 2 ? "Wooen Airplane obtained!" : "Red Airplane obtained!"));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg(selection < 2 ? "Wooen Airplane obtained!" : "Red Airplane obtained!"));
 			cm.dispose();
 			return;
 			}

@@ -5,8 +5,6 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1031)).getStatus() == 1) {
-		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("UI/tutorial.img/25"));
-		}
-		return false;
+	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("UI/tutorial.img/25"));
+	return false;
 }

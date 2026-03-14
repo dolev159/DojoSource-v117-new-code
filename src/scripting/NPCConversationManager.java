@@ -9,7 +9,6 @@
  as published by the Free Software Foundation. You may not use, modify
  or distribute this program under any other version of the
  GNU Affero General Public License.
- cm
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied wavrranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -93,15 +92,15 @@ import tools.packet.CWvsContext.InfoPacket;
 public class NPCConversationManager extends AbstractPlayerInteraction {
 
     private String getText;
-    private byte type; // -1 = NPC, 0 = start quest, 1 = end quest
+    private int type; // -1 = NPC, 0 = start quest, 1 = end quest
     private byte lastMsg = -1;
     public boolean pendingDisposal = false;
     private Invocable iv;
     private byte gmLevel;
     private Object client;
 
-    public NPCConversationManager(MapleClient c, int npc, int questid, byte type, Invocable iv) {
-        super(c, npc, questid);
+    public NPCConversationManager(MapleClient c, int npc, int questid, int npcObjectid, int type, Invocable iv) {
+        super(c, npc, questid, npcObjectid);
         this.type = type;
         this.iv = iv;
     }
@@ -118,7 +117,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         return id2;
     }
 
-    public byte getType() {
+    public int getType() {
         return type;
     }
 
@@ -140,6 +139,10 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
             eim.registerPlayer(c.getPlayer());
         }
         return eim;
+    }
+
+    public server.pqs.MaplePQEngine getPQEngine() {
+        return server.pqs.MaplePQEngine.getInstance();
     }
 
     /**
@@ -666,6 +669,10 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         MapleQuest.getInstance(idd).complete(getPlayer(), id);
     }
 
+    public void completeQuest(int idd, int selection) {
+        MapleQuest.getInstance(idd).complete(getPlayer(), id, selection);
+    }
+
     public void forfeitQuest(int idd) {
         MapleQuest.getInstance(idd).forfeit(getPlayer());
     }
@@ -702,6 +709,10 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         getPlayer().getQuestNAdd(MapleQuest.getInstance(id2)).setCustomData(customData);
     }
 
+    public int getQuestId() {
+        return id2;
+    }
+
     public int getMeso() {
         return getPlayer().getMeso();
     }
@@ -735,6 +746,11 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         getPlayer().changeSkillsLevel(newList);
         newList.clear();
         skills.clear();
+    }
+
+
+    public void getTutorialUI(String path) {
+        c.getSession().write(CField.NPCPacket.getTutorialUI(path));
     }
 
     public boolean hasSkill(int skillid) {
@@ -1535,7 +1551,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
     public boolean addFromDrop(Object statsSel) {
         if (statsSel instanceof Item) {
             final Item it = (Item) statsSel;
-            return MapleInventoryManipulator.checkSpace(getClient(), it.getItemId(), it.getQuantity(), it.getOwner()) && MapleInventoryManipulator.addFromDrop(getClient(), it, false);
+            return MapleInventoryManipulator.checkSpace(getClient(), it.getItemId(), it.getQuantity(), it.getOwner()) && MapleInventoryManipulator.addFromDrop(getClient(), it, false, false);
         }
         return false;
     }
@@ -1702,7 +1718,7 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
             item = eq.copy();
         }
         MapleInventoryManipulator.removeFromSlot(getClient(), inv, (short) slot, item.getQuantity(), false);
-        return MapleInventoryManipulator.addFromDrop(getClient(), item, false);
+        return MapleInventoryManipulator.addFromDrop(getClient(), item, false, false);
     }
 
     public boolean replaceItem(int slot, int invType, Object statsSel, int upgradeSlots) {

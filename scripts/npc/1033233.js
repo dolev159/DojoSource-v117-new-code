@@ -31,7 +31,7 @@ function action(mode, type, selection) {
 	switch (status) {
 	case 0:
 		if (cm.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "There are too many enemies left. It's not safe to move the child."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "There are too many enemies left. It's not safe to move the child."));
 			cm.dispose();
 			return;
 			}

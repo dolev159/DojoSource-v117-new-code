@@ -5,6 +5,7 @@
 */
 
 function enter(pi) {
+	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You have finished the training and will now return."));
 	pi.getPlayer().changeMap(pi.getMap(120000104), pi.getMap(120000104).getPortal(0)); //訓練場
 	return true;
 }

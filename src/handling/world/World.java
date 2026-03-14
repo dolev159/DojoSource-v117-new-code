@@ -62,6 +62,7 @@ public class World {
         World.Alliance.lock.toString();
         World.Messenger.getMessenger(0);
         World.Party.getParty(0);
+        server.pqs.MaplePQEngine.getInstance();
     }
 
     public static String getStatus() {
@@ -164,10 +165,11 @@ public class World {
     }
 
     public static boolean isChannelAvailable(final int ch) {
-        if (ChannelServer.getInstance(ch) == null || ChannelServer.getInstance(ch).getPlayerStorage() == null) {
-            return false;
-        }
         return ChannelServer.getInstance(ch).getPlayerStorage().getConnectedClients() < (ch == 1 ? 600 : 400);
+    }
+
+    public static server.pqs.MaplePQEngine getPQEngine() {
+        return server.pqs.MaplePQEngine.getInstance();
     }
 
     public static class Party {
@@ -1843,11 +1845,11 @@ public class World {
             for (handling.channel.ChannelServer cserv : handling.channel.ChannelServer.getAllInstances()) {
                 for (client.MapleCharacter chr : cserv.getPlayerStorage().getAllCharacters()) {
                     if (chr != null) {
-                        chr.saveToDB(false, false);
+                        chr.saveToDBAsync(false, false);
                     }
                 }
             }
-            System.out.println("[System] Global Auto-save completed.");
-        }, 60000);
+            System.out.println("[System] Global Auto-save tasks dispatched.");
+        }, 600000); // 10 minutes interval is more Enterprise-standard than 1 minute
     }
 }

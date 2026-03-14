@@ -3565,10 +3565,7 @@ public class CField {
                MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
 
                mplew.writeShort(SendPacketOpcode.CYGNUS_INTRO_ENABLE_UI.getValue());
-               mplew.write(wtf > 0 ? 1 : 0);
-               if (wtf > 0) {
-                    mplew.writeShort(wtf);
-               }
+               mplew.write(wtf);
 
                return mplew.getPacket();
           }
@@ -3598,6 +3595,16 @@ public class CField {
                mplew.write(1);
                mplew.writeInt(type);
                mplew.writeInt(7000);
+
+               return mplew.getPacket();
+          }
+
+          public static byte[] sendFourPillarsOfHeaven(int value, boolean something) {
+               MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+
+               mplew.writeShort(SendPacketOpcode.RED_LEAF_HIGH.getValue());
+               mplew.writeInt(value);
+               mplew.write(something ? 1 : 0);
 
                return mplew.getPacket();
           }

@@ -105,8 +105,16 @@ public class MaplePet implements Serializable {
     }
 
     public static final MaplePet loadFromDb(final int itemid, final int petid, final short inventorypos) {
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM pets WHERE petid = ?")) {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            return loadFromDb(con, itemid, petid, inventorypos);
+        } catch (SQLException ex) {
+            Logger.getLogger(MaplePet.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    public static final MaplePet loadFromDb(Connection con, final int itemid, final int petid, final short inventorypos) {
+        try (PreparedStatement ps = con.prepareStatement("SELECT * FROM pets WHERE petid = ?")) {
             final MaplePet ret = new MaplePet(itemid, petid, inventorypos);
 
             ps.setInt(1, petid);

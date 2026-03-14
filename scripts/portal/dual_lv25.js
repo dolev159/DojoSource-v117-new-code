@@ -5,10 +5,6 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getLevel() < 25) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You need level 25 to enter."));
-		return false;
-		}
-		pi.getPlayer().changeMap(pi.getMap(103050340), pi.getMap(103050340).getPortal(1)); //修煉場2
-		return true;
+	pi.getPlayer().changeMap(pi.getMap(103050340), pi.getMap(103050340).getPortal(1)); //修煉場2
+	return true;
 }

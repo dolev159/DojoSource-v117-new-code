@@ -41,34 +41,22 @@ function action(mode, type, selection) {
 function action0(mode, type, selection) {
 	switch (status) {
 	case 1:
-		if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+		if (cm.getPlayer().getParty() == null) {
 			cm.sendOk("It's a terrible place, filled with dangerous enemies. You're going to need a serious party for this. When you get one together, have your party leader talk to me.");
 			cm.dispose();
 			return;
-			}
-			party = cm.getPlayer().getParty().getMembers();
-			for (var i = 0; i < party.size(); i++)
-		if (party.size() < 3 || party.get(i).getLevel() < 120) {
-			cm.sendNext("You have less than 3 party members. You can only enter if you have 3 or more party members who are Lv. 120 or higher.");
+		}
+		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+			cm.sendOk("It's a terrible place, filled with dangerous enemies. You're going to need a serious party for this. When you get one together, have your party leader talk to me.");
 			cm.dispose();
 			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getMapid() != 921160000) {
-			cm.sendOk("One of your party members is in a different map. Get them here so you can all go together.");
-			cm.dispose();
-			return;
-			}
-			var em = cm.getEventManager("Prison");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("Some other party has already gotten in to try clearing the quest. Please try again later.");
-			cm.dispose();
-}
+		}
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Escape", cm)) {
+			cm.sendNext("Your party does not meet the requirements or another party is already attempting this quest. Please try again later.");
+		}
+		cm.dispose();
+		break;
+	}
 }
 
 function action1(mode, type, selection) {

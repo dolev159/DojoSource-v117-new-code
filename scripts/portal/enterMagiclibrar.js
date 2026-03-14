@@ -10,7 +10,7 @@ function enter(pi) {
 		return true;
 		}
 	if (pi.getMap(910110000).getCharacters().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
 		pi.getMap(910110000).resetFully();

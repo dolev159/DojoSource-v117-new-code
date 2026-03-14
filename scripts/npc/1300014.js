@@ -32,13 +32,13 @@ function action(mode, type, selection) {
 		if (cm.getPlayer().getMap().getId() == 106020300) {
 			cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2314)).setCustomData(1);
 			cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2314)), true);
-			cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/normalEffect/mushroomcastle/chatBalloon1"));
+			cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/normalEffect/mushroomcastle/chatBalloon1"));
 			}
 		if (cm.getPlayer().getMap().getId() == 106020500) {
 			cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2322)).setCustomData(1);
 			cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2322)), true);
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("Castle Wall Investigation Completed 1/1"));
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Go report this to the Secretary of Domestic Affairs."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("Castle Wall Investigation Completed 1/1"));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Go report this to the Secretary of Domestic Affairs."));
 			}
 			}
 			cm.dispose();

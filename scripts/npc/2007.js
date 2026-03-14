@@ -5,10 +5,7 @@
 */
 
 function start() {
-	if (!cm.getPlayer().getMap().containsNPC(2060102)) {
-		cm.getPlayer().getMap().spawnNpc(2060102, new java.awt.Point(-225, 485));
-		}
-		cm.sendYesNo("Would you like to skip the tutorials and head straight to Lith Harbor?");
+	cm.sendYesNo("Would you like to skip the tutorials and head straight to Lith Harbor?");
 }
 
 function action(mode, type, selection) {

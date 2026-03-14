@@ -4,8 +4,6 @@ import client.SkillFactory;
 import client.inventory.MapleInventoryIdentifier;
 import constants.ServerConstants;
 import constants.WorldConstants;
-import constants.WorldConstants.Servers;
-import constants.WorldConstants.TespiaServers;
 import database.DatabaseConnection;
 import handling.MapleServerHandler;
 import handling.cashshop.CashShopServer;
@@ -19,6 +17,9 @@ import handling.world.guild.MapleGuild;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import server.Timer.BuffTimer;
 import server.Timer.CloneTimer;
@@ -39,9 +40,10 @@ import tools.FileoutputUtil;
 
 public class Start {
 
-    public static long startTime = System.currentTimeMillis();
+    public static final long startTime = System.currentTimeMillis();
     public static final Start instance = new Start();
-    public static AtomicInteger CompletedLoadingThreads = new AtomicInteger(0);
+    public static final AtomicInteger completedLoadingThreads = new AtomicInteger(0);
+    private static final String STARTUP_BANNER = "============================================";
 
     public void run() throws InterruptedException {
 
@@ -52,9 +54,9 @@ public class Start {
             FileoutputUtil.logCrash("Thread: " + thread.getName(), throwable);
         });
 
-        FileoutputUtil.logStartup("============================================");
+        FileoutputUtil.logStartup(STARTUP_BANNER);
         FileoutputUtil.logStartup("  DojoSource v117 Server Starting...");
-        FileoutputUtil.logStartup("============================================");
+        FileoutputUtil.logStartup(STARTUP_BANNER);
 
         if (Boolean.parseBoolean(ServerProperties.getProperty("net.sf.odinms.world.admin")) || ServerConstants.Use_Localhost) {
             System.out.println("Maintenance is currently active.");
@@ -98,39 +100,46 @@ public class Start {
         EventTimer.getInstance().start();
         BuffTimer.getInstance().start();
         PingTimer.getInstance().start();
-        MapleGuildRanking.getInstance().load();
-        MapleGuild.loadAll();
-        MapleFamily.loadAll();
-        MapleLifeFactory.loadQuestCounts();
-        MapleQuest.initQuests();
-        MapleItemInformationProvider.getInstance().runEtc();
-        MapleItemInformationProvider.getInstance().runItems();
-        SkillFactory.load();
+        server.Timer.DatabaseTimer.getInstance().start();
+        System.out.println("Initiating Parallel Engine Boot...");
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        executor.submit(() -> { MapleGuildRanking.getInstance().load(); MapleGuild.loadAll(); });
+        executor.submit(() -> MapleFamily.loadAll());
+        executor.submit(() -> { MapleLifeFactory.loadQuestCounts(); MapleQuest.initQuests(); });
+        executor.submit(() -> { MapleItemInformationProvider.getInstance().runEtc(); MapleItemInformationProvider.getInstance().runItems(); });
+        executor.submit(SkillFactory::load);
+        executor.submit(MapleLifeFactory::loadAllMonsterStats);
+        executor.submit(() -> { MapleMonsterInformationProvider.getInstance().load(); });
+        executor.submit(LoginInformationProvider::getInstance);
+        executor.submit(RandomRewards::load);
+        executor.submit(MapleOxQuizFactory::getInstance);
+        executor.submit(MapleCarnivalFactory::getInstance);
+        executor.submit(() -> { CharacterCardFactory.getInstance().initialize(); });
+        executor.submit(MobSkillFactory::getInstance);
+        executor.submit(SpeedRunner::loadSpeedRuns);
+        executor.submit(MTSStorage::load);
+        executor.submit(MapleInventoryIdentifier::getInstance);
+        executor.submit(MapleMapFactory::loadCustomLife);
+        executor.submit(() -> { CashItemFactory.getInstance().initialize(); });
+        executor.submit(PlayerNPC::loadAll);
         
-        // Eagerly load monster stats and drop tables
-        MapleLifeFactory.loadAllMonsterStats();
-        MapleMonsterInformationProvider.getInstance().load();
-        
-        System.out.println(CacheManager.getMemoryUsageReport());
-        FileoutputUtil.logStartup(CacheManager.getMemoryUsageReport());
-        LoginInformationProvider.getInstance();
-        RandomRewards.load();
-        MapleOxQuizFactory.getInstance();
-        MapleCarnivalFactory.getInstance();
-        CharacterCardFactory.getInstance().initialize();
-        MobSkillFactory.getInstance();
-        SpeedRunner.loadSpeedRuns();
-        MTSStorage.load();
-        MapleInventoryIdentifier.getInstance();
-        MapleMapFactory.loadCustomLife();
-        FileoutputUtil.logStartup("Finished Loading Instances");
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.MINUTES)) {
+                System.err.println("[CRITICAL] Parallel boot timed out after 5 minutes!");
+            }
+        } catch (InterruptedException e) {
+            System.err.println("[CRITICAL] Parallel boot interrupted!");
+        }
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement("DELETE FROM `moonlightachievements` where achievementid > 0;")) {
             ps.executeUpdate();
         } catch (SQLException ex) {
             FileoutputUtil.logDatabaseError("DELETE moonlightachievements", ex);
         }
-        CashItemFactory.getInstance().initialize();
+
         MapleServerHandler.initiate();
         FileoutputUtil.logStartup("Loading Zipangu Login Server...");
         LoginServer.run_startup_configurations();
@@ -145,16 +154,15 @@ public class Start {
         FileoutputUtil.logStartup("Zipangu Cash Shop Server is Online!");
         Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown()));
         World.registerRespawn();
-        System.out.println("Channel Respawn Worker has been registered.");
+        World.registerAutoSave(); // Global Asynchronous Save Task
+        System.out.println("Channel Workers (Respawn & Auto-save) registered.");
         ShutdownServer.registerMBean();
-        PlayerNPC.loadAll();
-        MapleMonsterInformationProvider.getInstance().addExtra();
         LoginServer.setOn();
         RankingWorker.run();
         long launchTime = (System.currentTimeMillis() - startTime) / 1000;
-        FileoutputUtil.logStartup("============================================");
+        FileoutputUtil.logStartup(STARTUP_BANNER);
         FileoutputUtil.logStartup("  Server launched successfully in " + launchTime + " seconds!");
-        FileoutputUtil.logStartup("============================================");
+        FileoutputUtil.logStartup(STARTUP_BANNER);
         System.out.println("Zipangu Server has launched successfully in " + launchTime + " Seconds.");
     }
 

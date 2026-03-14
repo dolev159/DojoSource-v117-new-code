@@ -10,6 +10,6 @@ function start() {
 
 function action(mode, type, selection) {
 	if (mode > 0)
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.openUI(55));
+		cm.sendEventWindow();
 		cm.dispose();
 }

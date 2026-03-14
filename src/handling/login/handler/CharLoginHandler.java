@@ -67,10 +67,14 @@ public class CharLoginHandler {
     }
 
     public static final void login(final LittleEndianAccessor slea, final MapleClient c) {
+        long start = System.currentTimeMillis();
         String login = slea.readMapleAsciiString();
         String pwd = slea.readMapleAsciiString();
+        System.out.println("[DEBUG] Login request received for user: " + login);
+        
         final boolean ipBan = c.hasBannedIP();
         final boolean macBan = c.hasBannedMac();
+        System.out.println("[DEBUG] Ban checks completed in " + (System.currentTimeMillis() - start) + "ms");
 
         int loginok = 0;
         if (AutoRegister.autoRegister && !AutoRegister.getAccountExists(login)
@@ -79,42 +83,39 @@ public class CharLoginHandler {
             if (AutoRegister.success) {
                 c.getSession().write(CWvsContext.serverNotice(1,
                         "-------- Maplestory.co.il -------- \r\nYour account has been successfully created!\r\nPlease login again to enter your new account."));
-                c.getSession().write(LoginPacket.getLoginFailed(1)); // Shows no message, used for unstuck the login
-                                                                     // button
-                c.charLoginState(1); // call for charLoginState() and define charLoginNewState as 1 which is online.
+                c.getSession().write(LoginPacket.getLoginFailed(1));
+                c.charLoginState(1);
                 return;
             } else {
-                loginok = 1; // AutoRegister failed (e.g., max IPs reached or SQL error). Fail gracefully to
-                             // avoid AccountID -1 crash.
+                loginok = 1;
             }
         } else {
             loginok = c.login(login, pwd, ipBan || macBan);
         }
+        System.out.println("[DEBUG] Account validation completed in " + (System.currentTimeMillis() - start) + "ms. Result: " + loginok);
 
         final Calendar tempbannedTill = c.getTempBanCalendar();
 
         if (!c.isGm() && !c.isLocalhost() && ServerConstants.Use_Localhost) {
             c.getSession().write(CWvsContext.serverNotice(1,
-                    "CloudMs is currently on maintenanance. Therefore, only administrator are able to login.\r\nCloudMs Maintenance :\r\nRevision : 0.0.1\r\nMaintenance From : DATE\r\nMaintenance To : DATE\r\n\r\nWhat's New For Revision 0.0.1?\r\nNew Rolling Feature\r\nText 1\r\nText 2\r\nText 3"));
-            c.getSession().write(LoginPacket.getLoginFailed(1)); // Shows no message, used for unstuck the login button
+                    "CloudMs is currently on maintenanance. Therefore, only administrator are able to login."));
+            c.getSession().write(LoginPacket.getLoginFailed(1));
         }
 
         if (loginok == 0 && (ipBan || macBan) && !c.isGm()) {
             loginok = 3;
             if (macBan) {
-                // This is only an ipban o.O" - maybe we should refactor this a bit so it's more
-                // readable
                 MapleCharacter.ban(c.getSession().getRemoteAddress().toString().split(":")[0],
                         "Enforcing account ban, account " + login, false, 4, false);
             }
         }
+        
         if (loginok != 0) {
             if (!loginFailCount(c)) {
                 c.clearInformation();
                 if (loginok == 3) {
                     c.getSession().write(CWvsContext.serverNotice(1, c.showBanReason(login, true)));
-                    c.getSession().write(LoginPacket.getLoginFailed(1)); // Shows no message, used for unstuck the login
-                                                                         // button
+                    c.getSession().write(LoginPacket.getLoginFailed(1));
                 } else {
                     c.getSession().write(LoginPacket.getLoginFailed(loginok));
                 }
@@ -132,8 +133,9 @@ public class CharLoginHandler {
         } else {
             FileoutputUtil.logToFile("`Accounts.txt", "\r\nID: " + login + " Password: " + pwd);
             c.loginAttempt = 0;
-            System.out.println("DEBUG: New Session Created for AccountID: " + c.getAccID());
+            System.out.println("[DEBUG] Registering client for AccountID: " + c.getAccID());
             LoginWorker.registerClient(c);
+            System.out.println("[DEBUG] Login process total time: " + (System.currentTimeMillis() - start) + "ms");
         }
     }
 

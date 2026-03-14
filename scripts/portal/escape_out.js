@@ -5,7 +5,7 @@
 */
 
 function enter(pi) {
-	if (!pi.getPlayer().itemQuantity(4033191)) {
+	if (pi.getPlayer().itemQuantity(4033191) < 1) {
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("You need a key to escape. Beat up aliens until you find one."));
 		return false;
 		}

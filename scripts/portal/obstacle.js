@@ -10,13 +10,14 @@ function enter(pi) {
 		return true;
 		}
 	if (pi.getPlayer().itemQuantity(4000507)) {
+		pi.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("Proceeding forward after breaking barrier with the Poison Spore."));
 		pi.gainItem(4000507, -1);
 		pi.getPlayer().changeMap(pi.getMap(106020400), pi.getMap(106020400).getPortal(2)); //岔路
 		return true;
 		}
 	if (pi.getPlayer().itemQuantity(2430014)) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You must remove the barrier by using the Killer Mushroom Spore first."));
+		pi.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "You must remove the barrier by using the Killer Mushroom Spore first."));
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("You cannot move forward due to the barrier."));
+		pi.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("You cannot move forward due to the barrier."));
 		return false;
 }

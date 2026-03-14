@@ -5,14 +5,14 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 1) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
-		return false;
-		}
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31176)).getStatus() < 2) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "It's strange!! Bastille suddenly appears here."));
-		return false;
-		}
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31176)).getStatus() > 1) {
 		pi.getPlayer().changeMap(pi.getMap(272000310), pi.getMap(272000310).getPortal(2)); //燃燒的廢墟
 		return true;
+		}
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.getNPCTalk(2144008, 0, "Mwahaha, you're not leaving unless you defeat me!", "00 00", 0));
+		return false;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.getNPCTalk(2144008, 0, "Talk to me before you go.", "00 00", 0));
+		return false;
 }

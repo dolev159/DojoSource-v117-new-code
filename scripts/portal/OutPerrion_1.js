@@ -5,9 +5,9 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getInfoQuest(1022002) == 1) {
+	if (pi.getPlayer().getInfoQuest(1022002) > 0) {
 		pi.getPlayer().changeMap(pi.getMap(102000000), pi.getMap(102000000).getPortal(15));
-		pi.updateInfoQuest(1022002, 0);
+		pi.getPlayer().updateInfoQuest(1022002, 0);
 		return true;
 		}
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You cannot use this portal."));

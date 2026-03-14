@@ -42,7 +42,7 @@ function action0(mode, type, selection) {
 		cm.sendYesNo("You must have a party to do party quests. Do you want to use the Party Search Bulletin Board to find members?");
 		break;
 	case 1:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.sendUIWindow(7, 1));
+		cm.sendPartyWindow();
 		cm.dispose();
 }
 }
@@ -128,7 +128,7 @@ function action5(mode, type, selection) {
 			return;
 			}
 		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.EQUIP).getNumFreeSlot() < 1) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Equip item inventory is full."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "Equip item inventory is full."));
 			cm.dispose();
 			return;
 			}
@@ -148,7 +148,7 @@ function action6(mode, type, selection) {
 			return;
 			}
 		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.EQUIP).getNumFreeSlot() < 1) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Equip item inventory is full."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "Equip item inventory is full."));
 			cm.dispose();
 			return;
 			}

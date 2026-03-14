@@ -1,0 +1,38 @@
+
+
+In the first level, dropped cards are not placed in the player's backpack, but are used as counting units.
+
+Search:
+
+
+    public static boolean addFromDrop(final MapleClient c, Item item, final boolean show, final boolean enhance) {
+        final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+
+replace:
+
+    public static boolean addFromDrop(final MapleClient c, Item item, final boolean show, final boolean enhance) {
+        final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+
+
+        final EventManager LudiPQ = c.getChannelServer().getEventSM().getEventManager("LudiPQ"); //遺棄之塔101
+
+        if (item.getItemId() == 4001022 && LudiPQ != null && c.getPlayer().getEventInstance().getProperty("drop") == null) {
+
+            c.getPlayer().getEventInstance().setProperty("count", c.getPlayer().getEventInstance().getProperty("count") == null ? "1" : Integer.parseInt(c.getPlayer().getEventInstance().getProperty("count")) + 1 + "");
+
+            c.getPlayer().getMap().broadcastMessage(tools.packet.CWvsContext.getTopMsg("You have collected " + c.getPlayer().getEventInstance().getProperty("count") + " Passes."));
+
+            if (c.getPlayer().getEventInstance().getProperty("count").equals("20")) {
+
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CWvsContext.getTopMsg("A portal to the next stage has opened."));
+                c.getPlayer().getMap().startMapEffect("All of the passes have been gathered. Proceed to the next stage by talking to the Red Balloon.", 5120018);
+
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CField.environmentChange("gate", 2));
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CField.environmentChange("quest/party/clear", 3));
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CField.environmentChange("Party1/Clear", 4));
+
+                c.getPlayer().getEventInstance().setProperty("stage1", "1");
+                c.getPlayer().getEventInstance().setProperty("drop", "1");
+            }
+            return false;
+        }

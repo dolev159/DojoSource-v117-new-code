@@ -5,6 +5,10 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().addHP(-1500);
-	return true;
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() < 10) {
+		for (var i = 0; i < 20; i++)
+		pi.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9300493), new java.awt.Point(-471, -164));
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Defeat the Attacking Androids!"));
+		return false;
 }

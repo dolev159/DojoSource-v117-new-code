@@ -894,7 +894,7 @@ public class InternCommand {
                 mapitem = (MapleMapItem) item;
                 if (mapitem.getMeso() > 0) {
                     c.getPlayer().gainMeso(mapitem.getMeso(), true);
-                } else if (mapitem.getItem() == null || !MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), true)) {
+                } else if (mapitem.getItem() == null || !MapleInventoryManipulator.addFromDrop(c, mapitem.getItem(), true, false)) {
                     continue;
                 }
                 mapitem.setPickedUp(true);

@@ -42,10 +42,10 @@ public class MapleItemInformationProvider {
     private static int get_gender_from_id(int itemId) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    protected final MapleDataProvider chrData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Character.wz"));
-    protected final MapleDataProvider etcData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Etc.wz"));
-    protected final MapleDataProvider itemData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/Item.wz"));
-    protected final MapleDataProvider stringData = MapleDataProviderFactory.getDataProvider(new File(System.getProperty("net.sf.odinms.wzpath") + "/String.wz"));
+    protected final MapleDataProvider chrData = MapleDataProviderFactory.getDataProvider("Character");
+    protected final MapleDataProvider etcData = MapleDataProviderFactory.getDataProvider("Etc");
+    protected final MapleDataProvider itemData = MapleDataProviderFactory.getDataProvider("Item");
+    protected final MapleDataProvider stringData = MapleDataProviderFactory.getDataProvider("String");
     protected final Map<Integer, ItemInformation> dataCache = new ConcurrentHashMap<>();
     protected final Map<String, List<Triple<String, Point, Point>>> afterImage = new ConcurrentHashMap<>();
     protected final Map<Integer, List<StructItemOption>> potentialCache = new ConcurrentHashMap<>();

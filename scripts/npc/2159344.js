@@ -25,18 +25,18 @@ function action(mode, type, selection) {
 		}
 	switch (status) {
 	case 0:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(1));
 		cm.sendNextS("Hmm...", 3);
 		break;
 	case 1:
 		cm.sendNextPrevS("(Where am I? I don't recognize this place... It's not the cave I was in before... Ugh, everything hurts.)", 3);
 		break;
 	case 2:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 600));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 600));
 		break;
 	case 3:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
 		cm.sendNextS("(This looks like a Treatment Room... Where am I? What happened to me?)", 3);
 		break;
 	case 4:
@@ -52,11 +52,11 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("(Did I lose it during the fight? That was all I have left from my family... No...)", 3);
 		break;
 	case 8:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 2));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 600));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 2));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 600));
 		break;
 	case 9:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
 		cm.sendNextS("(I went to the Temple of Time to take revenge on the Black Mage... On the way, I let #p2151009# go, to get away from the Commanders. #p2159309# tried to stop me, but I was determined... Say, I wonder how the Heroes did?)", 3);
 		break;
 	case 10:
@@ -69,16 +69,16 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("(Ugh, now I have a headache. I don't even know where I am now. This place is so strange. And yet... does this mean Maple World wasn't destroyed?)", 3);
 		break;
 	case 13:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 600));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 600));
 		break;
 	case 14:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
 		cm.sendNextS("(I should check on myself. I'm going to need my Demon Fury no matter what... But how much is left?)", 3);
 		break;
 	case 15:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/13", 1000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/13", 1000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 16:
 		cm.sendNextS("(No! My Demon Aegis is so weak...I've never seen it this bad. Almost all of my power and abilities are gone. How could this happen?)", 3);
@@ -90,13 +90,13 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("(It's going to take time to build my power back up, and sitting here won't accomplish anything. I need to go.)", 3);
 		break;
 	case 19:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 3000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 3000));
 		break;
 	case 20:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/3", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/3", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 21:
 		cm.sendNextS("(I hear something...)", 3);
@@ -123,18 +123,18 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("...Hold on. I'll see if our new friend is awake yet.", 1);
 		break;
 	case 29:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 2));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 2));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 2000));
 		break;
 	case 30:
 		cm.spawnNPCRequestController(2159344, -600, -20, 0);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 30));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 30));
 		break;
 	case 31:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
 		cm.getNPCDirectionEffect(2159344, "Effect/Direction6.img/effect/tuto/balloonMsg1/3", 1500, 0, -100);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 32:
 		cm.sendNextS("Ah, you're awake. How do you feel? Still tired?", 1);
@@ -150,7 +150,7 @@ function action(mode, type, selection) {
 		break;
 	case 36:
 		cm.dispose();
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.removeNPCController(2159344));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.removeNPCController(2159344));
 		cm.getPlayer().changeMap(cm.getMap(931050010), cm.getMap(931050010).getPortal(0));
 }
 }

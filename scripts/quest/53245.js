@@ -43,6 +43,7 @@ function end(mode, type, selection) {
 	case 4:
 		qm.dispose();
 		qm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		qm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("Follow the arrows to the Key Keeper's Room."));
 		Packages.server.quest.MapleQuest.getInstance(53247).forceStart(qm.getPlayer(), qm.getNpc(), null);
 }
 }

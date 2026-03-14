@@ -5,10 +5,7 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(20743)).getStatus() < 1) {
-		Packages.server.quest.MapleQuest.getInstance(20743).forceStart(pi.getPlayer(), 0, 1);
-		pi.showInstruction("There seems to be a child's voice heard in the cave.", 150, 5);
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "There seems to be a child's voice heard in the cave."));
-		}
-		return false;
+	pi.getPlayer().addHP(pi.getPlayerStat("HP") > 100 ? -(pi.getPlayerStat("HP") / 2) : 0);
+	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "OUCH! You just got shocked! This can't be the right lab."));
+	return false;
 }

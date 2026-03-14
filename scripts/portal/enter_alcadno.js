@@ -12,7 +12,7 @@ function enter(pi) {
 		em.startInstance(pi.getPlayer());
 		return false;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23270)).getStatus() > 1 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23271)).getStatus() < 2) {

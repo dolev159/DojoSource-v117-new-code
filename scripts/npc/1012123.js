@@ -30,7 +30,7 @@ function action(mode, type, selection) {
 	switch (status) {
 	case 0:
 		if (cm.getPlayer().getAndroid() == null) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "You don't have an Android. Try again when you get one."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "You don't have an Android. Try again when you get one."));
 			cm.dispose();
 			return;
 			}

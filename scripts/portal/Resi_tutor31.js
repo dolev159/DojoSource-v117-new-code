@@ -5,6 +5,8 @@
 */
 
 function enter(pi) {
-	pi.openNpc(2159006);
-	return true;
+	if (pi.getPlayer().getInfoQuest(23007).indexOf("vel00=1") == -1) {
+		pi.openNpc(2159006);
+		}
+		return true;
 }

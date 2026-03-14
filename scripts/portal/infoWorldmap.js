@@ -6,5 +6,5 @@
 
 function enter(pi) {
 	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("UI/tutorial.img/26"));
-	return true;
+	return false;
 }

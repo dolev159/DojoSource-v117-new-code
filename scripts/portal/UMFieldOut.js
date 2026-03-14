@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(130000200), pi.getMap(130000200).getPortal(1)); //耶雷弗岔道
+	pi.getPlayer().changeMap(pi.getMap(130000000), pi.getMap(130000000).getPortal(0)); //耶雷弗
 	return true;
 }

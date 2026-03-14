@@ -5,10 +5,6 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().itemQuantity(4032922)) {
-		pi.getPlayer().changeMap(pi.getMap(271030100), pi.getMap(271030100).getPortal(4)); //騎士團第1區域
-		return true;
-		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Security in the Stronghold has been increased. Getting in won't be easy."));
-		return false;
+	pi.getPlayer().changeMap(pi.getMap(271030100), pi.getMap(271030100).getPortal(4)); //騎士團第1區域
+	return true;
 }

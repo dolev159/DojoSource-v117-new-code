@@ -29,6 +29,6 @@ function start() {
 		cm.dispose();
 		return;
 		}
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Someone is attempting to protect the Watch Hog already. Please try again later."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Someone is attempting to protect the Watch Hog already. Please try again later."));
 		cm.dispose();
 }

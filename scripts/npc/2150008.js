@@ -81,10 +81,6 @@ function action1(mode, type, selection) {
 			}
 			cm.gainMeso(-5000);
 			cm.giveBuff(selection < 1 ? 80001027 : 80001028, 1);
-			cm.getMap(200110071).setTimeLimit(selection < 1 ? 20 : 10);
-			cm.getMap(200110050).setTimeLimit(selection < 1 ? 20 : 10);
-			cm.getMap(200110071).setForcedReturnMap(104020130);
-			cm.getMap(200110050).setForcedReturnMap(200000170);
 			cm.getPlayer().changeMap(cm.getMap(select < 1 ? 200110071 : 200110050), cm.getMap(select < 1 ? 200110071 : 200110050).getPortal(0));
 			cm.dispose();
 }

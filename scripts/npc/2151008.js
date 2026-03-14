@@ -29,7 +29,7 @@ function action(mode, type, selection) {
 		cm.dispose();
 		return;
 		}
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Come back later."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Come back later."));
 		}
 		cm.dispose();
 }

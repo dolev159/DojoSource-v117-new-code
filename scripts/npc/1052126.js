@@ -7,11 +7,12 @@
 function start() {
 	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(2369)).getCustomData() == 1) {
 	if (cm.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
+		cm.sendNext("You can't grab the diary due to interference from the monsters.");
 		cm.dispose();
 		return;
 		}
 	if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
-		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "Please check and see if you have an empty slot available at your etc. inventory."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "Etc item inventory is full."));
 		cm.dispose();
 		return;
 		}

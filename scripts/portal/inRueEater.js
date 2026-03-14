@@ -7,11 +7,11 @@
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23970)).getStatus() == 1) {
 		pi.openNpc(2159304);
-		return false;
+		return true;
 		}
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23971)).getStatus() == 1) {
 	if (pi.getPlayer().itemQuantity(4032782)) {
-		var em = pi.getEventManager("EscapePlans");
+		var em = pi.getEventManager("q23971");
 		var prop = em.getProperty("state");
 	if (prop == null || prop == 0) {
 		em.startInstance(pi.getPlayer());

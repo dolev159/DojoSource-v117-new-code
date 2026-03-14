@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(931050500), pi.getMap(931050500).getPortal(1)); //補給品倉庫
+	pi.openNpc(9073011);
 	return true;
 }

@@ -1,0 +1,148 @@
+﻿Cleaning dist...
+Compiling GameConstants...
+.\compile_all_changes.bat : 
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+At line:1 char:1
++ .\compile_all_changes.bat 
+> compile_log_2.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Note: s  
+  rc\clien...deprecated AP   
+ I.:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling AbstractPlayerInteraction...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling NPCConversationManager...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling NPCScriptManager...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling MapleQuest...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling MapleInventoryManipulator...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling NPCHandler...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling PlayersHandler...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling InventoryHandler...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling MapleTrade...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+Compiling MapleMap...
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+All files compiled successfully!

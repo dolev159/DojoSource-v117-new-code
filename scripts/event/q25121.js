@@ -28,9 +28,9 @@ function playerEntry(eim, player) {//傳送進事件地圖
 function scheduledTimeout(eim) {//規定時間結束
 }
 
-function monsterValue(eim, player, mob) {//殺怪後觸發
-	if (mob.getId() == 9001047) {
-		player.mobKilled(9001047, 1);//添加任務怪物計數
+function monsterValue(eim, mobId) {//殺怪後觸發
+	if (mobId == 9001047) {
+		eim.getPlayers().get(0).mobKilled(9001047, 1);//添加任務怪物計數
 		}
 		return 1;
 }

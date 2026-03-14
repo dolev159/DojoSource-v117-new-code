@@ -27,7 +27,7 @@ function start(mode, type, selection) {
 		qm.sendNext("Huh? Are you some sort of homunculus I forgot I'd summoned?");
 		break;
 	case 1:
-		qm.sendNextPrevS("No, I'm a bounty hunter, and I'm looking for the person who gave you this letter.", 2);
+		qm.sendNextPrevS("No, I'm a bounty hunter, and I'm looking for the person who gave you this letter.", 16);
 		break;
 	case 2:
 		qm.sendNextPrev("Oh, the letter! That was the easlest 1000 mesos I ever made! I didn't know the gentleman, but he did have the most awe-inspiring crimson hair. lt was almost as red as the inside of an Adonis Cauldron, if you could believe it, hahahaha! Oh. I am HILARIOUS today...");

@@ -9,6 +9,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(931050500), pi.getMap(931050500).getPortal(1)); //補給品倉庫
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It's just empty space."));
+		pi.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "It's just empty space."));
 		return false;
 }

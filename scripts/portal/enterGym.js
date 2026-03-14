@@ -5,7 +5,7 @@
 */
 
 var map = [914010000, 914010100, 914010200];
-var quest = [21701, 21702, 21703]
+var quest = [21701, 21702, 21703];
 
 function enter(pi) {
 	for (var i = 0; i < quest.length; i ++)

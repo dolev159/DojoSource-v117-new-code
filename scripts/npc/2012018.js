@@ -42,6 +42,6 @@ function action(mode, type, selection) {
 	case 2:
 		cm.dispose();
 		cm.getPlayer().changeMap(cm.getMap(200100001), cm.getMap(200100001).getPortal(0));
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("Pressing the JUMP key allows you to fly to Chryse."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("Pressing the JUMP key allows you to fly to Chryse."));
 }
 }

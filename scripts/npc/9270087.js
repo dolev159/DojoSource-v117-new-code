@@ -1,5 +1,5 @@
 /*
-	名字:	漢斯
+	名字:	Burnt Remains
 	地圖:	Wrecked Airship 1
 	描述:	552000030
 */

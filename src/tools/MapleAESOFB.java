@@ -56,7 +56,7 @@ public class MapleAESOFB {
             return skey;
         }
     }
-    private static SecretKeySpec skey;
+    private SecretKeySpec skey;
     // V111(probably) - V117:
     //private final static SecretKeySpec skey117 = new SecretKeySpec(new byte[]{0x13, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, (byte) 0xB4, 0x00, 0x00, 0x00, 0x1B, 0x00, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x33, 0x00, 0x00, 0x00, 0x52, 0x00, 0x00, 0x00}, "AES");
     // V118 - V119:
@@ -141,26 +141,25 @@ public class MapleAESOFB {
      */
     public MapleAESOFB(byte iv[], short mapleVersion) {
         boolean keyFound = false;
+        String versionStr = "V" + ServerConstants.MAPLE_VERSION;
         for (EncryptionKey encryptkey : EncryptionKey.values()) {
-            if (("V" + ServerConstants.MAPLE_VERSION).equals(encryptkey.name())) {
-                skey = encryptkey.getEncryptionKey();
+            if (versionStr.equals(encryptkey.name())) {
+                this.skey = encryptkey.getEncryptionKey();
                 keyFound = true;
                 break;
             }
         }
         if (!keyFound) {
             // Use the latest available encryption key as default
-            skey = EncryptionKey.values()[EncryptionKey.values().length - 1].getEncryptionKey();
+            this.skey = EncryptionKey.values()[EncryptionKey.values().length - 1].getEncryptionKey();
         }
         try {
             cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, skey);
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("ERROR" + e);
-        } catch (NoSuchPaddingException e) {
+            cipher.init(Cipher.ENCRYPT_MODE, this.skey);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             System.err.println("ERROR" + e);
         } catch (InvalidKeyException e) {
-            System.err.println("Error initalizing the encryption cipher.  Make sure you're using the Unlimited Strength cryptography jar files.");
+            System.err.println("Error initalizing the encryption cipher. Make sure you're using the Unlimited Strength cryptography jar files.");
         }
 
         this.setIv(iv);

@@ -56,12 +56,17 @@ public abstract class AbstractPlayerInteraction {
 
     protected MapleClient c;
     protected DefaultSettings settings;
-    protected int id, id2;
+    protected int id, id2, id3;
 
-    public AbstractPlayerInteraction(final MapleClient c, final int id, final int id2) {
+    public AbstractPlayerInteraction(MapleClient c, int id, int id2, int id3) {
         this.c = c;
         this.id = id;
         this.id2 = id2;
+        this.id3 = id3;
+    }
+
+    public final int getObjectId() {
+        return id3;
     }
 
     public final MapleClient getClient() {
@@ -90,6 +95,10 @@ public abstract class AbstractPlayerInteraction {
 
     public final EventInstanceManager getEventInstance() {
         return c.getPlayer().getEventInstance();
+    }
+
+    public final server.pqs.MaplePQInstance getPQInstance() {
+        return handling.world.World.getPQEngine().getInstance(c.getPlayer().getMap().getInstanceId());
     }
 
     public final void openNpc(int npc, String filename) {
@@ -561,6 +570,15 @@ public abstract class AbstractPlayerInteraction {
     public final void changeMusic(final String songName) {
         getPlayer().getMap().broadcastMessage(CField.musicChange(songName));
     }
+
+    public final void summonHelper(boolean summon) {
+        // Legacy stub
+    }
+
+    public final void summonMessage(String msg) {
+        // Legacy stub
+    }
+
 
     public final void worldMessage(final int type, final String message) {
         World.Broadcast.broadcastMessage(CWvsContext.serverNotice(type, message));
@@ -1113,16 +1131,16 @@ public abstract class AbstractPlayerInteraction {
         c.getSession().write(UIPacket.IntroEnableUI(i));
     }
 
-    public final void DisableUI(final boolean enabled) {
-        c.getSession().write(UIPacket.IntroDisableUI(enabled));
-    }
-
     public final void disableUI(final boolean enabled) {
         c.getSession().write(UIPacket.IntroDisableUI(enabled));
     }
 
     public final void MovieClipIntroUI(final boolean enabled) {
         c.getSession().write(UIPacket.IntroDisableUI(enabled));
+        c.getSession().write(UIPacket.IntroLock(enabled));
+    }
+
+    public final void IntroLock(final boolean enabled) {
         c.getSession().write(UIPacket.IntroLock(enabled));
     }
 

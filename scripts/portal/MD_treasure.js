@@ -4,20 +4,19 @@
 	描述:	251010402
 */
 
-var map = 251010402;
-var maps = 251010410; //搶奪寶物島
+var map = 251010410; //搶奪寶物島
 var num = 10;
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getId() != map) {
-		pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(5));
+	if (pi.getPlayer().getMap().getId() != 251010402) {
+		pi.getPlayer().changeMap(pi.getMap(251010402), pi.getMap(251010402).getPortal(5));
 		return true;
 		}
 		for (var i = 0; i < num; i++)
-	if (pi.getMap(maps + i).getCharacters().size() < 1) {
-		pi.getPlayer().changeMap(pi.getMap(maps + i), pi.getMap(maps + i).getPortal(2));
+	if (pi.getMap(map + i).getCharacters().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(map + i), pi.getMap(map + i).getPortal(2));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "All of the Mini-Dungeons are in use right now, please try again later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 }

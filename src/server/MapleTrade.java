@@ -57,7 +57,7 @@ public class MapleTrade {
                         item.setFlag((short) (flag - ItemFlag.KARMA_USE.getValue()));
                     }
                     // Attempt to add. If this fails, it will throw an exception caught below.
-                    if (!MapleInventoryManipulator.addFromDrop(c.getClient(), item, false)) {
+                    if (!MapleInventoryManipulator.addFromDrop(c.getClient(), item, false, false)) {
                         throw new InventoryException("Failed to add item during trade: " + item.getItemId());
                     }
                 }
@@ -87,7 +87,7 @@ public class MapleTrade {
         if (items != null) { // Just to be on the safe side...
 	    List<Item> itemz = new LinkedList<Item>(items);
             for (final Item item : itemz) {
-                MapleInventoryManipulator.addFromDrop(c, item, false);
+                MapleInventoryManipulator.addFromDrop(c, item, false, false);
             }
             items.clear();
         }

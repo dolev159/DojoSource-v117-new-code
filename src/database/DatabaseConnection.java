@@ -48,7 +48,7 @@ public class DatabaseConnection {
             try (FileInputStream fis = new FileInputStream("db.properties")) {
                 dbProps.load(fis);
             } catch (IOException e) {
-                // Ignore, will use ServerConstants as fallback
+                System.err.println("[DB] Warning: db.properties not found, using defaults.");
             }
 
             String port = dbProps.getProperty("sql.port", ServerConstants.SQL_PORT);
@@ -58,8 +58,8 @@ public class DatabaseConnection {
 
             HikariConfig config = new HikariConfig();
 
-            // Connection URL with essential MySQL flags
-            config.setJdbcUrl("jdbc:mysql://localhost:" + port
+            // Connection URL with essential MySQL flags for high-performance binary data
+            config.setJdbcUrl("jdbc:mysql://127.0.0.1:" + port
                     + "/" + db
                     + "?autoReconnect=true"
                     + "&useSSL=false"
@@ -67,55 +67,52 @@ public class DatabaseConnection {
                     + "&useUnicode=true"
                     + "&serverTimezone=UTC"
                     + "&allowPublicKeyRetrieval=true"
-                    + "&zeroDateTimeBehavior=convertToNull");
+                    + "&zeroDateTimeBehavior=convertToNull"
+                    + "&rewriteBatchedStatements=true"); // Important for performance
 
-            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            config.setDriverClassName("com.mysql.jdbc.Driver");
             config.setUsername(user);
             config.setPassword(pass);
-            config.setPoolName("DojoSource-DB-Pool");
+            config.setPoolName("Nexus-Omni-DB-Pool");
 
             // =============================================
-            // [Phase B] Pool Sizing & Response Tuning
+            // [Phase C] Enterprise Pool Sizing (1,000 CCU)
             // =============================================
-            // maximumPoolSize: 30 is ideal for 100-500 players, preventing MySQL
-            // saturation.
-            config.setMaximumPoolSize(30);
-            // minimumIdle: Maintains 10 ready-to-use connections for instant response.
-            config.setMinimumIdle(10);
+            config.setMaximumPoolSize(Integer.parseInt(dbProps.getProperty("db.maxPoolSize", "100")));
+            config.setMinimumIdle(Integer.parseInt(dbProps.getProperty("db.minIdle", "20")));
 
             // =============================================
-            // [Phase B] Monitoring & Leak Prevention
+            // [Phase C] Aggressive Leak & Timeout Management
             // =============================================
-            // leakDetectionThreshold: Logs a warning if a thread holds a connection for >
-            // 30s.
-            // This is the #1 tool to find unclosed Statements/ResultSets.
-            config.setLeakDetectionThreshold(30000);
-
-            // =============================================
-            // Timeouts & Life Cycle
-            // =============================================
-            config.setConnectionTimeout(10000);
-            config.setIdleTimeout(300000);
-            config.setMaxLifetime(600000);
+            // connectionTimeout: 3000ms prevents the login thread from hanging on slow DB
+            // queries.
+            config.setConnectionTimeout(Long.parseLong(dbProps.getProperty("db.connectionTimeout", "10000")));
+            // leakDetectionThreshold: 600s (10 mins) to allow for massive WZ-to-DB startup loads.
+            config.setLeakDetectionThreshold(Long.parseLong(dbProps.getProperty("db.leakDetectionThreshold", "600000")));
+            
+            config.setIdleTimeout(Long.parseLong(dbProps.getProperty("db.idleTimeout", "600000")));
+            config.setMaxLifetime(Long.parseLong(dbProps.getProperty("db.maxLifetime", "1800000")));
             config.setKeepaliveTime(30000);
             config.setConnectionTestQuery("SELECT 1");
 
             // =============================================
-            // Phase B Performance Switches: PreparedStatement Caching
+            // [Phase C] MySQL Performance Switches (PreparedStatement Cache)
             // =============================================
-            config.addDataSourceProperty("cachePrepStmts", "true");
-            config.addDataSourceProperty("prepStmtCacheSize", "500");
-            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            config.addDataSourceProperty("cachePrepStmts", dbProps.getProperty("db.cachePrepStmts", "true"));
+            config.addDataSourceProperty("prepStmtCacheSize", dbProps.getProperty("db.prepStmtCacheSize", "1000"));
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", dbProps.getProperty("db.prepStmtCacheSqlLimit", "4096"));
             config.addDataSourceProperty("useServerPrepStmts", "true");
             config.addDataSourceProperty("useLocalSessionState", "true");
-            config.addDataSourceProperty("rewriteBatchedStatements", "true");
             config.addDataSourceProperty("cacheResultSetMetadata", "true");
             config.addDataSourceProperty("cacheServerConfiguration", "true");
+            config.addDataSourceProperty("elideSetAutoCommits", "true");
+            config.addDataSourceProperty("maintainTimeStats", "false");
 
             dataSource = new HikariDataSource(config);
 
-            System.out.println("[DB] [Phase B] HikariCP Pool Optimized. Leak Detection: ON (30s). MaxPoolSize: "
-                    + config.getMaximumPoolSize());
+            System.out.println("[DB] [Phase C] Nexus-Omni Connection Pool Active.");
+            System.out.println("[DB] Max Pool: " + config.getMaximumPoolSize() + " | Timeout: " + config.getConnectionTimeout() + "ms");
+            System.out.println("[DB] Leak Detection: " + config.getLeakDetectionThreshold() + "ms (Enabled)");
 
         } catch (Exception e) {
             System.err.println("[DB] FATAL: Failed to initialize database connection pool!");

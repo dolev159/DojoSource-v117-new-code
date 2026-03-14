@@ -56,7 +56,9 @@ public class ReactorScriptManager extends AbstractScriptManager {
             ReactorActionManager rm = new ReactorActionManager(c, reactor);
 
             scriptengine.put("rm", rm);
-            iv.invokeFunction("act");
+            if (hasMethod(iv, "act")) {
+                iv.invokeFunction("act");
+            }
         } catch (Exception e) {
             System.err.println("Error executing reactor script. Reactor ID: " + reactor.getReactorId() + ", Reactor Name: " + reactor.getName() + ":" + e);
             FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Error executing reactor script. Reactor ID: " + reactor.getReactorId() + ", Reactor Name: " + reactor.getName() + ":" + e);

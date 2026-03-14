@@ -31,7 +31,7 @@ function start(mode, type, selection) {
 		qm.sendNext("Ah, #b#h0##k I'm sure your core is better than it ever was My calculations must have improved it ten--");
 		break;
 	case 1:
-		qm.sendNextPrevS("It's a mess, Thunder Hammer. I was coming to see you.", 16);
+		qm.sendNextPrevS("It's a mess, #bThunder Hammer#k. I was coming to see you.", 16);
 		break;
 	case 2:
 		qm.sendYesNo("Are you trying to tell me that you broke the item I so perfectly fixed for you?");
@@ -55,7 +55,7 @@ function start(mode, type, selection) {
 		qm.sendNextPrev("#bFire Ore#k has some very unique strengthening properties. It develops in the #bBlast Furnace#k, but it's quite hard to get in proper quantities...");
 		break;
 	case 9:
-		qm.sendNextPrevS("I'll head into the Blast Furnace. What's a little furnace gonna do to me that space hasn't already?", 16);
+		qm.sendNextPrevS("I'll head into the #bBlast Furnace#k. What's a little furnace gonna do to me that space hasn't already?", 16);
 		break;
 	case 10:
 		qm.sendAcceptDecline("A foolish anecdote at best, but I'm sure you know your limits. Remember to take enough potions, because if you have to quit before you succeed, #byou must forfeit the quest and start again.");

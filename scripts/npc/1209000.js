@@ -44,7 +44,7 @@ function action0(mode, type, selection) {
 		break;
 	case 3:
 		Packages.server.quest.MapleQuest.getInstance(21002).forceStart(cm.getPlayer(), 0, 1);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction1.img/aranTutorial/Trio"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction1.img/aranTutorial/Trio"));
 		cm.dispose();
 }
 }

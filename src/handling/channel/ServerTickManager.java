@@ -84,9 +84,7 @@ public class ServerTickManager {
      */
     private void updateMapItems(long now) {
         for (MapleMap map : cserv.getMapFactory().getAllMaps()) {
-            if (map.getCharactersSize() > 0) {
-                map.updateMapItems(now);
-            }
+            map.updateMapItems(now);
         }
     }
 

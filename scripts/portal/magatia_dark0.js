@@ -5,7 +5,10 @@
 */
 
 function enter(pi) {
-	var map = pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3309)).getStatus() == 1 ? 926120000 : 261020700; //熄火的研究室
-	pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(1));
-	return true;
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3309)).getStatus() == 1) {
+		pi.getPlayer().changeMap(pi.getMap(926120000), pi.getMap(926120000).getPortal(1)); //熄火的研究室
+		return true;
+		}
+		pi.getPlayer().changeMap(pi.getMap(261020700), pi.getMap(261020700).getPortal(1));
+		return true;
 }

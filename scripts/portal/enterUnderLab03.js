@@ -5,6 +5,9 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().addHP(-2000);
-	return true;
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(20743)).getStatus() < 1) {
+		Packages.server.quest.MapleQuest.getInstance(20743).forceStart(pi.getPlayer(), 0, 1);
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Is that a voice you hear ...? This must be the place. Return to Claudine."));
+		return false;
 }

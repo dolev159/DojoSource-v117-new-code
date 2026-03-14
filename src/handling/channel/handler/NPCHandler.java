@@ -132,12 +132,12 @@ public class NPCHandler {
             return;
         }
         if (NPCScriptManager.getInstance().hasScript(c, npc.getId(), null)) { // I want it to come before shop
-            NPCScriptManager.getInstance().start(c, npc.getId(), null);
+            NPCScriptManager.getInstance().start(c, npc.getId(), npc.getObjectId(), null);
         } else if (npc.hasShop()) {
             chr.setConversation(1);
             npc.sendShop(c);
         } else {
-            NPCScriptManager.getInstance().start(c, npc.getId(), null);
+            NPCScriptManager.getInstance().start(c, npc.getId(), npc.getObjectId(), null);
         }
     }
 
@@ -151,74 +151,76 @@ public class NPCHandler {
         if (chr == null) {
             return;
         }
-        final MapleQuest q = MapleQuest.getInstance(quest);
-        switch (action) {
-            case 0: { // Restore lost item
-                //chr.updateTick(slea.readInt());
-                slea.readInt();
-                final int itemid = slea.readInt();
-                q.RestoreLostItem(chr, itemid);
-                break;
+        try {
+            final MapleQuest q = MapleQuest.getInstance(quest);
+            System.out.println("[Quest] Character " + (chr != null ? chr.getName() : "Unknown") + " | Action: " + action + " | Quest ID: " + quest + (q == null ? " [WARNING: QUEST NOT FOUND]" : ""));
+            
+            if (q == null) {
+                c.getSession().write(CWvsContext.enableActions());
+                return;
             }
-            case 1: { // Start Quest
-                final int npc = slea.readInt();
-                if (npc == 0 && quest > 0) {
-                    q.forceStart(chr, npc, null);
-                } else if (!q.hasStartScript()) {
-                    q.start(chr, npc);
+            switch (action) {
+                case 0: { // Restore lost item
+                    //chr.updateTick(slea.readInt());
+                    slea.readInt();
+                    final int itemid = slea.readInt();
+                    q.RestoreLostItem(chr, itemid);
+                    break;
                 }
-                break;
+                case 1: { // Start Quest
+                    final int npc = slea.readInt();
+                    if (npc == 0 && quest > 0) {
+                        q.forceStart(chr, npc, null);
+                    } else {
+                        q.start(chr, npc);
+                    }
+                    break;
+                }
+                case 2: { // Complete Quest
+                    final int npc = slea.readInt();
+                    //chr.updateTick(slea.readInt());
+                    slea.readInt();
+                    if (q.hasEndScript()) {
+                        return;
+                    }
+                    if (slea.available() >= 4) {
+                        q.complete(chr, npc, slea.readInt());
+                    } else {
+                        q.complete(chr, npc);
+                    }
+                    break;
+                }
+                case 3: { // Forefit Quest
+                    if (GameConstants.canForfeit(q.getId())) {
+                        q.forfeit(chr);
+                    } else {
+                        chr.dropMessage(1, "You may not forfeit this quest.");
+                    }
+                    break;
+                }
+                case 4: { // Scripted Start Quest
+                    final int npcId = slea.readInt();
+                    if (chr.hasBlockedInventory()) {
+                        return;
+                    }
+                    NPCScriptManager.getInstance().startQuest(c, npcId, quest);
+                    break;
+                }
+                case 5: { // Scripted End Quest
+                    final int npcId = slea.readInt();
+                    if (chr.hasBlockedInventory()) {
+                        return;
+                    }
+                    NPCScriptManager.getInstance().endQuest(c, npcId, quest, false);
+                    c.getSession().write(EffectPacket.showForeignEffect(12)); // Quest completion
+                    chr.getMap().broadcastMessage(chr, EffectPacket.showForeignEffect(chr.getId(), 12), false);
+                    break;
+                }
             }
-            case 2: { // Complete Quest
-                final int npc = slea.readInt();
-                //chr.updateTick(slea.readInt());
-                slea.readInt();
-                if (q.hasEndScript()) {
-                    return;
-                }
-                if (slea.available() >= 4) {
-                    q.complete(chr, npc, slea.readInt());
-                } else {
-                    q.complete(chr, npc);
-                }
-                // c.getSession().write(CField.completeQuest(c.getPlayer(), quest));
-                //c.getSession().write(CField.updateQuestInfo(c.getPlayer(), quest, npc, (byte)14));
-                // 6 = start quest
-                // 7 = unknown error
-                // 8 = equip is full
-                // 9 = not enough mesos
-                // 11 = due to the equipment currently being worn wtf o.o
-                // 12 = you may not posess more than one of this item
-                break;
-            }
-            case 3: { // Forefit Quest
-                if (GameConstants.canForfeit(q.getId())) {
-                    q.forfeit(chr);
-                } else {
-                    chr.dropMessage(1, "You may not forfeit this quest.");
-                }
-                break;
-            }
-            case 4: { // Scripted Start Quest
-                final int npc = slea.readInt();
-                if (chr.hasBlockedInventory()) {
-                    return;
-                }
-                //c.getPlayer().updateTick(slea.readInt());
-                NPCScriptManager.getInstance().startQuest(c, npc, quest);
-                break;
-            }
-            case 5: { // Scripted End Quest
-                final int npc = slea.readInt();
-                if (chr.hasBlockedInventory()) {
-                    return;
-                }
-                //c.getPlayer().updateTick(slea.readInt());
-                NPCScriptManager.getInstance().endQuest(c, npc, quest, false);
-                c.getSession().write(EffectPacket.showForeignEffect(12)); // Quest completion
-                chr.getMap().broadcastMessage(chr, EffectPacket.showForeignEffect(chr.getId(), 12), false);
-                break;
-            }
+        } catch (Exception e) {
+            FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Error handling QuestAction ID: " + quest + ". Action: " + action + "\n" + e);
+            System.err.println("Error handling QuestAction ID: " + quest + ". Action: " + action + "\n" + e);
+            c.getSession().write(CWvsContext.enableActions());
         }
     }
 
@@ -247,7 +249,7 @@ public class NPCHandler {
                         storage.store(item);
                         chr.dropMessage(1, "Your inventory is full");
                     } else {
-                        MapleInventoryManipulator.addFromDrop(c, item, false);
+                        MapleInventoryManipulator.addFromDrop(c, item, false, false);
                         storage.sendTakenOut(c, GameConstants.getInventoryType(item.getItemId()));
                     }
                 } else {

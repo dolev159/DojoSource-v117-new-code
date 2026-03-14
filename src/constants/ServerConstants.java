@@ -74,12 +74,14 @@ public class ServerConstants {
     }
     public static final short MAPLE_VERSION = (short) 117;
     public static final String MAPLE_PATCH = "2";
+    public static final byte SERVER_TYPE = 8;
     public static final String vote1 = "http://www.gtop100.com/topsites/MapleStory/sitedetails/-Zipangu--V117-Low-Rates-Private-Server-88169?vote=1";
     public static final String vote2 = "http://www.gtop100.com/topsites/MapleStory/sitedetails/-Zipangu--V117-Low-Rates-Private-Server-88169?vote=1";  
     public static final String SOURCE_REVISION = "0.0.1";
     public static final boolean BLOCK_CS = false;
     public static final boolean Old_Maps = false; // Example: It will use old maple event's henesys instead of current one
-    public static boolean Use_Localhost = true; // true = Packets are logged, false = Others can connect to server
+    public static boolean Use_Localhost = false; // true = Packets are logged, false = Others can connect to server
+    public static final boolean DEBUG_MODE = true;
     public static final boolean USE_AES = true;
     public static final boolean USE_SHANDA = true;
     

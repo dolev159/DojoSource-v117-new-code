@@ -26,6 +26,9 @@ function end(mode, type, selection) {
 			return;
 			}
 			qm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(1));
+			Packages.server.quest.MapleQuest.getInstance(53251).forceComplete(qm.getPlayer(), qm.getNpc());
+			Packages.server.quest.MapleQuest.getInstance(53252).forceComplete(qm.getPlayer(), qm.getNpc());
+			Packages.server.quest.MapleQuest.getInstance(53253).forceStart(qm.getPlayer(), qm.getNpc(), null);
 			qm.getNPCDirectionEffect(9270090, "Effect/DirectionNewPirate.img/newPirate/balloonMsg2/9", 2000, 0, -100);
 			qm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2000));
 			break;
@@ -91,7 +94,7 @@ function end(mode, type, selection) {
 		qm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2000));
 		break;
 	case 19:
-		qm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/DirectionNewPirate.img/newPirate/balloonMsg2/18", 2000, 0, -100, 1));
+		qm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/DirectionNewPirate.img/newPirate/balloonMsg2/23", 2000, 0, -100, 1));
 		qm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2000));
 		break;
 	case 20:
@@ -134,9 +137,6 @@ function end(mode, type, selection) {
 		break;
 	case 31:
 		qm.dispose();
-		Packages.server.quest.MapleQuest.getInstance(53251).forceComplete(qm.getPlayer(), qm.getNpc());
-		Packages.server.quest.MapleQuest.getInstance(53252).forceComplete(qm.getPlayer(), qm.getNpc());
-		Packages.server.quest.MapleQuest.getInstance(53253).forceStart(qm.getPlayer(), qm.getNpc(), null);
 		qm.getPlayer().changeMap(qm.getMap(240000000), qm.getMap(240000000).getPortal(0));
 }
 }

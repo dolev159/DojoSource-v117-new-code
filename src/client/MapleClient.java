@@ -68,17 +68,25 @@ public class MapleClient implements Serializable {
     private int charslots = DEFAULT_CHARSLOT;
     private boolean loggedIn = false, serverTransition = false;
     private transient Calendar tempban = null;
-    private String accountName;
-    private transient long lastPong = 0, lastPing = 0, lastPacketTime = 0;
-    private transient int packetCount = 0;
-    private boolean monitored = false, receiving = true, firstPacket = true;
+    private transient String accountName;
+    private transient long lastPong = 0, lastPing = 0;
+    private int receivedPackets = 0;
+    private boolean monitored = false, receiving = true, firstSend = true, firstRecv = true;
 
-    public final boolean isFirstPacket() {
-        return firstPacket;
+    public final boolean isFirstSend() {
+        return firstSend;
     }
 
-    public final void setFirstPacket(boolean firstPacket) {
-        this.firstPacket = firstPacket;
+    public final void setFirstSend(boolean firstSend) {
+        this.firstSend = firstSend;
+    }
+
+    public final boolean isFirstRecv() {
+        return firstRecv;
+    }
+
+    public final void setFirstRecv(boolean firstRecv) {
+        this.firstRecv = firstRecv;
     }
 
     private boolean gm;
@@ -92,31 +100,13 @@ public class MapleClient implements Serializable {
     private final transient Lock mutex = new ReentrantLock(true);
     private final transient Lock npc_mutex = new ReentrantLock();
     private long lastNpcClick = 0;
-    private final static Lock login_mutex = new ReentrantLock(true);
+
     private Map<Integer, Pair<Short, Short>> charInfo = new LinkedHashMap<>();
 
     public MapleClient(MapleAESOFB send, MapleAESOFB receive, Object session) {
         this.send = send;
         this.receive = receive;
         this.session = session;
-    }
-
-    /**
-     * Highly optimized Spam Tracker ensuring maximum of 50 packets per second per client.
-     */
-    public final boolean checkPacketSpam() {
-        if (player != null && player.isGM()) {
-            return false;
-        }
-        long timeNow = System.currentTimeMillis();
-        if (timeNow - lastPacketTime > 1000) { // Roll over every second
-            packetCount = 1;
-            lastPacketTime = timeNow;
-            return false;
-        } else {
-            packetCount++;
-            return packetCount > 50; // Tolerance Threshold
-        }
     }
 
     public final MapleAESOFB getReceiveCrypto() {
@@ -170,6 +160,25 @@ public class MapleClient implements Serializable {
         return "0.0.0.0";
     }
 
+    public final String getSessionIPAddress() {
+        if (nettyChannel != null) {
+            String addr = nettyChannel.remoteAddress().toString();
+            if (addr.startsWith("/")) {
+                addr = addr.substring(1);
+            }
+            if (addr.contains(":")) {
+                addr = addr.split(":")[0];
+            }
+            return addr;
+        }
+        return "127.0.0.1";
+    }
+
+    public final boolean isLocalhost() {
+        String ip = getSessionIPAddress();
+        return ip.equals("127.0.0.1") || ip.equals("localhost") || ip.equals("0:0:0:0:0:0:0:1") || ip.startsWith("192.168.") || ip.startsWith("10.");
+    }
+
     public final Object getHandler() {
         return null; // Stub for legacy command support
     }
@@ -210,18 +219,23 @@ public class MapleClient implements Serializable {
         return allowedChar.contains(id);
     }
 
-    public final List<MapleCharacter> loadCharacters(final int serverId) { // TODO: Make this less costly zZz
+    public final List<MapleCharacter> loadCharacters(final int serverId) {
+        long start = System.currentTimeMillis();
         final List<MapleCharacter> chars = new LinkedList<>();
 
         final Map<Integer, CardData> cardss = CharacterCardFactory.getInstance().loadCharacterCards(accId, serverId);
-        for (final CharNameAndId cni : loadCharactersInternal(serverId)) {
-            final MapleCharacter chr = MapleCharacter.loadCharFromDB(cni.id, this, false, cardss);
+        List<CharNameAndId> internalChars = loadCharactersInternal(serverId);
+        
+        for (final CharNameAndId cni : internalChars) {
+            // OPTIMIZATION: Use loadCharList for selection lobby instead of full loadCharFromDB
+            final MapleCharacter chr = MapleCharacter.loadCharList(cni.id, this);
             chars.add(chr);
-            charInfo.put(chr.getId(), new Pair<>(chr.getLevel(), chr.getJob())); // To be used to update charCards
+            charInfo.put(chr.getId(), new Pair<>(chr.getLevel(), chr.getJob())); 
             if (!login_Auth(chr.getId())) {
                 allowedChar.add(chr.getId());
             }
         }
+        System.out.println("[DEBUG] Total optimized loadCharacters took " + (System.currentTimeMillis() - start) + "ms");
         return chars;
     }
 
@@ -585,18 +599,27 @@ public class MapleClient implements Serializable {
      * @return The state of the login.
      */
     public int finishLogin() {
-        login_mutex.lock();
-        try {
-            final byte state = getLoginState();
-            if (state > MapleClient.LOGIN_NOTLOGGEDIN) { // already loggedin
-                loggedIn = false;
-                return 7;
-            }
-            updateLoginState(MapleClient.LOGIN_LOGGEDIN, getSessionIPAddress());
-        } finally {
-            login_mutex.unlock();
+        if (getAccID() <= 0) {
+            return 1;
         }
-        return 0;
+        final String ip = getSessionIPAddress();
+        // Atomic SQL update: only set to loggedin if it's currently 0 or it's the same IP (re-login/ghost session)
+        try (Connection con = DatabaseConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement(
+                        "UPDATE accounts SET loggedin = ?, SessionIP = ?, lastlogin = CURRENT_TIMESTAMP() WHERE id = ? AND (loggedin <= 0 OR SessionIP = ?)")) {
+            ps.setInt(1, LOGIN_LOGGEDIN);
+            ps.setString(2, ip);
+            ps.setInt(3, getAccID());
+            ps.setString(4, ip);
+            
+            if (ps.executeUpdate() > 0) {
+                loggedIn = true;
+                return 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL ERROR IN finishLogin: " + e.getMessage());
+        }
+        return 7; // Already logged in or database error
     }
 
     public void clearInformation() {
@@ -647,17 +670,23 @@ public class MapleClient implements Serializable {
                         }
                         byte loginstate = getLoginState();
                         if (loginstate > MapleClient.LOGIN_NOTLOGGEDIN) { // already loggedin
-                            loggedIn = false;
-                            loginok = 7;
+                            if (getSessionIPAddress().equals(oldSession)) {
+                                updateLoginState(MapleClient.LOGIN_NOTLOGGEDIN, getSessionIPAddress());
+                                System.out.println("[DEBUG] Ghost session detected for same IP. Force clearing state for account: " + accId);
+                            } else {
+                                loggedIn = false;
+                                loginok = 7;
+                            }
+                        }
+                        
+                        if (loginok == 5) { // No error yet, proceed to password check
                             if (pwd.equalsIgnoreCase("fixme")) {
                                 try (PreparedStatement ps2 = con
                                         .prepareStatement("UPDATE accounts SET loggedin = 0 WHERE name = ?")) {
                                     ps2.setString(1, login);
                                     ps2.executeUpdate();
-                                } catch (SQLException se) {
-                                }
+                                } catch (SQLException se) {}
                             }
-                        } else {
                             boolean updatePasswordHash = false;
                             // Check if the passwords are correct here. :B
                             if (passhash == null || passhash.isEmpty()) {
@@ -800,7 +829,7 @@ public class MapleClient implements Serializable {
         return this.accId;
     }
 
-    public final void updateLoginState(final int newstate, final String SessionID) { // TODO: Hide?
+    public final void updateLoginState(final int newstate, final String SessionID) {
         try (Connection con = DatabaseConnection.getConnection();
                 PreparedStatement ps = con.prepareStatement(
                         "UPDATE accounts SET loggedin = ?, SessionIP = ?, lastlogin = CURRENT_TIMESTAMP() WHERE id = ?")) {
@@ -809,8 +838,7 @@ public class MapleClient implements Serializable {
             ps.setInt(3, getAccID());
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("SQL ERROR IN PIC/TRANSFER (updateLoginState): " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("SQL ERROR IN updateLoginState: " + e.getMessage());
         }
         if (newstate == MapleClient.LOGIN_NOTLOGGEDIN) {
             loggedIn = false;
@@ -851,7 +879,7 @@ public class MapleClient implements Serializable {
                 byte state = rs.getByte("loggedin");
 
                 if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL) {
-                    if (rs.getTimestamp("lastlogin").getTime() + 20000 < System.currentTimeMillis()) { // Connecting to
+                    if (rs.getTimestamp("lastlogin").getTime() + 5000 < System.currentTimeMillis()) { // Connecting to
                                                                                                        // chanserver
                                                                                                        // timeout
                         state = MapleClient.LOGIN_NOTLOGGEDIN;
@@ -1112,13 +1140,6 @@ public class MapleClient implements Serializable {
         clearInformation();
     }
 
-    public final String getSessionIPAddress() {
-        String s = getRemoteAddress().split(":")[0];
-        if (s.contains("/")) {
-            return s.substring(s.lastIndexOf('/') + 1);
-        }
-        return s;
-    }
 
     public final boolean CheckIPAddress() {
         if (this.accId < 0) {
@@ -1599,7 +1620,18 @@ public class MapleClient implements Serializable {
         this.tempIP = s;
     }
 
-    public boolean isLocalhost() {
-        return ServerConstants.Use_Localhost;
+    public int getReceivedPackets() {
+        return receivedPackets;
     }
-}
+
+    public void incrementReceivedPackets() {
+        this.receivedPackets++;
+    }
+
+
+    public static int getPacketLength(int packetHeader) {
+        int packetLength = ((packetHeader >>> 16) ^ (packetHeader & 0xFFFF));
+        packetLength = ((packetLength << 8) & 0xFF00) | ((packetLength >>> 8) & 0xFF);
+        return packetLength;
+    }
+}

@@ -48,7 +48,7 @@ function action0(mode, type, selection) {
 		break;
 	case 4:
 		cm.getPlayer().updateInfoQuest(23007, cm.getPlayer().getInfoQuest(23007) + ";vel00=1");
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction4.img/Resistance/ClickVel"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction4.img/Resistance/ClickVel"));
 		cm.dispose();
 }
 }

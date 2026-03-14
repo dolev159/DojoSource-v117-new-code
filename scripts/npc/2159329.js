@@ -6,7 +6,7 @@
 
 function start() {
 	if (cm.getPlayer().getPosition().x < 412 || cm.getPlayer().getPosition().x > 612) {
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "It's too far away to see clearly. I must get closer."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It's too far away to see clearly. I must get closer."));
 		cm.dispose();
 		return;
 		}

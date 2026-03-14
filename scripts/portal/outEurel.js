@@ -5,7 +5,7 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24040)).getStatus() == 1 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24093)).getStatus() != 1) {
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24040)).getStatus() == 1) {
 		pi.openNpc(1033205);
 		return true;
 		}

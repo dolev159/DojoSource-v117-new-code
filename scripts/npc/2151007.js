@@ -16,14 +16,14 @@ function action(mode,type,selection) {
 			return;
 			}
 		if (cm.getMap(931000400).getCharacters().size() > 0) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The Training Room door is closed. Is someone else using it? Come back later."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The Training Room door is closed. Is someone else using it? Come back later."));
 			cm.dispose();
 			return;
 			}
 			cm.getMap(931000400).resetFully();
 			cm.getPlayer().changeMap(cm.getMap(931000400), cm.getMap(931000400).getPortal(1));
 			cm.getPlayer().startMapTimeLimitTask(300, cm.getMap(310010010));
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Defeat the Training Robots before the effect of Vita's medicine wears off!"));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Defeat the Training Robots before the effect of Vita's medicine wears off!"));
 			}
 			cm.dispose();
 }

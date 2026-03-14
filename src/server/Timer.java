@@ -106,6 +106,18 @@ public abstract class Timer {
 	}
     }
 
+    public static class DatabaseTimer extends Timer {
+        private static DatabaseTimer instance = new DatabaseTimer();
+
+        private DatabaseTimer() {
+            name = "Databasetimer";
+        }
+
+        public static DatabaseTimer getInstance() {
+            return instance;
+        }
+    }
+
     private ScheduledThreadPoolExecutor ses;
     protected String file, name;
     private static final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -142,6 +154,13 @@ public abstract class Timer {
 
     public ScheduledFuture<?> schedule(Runnable r, long delay) {
 	if (ses == null) {	    return null;	}	return ses.schedule(new LoggingSaveRunnable(r, file), delay, TimeUnit.MILLISECONDS);    }
+
+    public void execute(Runnable r) {
+        if (ses == null) {
+            return;
+        }
+        ses.execute(new LoggingSaveRunnable(r, file));
+    }
 
     public ScheduledFuture<?> scheduleAtTimestamp(Runnable r, long timestamp) {
         return schedule(r, timestamp - System.currentTimeMillis());

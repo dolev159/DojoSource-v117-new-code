@@ -13,7 +13,7 @@ function start() {
 
 function action(mode, type, selection) {
 	switch (mode) {
-	case -1:
+	case - 1:
 		cm.dispose();
 		return;
 	case 0:
@@ -66,7 +66,7 @@ function action0(mode, type, selection) {
 function action1(mode, type, selection) {
 	switch (status) {
 	case 1:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.summonMessage(select));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonMessage(select));
 		cm.dispose();
 }
 }

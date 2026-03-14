@@ -11,7 +11,7 @@ function enter(pi) {
 	map = map == -1 ? 104000000 : map == 100000000 ? map = 100000100 : map == 103000000 ? map = 103050000 : map;
 	portal = map == 230000000 ? "market01" : map == 261000000 ? "market0" : map == 130000200 ? "st00" : 0;
 	for (var i = 0; i < maps.length; i++)
-	if (map == maps[i]) portal = "market00"
+	if (map == maps[i]) portal = "market00";
 	pi.getPlayer().changeMap(pi.getMap(map), pi.getMap(map).getPortal(portal));
 	return true;
 }

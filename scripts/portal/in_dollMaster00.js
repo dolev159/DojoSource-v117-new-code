@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(910510500), pi.getMap(910510500).getPortal(1));
-	return true;
+	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The cave is blocked."));
+	return false;
 }

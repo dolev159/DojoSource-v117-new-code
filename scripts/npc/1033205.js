@@ -25,16 +25,16 @@ function action(mode, type, selection) {
 		}
 	switch (status) {
 	case 0:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 2000));
 		break;
 	case 1:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction5.img/effect/mercedesQuest/merBalloon/0", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction5.img/effect/mercedesQuest/merBalloon/0", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 2500));
 		break;
 	case 2:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction5.img/effect/mercedesQuest/merBalloon/1", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction5.img/effect/mercedesQuest/merBalloon/1", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 2500));
 		break;
 	case 3:
 		cm.sendNextS("Wait... Something doesn't feel right...about...my level?", 17);
@@ -43,7 +43,7 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("Level... 10?", 17);
 		break;
 	case 5:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(0));
 		var tick = 0;
 		schedule = Packages.server.Timer.EtcTimer.getInstance().register(function () {
 		if (tick == 1) {

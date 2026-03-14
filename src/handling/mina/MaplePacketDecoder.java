@@ -36,26 +36,46 @@ public class MaplePacketDecoder extends CumulativeProtocolDecoder {
     public static class DecoderState {
 
 	public int packetlength = -1;
+        public boolean handshake = true;
     }
 
     @Override
     protected boolean doDecode(IoSession session, ByteBuffer in, ProtocolDecoderOutput out) throws Exception {
 	final DecoderState decoderState = (DecoderState) session.getAttribute(DECODER_STATE_KEY);
-
-/*	if (decoderState == null) {
-	    decoderState = new DecoderState();
-	    session.setAttribute(DECODER_STATE_KEY, decoderState);
-	}*/
 	final MapleClient client = (MapleClient) session.getAttribute("CLIENT");
+
+        if (client.isFirstRecv()) {
+            if (in.remaining() >= 2) {
+                byte[] decryptedPacket = new byte[in.remaining()];
+                in.get(decryptedPacket, 0, in.remaining());
+                client.setFirstRecv(false);
+                out.write(decryptedPacket);
+                client.incrementReceivedPackets();
+                return true;
+            }
+            return false;
+        }
 
 	if (decoderState.packetlength == -1) {
 	    if (in.remaining() >= 4) {
 		final int packetHeader = in.getInt();
 		if (!client.getReceiveCrypto().checkPacket(packetHeader)) {
-		    session.close();
-		    return false;
+                    if (client.isLocalhost()) {
+                        System.out.println("[Mina] Localhost DLL Header Mismatch (0x" + Integer.toHexString(packetHeader).toUpperCase() + "). Bypassing...");
+                    } else {
+                        session.close();
+                        return false;
+                    }
 		}
 		decoderState.packetlength = MapleAESOFB.getPacketLength(packetHeader);
+                if (decoderState.packetlength <= 0 || decoderState.packetlength > 16384) {
+                    if (client.isLocalhost()) {
+                        decoderState.packetlength = in.remaining();
+                    } else {
+                        session.close();
+                        return false;
+                    }
+                }
 	    } else {
 		return false;
 	    }
@@ -68,6 +88,7 @@ public class MaplePacketDecoder extends CumulativeProtocolDecoder {
 	    client.getReceiveCrypto().crypt(decryptedPacket);
 	    MapleCustomEncryption.decryptData(decryptedPacket);
 	    out.write(decryptedPacket);
+            client.incrementReceivedPackets();
 	    return true;
 	}
 	return false;

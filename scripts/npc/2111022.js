@@ -24,7 +24,7 @@ function start() {
 		cm.dispose();
 		return;
 		}
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The third Magic Pentagram has reacted."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The third Magic Pentagram has reacted."));
 		cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3345)).setCustomData(3);
 		cm.showNpcSpecialEffect(2111022, "act33453");
 		cm.gainItem(4031741, -1);

@@ -1,0 +1,132 @@
+﻿Cleaning dist...
+Compiling GameConstants...
+.\compile_all_changes.bat : s
+rc\server\shops\HiredMerchant
+.java:150: error: method 
+addFromDrop in class 
+MapleInventoryManipulator 
+cannot be applied to given 
+types;
+At line:1 char:1
++ .\compile_all_changes.bat 
+> compile_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (src\ser  
+  ver\shop...to given type   
+ s;:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+                    MapleInve
+ntoryManipulator.addFromDrop(
+c, newItem, false);
+                             
+                ^
+  required: MapleClient,Item,
+boolean,boolean
+  found:    
+MapleClient,Item,boolean
+  reason: actual and formal 
+argument lists differ in 
+length
+src\handling\channel\handler\
+PlayerInteractionHandler.java
+:520: error: method 
+addFromDrop in class 
+MapleInventoryManipulator 
+cannot be applied to given 
+types;
+                            M
+apleInventoryManipulator.addF
+romDrop(c, item_get, false);
+                             
+                        ^
+  required: MapleClient,Item,
+boolean,boolean
+  found:    
+MapleClient,Item,boolean
+  reason: actual and formal 
+argument lists differ in 
+length
+src\handling\channel\handler\
+HiredMerchantHandler.java:204
+: error: method addFromDrop 
+in class 
+MapleInventoryManipulator 
+cannot be applied to given 
+types;
+                    MapleInve
+ntoryManipulator.addFromDrop(
+c, item, false);
+                             
+                ^
+  required: MapleClient,Item,
+boolean,boolean
+  found:    
+MapleClient,Item,boolean
+  reason: actual and formal 
+argument lists differ in 
+length
+src\server\shops\MaplePlayerS
+hop.java:58: error: method 
+addFromDrop in class 
+MapleInventoryManipulator 
+cannot be applied to given 
+types;
+                if 
+(getMCOwner().getMeso() + 
+gainmeso > 0 && MapleInventor
+yManipulator.checkSpace(c, 
+newItem.getItemId(), 
+newItem.getQuantity(), 
+newItem.getOwner()) && MapleI
+nventoryManipulator.addFromDr
+op(c, newItem, false)) {
+                             
+                             
+                             
+                             
+                             
+                             
+                   ^
+  required: MapleClient,Item,
+boolean,boolean
+  found:    
+MapleClient,Item,boolean
+  reason: actual and formal 
+argument lists differ in 
+length
+src\server\shops\MaplePlayerS
+hop.java:104: error: method 
+addFromDrop in class 
+MapleInventoryManipulator 
+cannot be applied to given 
+types;
+                        if (M
+apleInventoryManipulator.addF
+romDrop(owner.getClient(), 
+newItem, false)) {
+                             
+                        ^
+  required: MapleClient,Item,
+boolean,boolean
+  found:    
+MapleClient,Item,boolean
+  reason: actual and formal 
+argument lists differ in 
+length
+Note: src\client\messages\Com
+mandProcessor.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+Note: Some input files use 
+unchecked or unsafe 
+operations.
+Note: Recompile with 
+-Xlint:unchecked for details.
+5 errors

@@ -4,10 +4,6 @@
 	描述:	220050300
 */
 
-var map = 927000100;
-
-var num = 10;
-
 var status;
 
 function start() {
@@ -40,14 +36,14 @@ function action(mode, type, selection) {
 		cm.sendNext("Good luck, #h0#.");
 		break;
 	case 2:
-		for (var i = 0; i < num; i++)
-		if (cm.getMap(map + i).getCharacters().size() < 1 && cm.getMap(map + i + 10).getCharacters().size() < 1) {
-			cm.getMap(map + i).resetFully();
-			cm.getPlayer().changeMap(cm.getMap(map + i), cm.getMap(map + i).getPortal(0));
+		var em = cm.getEventManager("q23215");
+		var prop = em.getProperty("state");
+		if (prop == null || prop == 0) {
+			em.startInstance(cm.getPlayer());
 			cm.dispose();
 			return;
 			}
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Try again soon."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 			cm.dispose();
 }
 }

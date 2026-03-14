@@ -46,8 +46,8 @@ function action0(mode, type, selection) {
 		break;
 	case 5:
 		cm.getPlayer().updateInfoQuest(21019, "helper=clear");
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction1.img/aranTutorial/face"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction1.img/aranTutorial/ClickLilin"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction1.img/aranTutorial/face"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction1.img/aranTutorial/ClickLilin"));
 		cm.dispose();
 }
 }
@@ -77,7 +77,7 @@ function action1(mode, type, selection) {
 		break;
 	case 7:
 		cm.getPlayer().changeMap(cm.getMap(140090100), cm.getMap(140090100).getPortal(1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.summonHelper(true));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonHelper(true));
 		cm.dispose();
 }
 }

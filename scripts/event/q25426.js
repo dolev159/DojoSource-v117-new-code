@@ -42,7 +42,7 @@ function scheduledTimeout(eim) {//規定時間結束
 	eim.disposeIfPlayerBelow(100, 140020000);
 }
 
-function monsterValue(eim, player, mob) {//殺怪後觸發
+function monsterValue(eim, mobId) {//殺怪後觸發
 	return 1;
 }
 

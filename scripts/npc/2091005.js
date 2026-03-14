@@ -50,23 +50,11 @@ function action(mode, type, selection) {
 		if (cm.getParty() != null) {
 			cm.sendOk("Please leave your party.");
 			cm.dispose();
+            return;
 		}
-		var record = cm.getQuestRecord(150000);
-		var data = record.getCustomData();
-
-		if (data != null) {
-		    var idd = get_restinFieldID(parseInt(data));
-		    if (idd != 925020002) {
-		        cm.dojoAgent_NextMap(true, true, idd);
-		        record.setCustomData(null);
-		    } else {
-			cm.sendOk("Please try again later.");
-		    }
-		} else {
-		    cm.start_DojoAgent(true, false);
-		}
+        // Solo Dojo via PQ Engine (The engine handles solo if party is properly initialized or bypass is applied)
+        cm.getPQEngine().startInstance(null, "Mu Lung Dojo", cm);
 		cm.dispose();
-	    // cm.sendYesNo("The last time you took the challenge yourself, you were able to reach Floor #18. I can take you straight to that floor, if you want. Are you interested?");
 	    }
 	} else if (status == 1) {
 	    if (sel == 3) {
@@ -116,7 +104,7 @@ function action(mode, type, selection) {
 		}
 		cm.dispose();
 	    } else if (sel == 1) {
-		cm.start_DojoAgent(true, true);
+		cm.getPQEngine().startInstance(cm.getParty(), "Mu Lung Dojo", cm);
 		cm.dispose();
 	    }
 	}

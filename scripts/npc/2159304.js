@@ -7,7 +7,7 @@
 function start() {
 	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23970)).getStatus() == 1) {
 	if (cm.getPlayer().getPosition().x > 300) {
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "It's too far away to see clearly. I must get closer."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It's too far away to see clearly. I must get closer."));
 		cm.dispose();
 		return;
 		}

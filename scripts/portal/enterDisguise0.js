@@ -12,9 +12,9 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(130010000), pi.getMap(130010000).getPortal(3)); //修煉森林1
 		return true;
 		}
-	for (var i = 0; i < quest.length; i ++)
+		for (var i = 0; i < quest.length; i ++)
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(quest[i])).getStatus() == 1) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Due to the lock down you can not enter without a permit."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Cannot pass through without an Investigation permit."));
 		return false;
 		}
 		pi.getPlayer().changeMap(pi.getMap(130010000), pi.getMap(130010000).getPortal(3)); //修煉森林1

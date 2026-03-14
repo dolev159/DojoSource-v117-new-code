@@ -14,16 +14,20 @@ import tools.HexTool;
 import tools.data.MaplePacketLittleEndianWriter;
 
 public class LoginPacket {
+    
+    private LoginPacket() {
+        // Static helper class
+    }
 
-    public static final byte[] getHello(short mapleVersion, byte[] sendIv, byte[] recvIv) {
-        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter(15 + ServerConstants.MAPLE_PATCH.length());
+    public static final byte[] getHello(short version, byte[] sendIv, byte[] recvIv) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
 
-        mplew.writeShort(13 + ServerConstants.MAPLE_PATCH.length());
-        mplew.writeShort(mapleVersion);
+        mplew.writeShort((short) (13 + ServerConstants.MAPLE_PATCH.length()));
+        mplew.writeShort(version);
         mplew.writeMapleAsciiString(ServerConstants.MAPLE_PATCH);
         mplew.write(recvIv);
         mplew.write(sendIv);
-        mplew.write(8);
+        mplew.write(ServerConstants.SERVER_TYPE);
 
         return mplew.getPacket();
     }
@@ -54,6 +58,7 @@ public class LoginPacket {
         mplew.writeShort(257);
         mplew.writeInt(0);
         mplew.writeInt(0);
+
         return mplew.getPacket();
     }
 
@@ -105,23 +110,23 @@ public class LoginPacket {
     }
 
     public static final byte[] getSecondAuthSuccess(MapleClient client) {
-         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
 
-         mplew.writeShort(SendPacketOpcode.LOGIN_SECOND.getValue());
-         mplew.write(0);
-         mplew.writeInt(client.getAccID());
-         mplew.writeZeroBytes(5);
-         mplew.writeMapleAsciiString(client.getAccountName());
-         mplew.writeLong(2L);
-         mplew.writeZeroBytes(3);
-         mplew.writeInt(Randomizer.nextInt());
-         mplew.writeInt(Randomizer.nextInt());
-         mplew.writeInt(28);
-         mplew.writeInt(Randomizer.nextInt());
-         mplew.writeInt(Randomizer.nextInt());
-         mplew.write(1);
+        mplew.writeShort(SendPacketOpcode.LOGIN_SECOND.getValue());
+        mplew.write(0);
+        mplew.writeInt(client.getAccID());
+        mplew.writeZeroBytes(5);
+        mplew.writeMapleAsciiString(client.getAccountName());
+        mplew.writeLong(2L);
+        mplew.writeZeroBytes(3);
+        mplew.writeInt(Randomizer.nextInt());
+        mplew.writeInt(Randomizer.nextInt());
+        mplew.writeInt(28);
+        mplew.writeInt(Randomizer.nextInt());
+        mplew.writeInt(Randomizer.nextInt());
+        mplew.write(1);
 
-         return mplew.getPacket();
+        return mplew.getPacket();
     }
 
     public static final byte[] deleteCharResponse(int cid, int state) {

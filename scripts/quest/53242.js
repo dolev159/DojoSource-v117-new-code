@@ -45,13 +45,13 @@ function start(mode, type, selection) {
 		qm.sendNextPrev("A couple of days ago, I received an order from a secret organization.");
 		break;
 	case 7:
-		qm.sendNextPrev("And you don't want anybody to know what you're cooking up?");
+		qm.sendNextPrevS("And you don't want anybody to know what you're cooking up?", 2);
 		break;
 	case 8:
-		qm.sendNextPrev("I prefer to keep my trade secrets to myself. The client asked me to make a Matter Disassembler, based on an old alchemy manuscript he found. The pay is VERY handsome.");
+		qm.sendNextPrev("I prefer to keep my trade secrets to myself. The client asked me to make a #bMatter Disassembler#k, based on an old alchemy manuscript he found. The pay is VERY handsome.");
 		break;
 	case 9:
-		qm.sendNextPrevS("(Matter Disassembler? That sounds like a dangerous thing to have...)", 2);
+		qm.sendNextPrevS("#b(Matter Disassembler? That sounds like a dangerous thing to have...)", 2);
 		break;
 	case 10:
 		qm.sendNextPrevS("The client... you know him?", 2);
@@ -64,6 +64,7 @@ function start(mode, type, selection) {
 		break;
 	case 13:
 		qm.dispose();
-		Packages.server.quest.MapleQuest.getInstance(53242).forceStart(qm.getPlayer(), qm.getNpc(), null);
+		qm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(53242)).setStatus(1);
+		qm.getPlayer().updateQuest(qm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(53242)), true);
 }
 }

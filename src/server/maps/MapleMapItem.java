@@ -26,6 +26,7 @@ import client.MapleCharacter;
 import client.MapleClient;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import client.inventory.Equip;
 import tools.packet.CField;
 
 public class MapleMapItem extends MapleMapObject {
@@ -35,8 +36,43 @@ public class MapleMapItem extends MapleMapObject {
     protected int character_ownerid, meso = 0, questid = -1;
     protected byte type;
     protected boolean pickedUp = false, playerDrop, randDrop = false;
+    protected boolean bossDrop = false;
     protected long nextExpiry = 0, nextFFA = 0;
     private ReentrantLock lock = new ReentrantLock();
+
+    public final boolean isBossDrop() {
+        return bossDrop;
+    }
+
+    public final void setBossDrop(boolean bossDrop) {
+        this.bossDrop = bossDrop;
+    }
+
+    public final boolean isRarePlus() {
+        if (item == null) {
+            return false;
+        }
+        int itemId = item.getItemId();
+        // Scrolls
+        if (itemId / 10000 == 204) {
+            return true;
+        }
+        // Equips with Potential
+        if (item instanceof Equip eq && eq.getState() >= 1) { // 1 = Rare, 2 = Epic, 3 = Unique, 4 = Legendary
+            return true;
+        }
+        return false;
+    }
+
+    public final boolean isCommon() {
+        if (meso > 0) {
+            return true;
+        }
+        if (item == null) {
+            return false;
+        }
+        return !isRarePlus() && !bossDrop;
+    }
 
     public MapleMapItem(Item item, Point position, MapleMapObject dropper, MapleCharacter owner, byte type, boolean playerDrop) {
         setPosition(position);
@@ -173,11 +209,11 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public void expire(final MapleMap map) {
-	pickedUp = true;
-	map.broadcastMessage(CField.removeItemFromMap(getObjectId(), 0, 0));
-	map.removeMapObject(this);
-	if (randDrop) {
-	   map.spawnRandDrop();
-	}
+        pickedUp = true;
+        map.broadcastMessage(CField.removeItemFromMap(getObjectId(), 0, 0));
+        map.removeMapObject(this);
+        if (randDrop) {
+            map.spawnRandDrop();
+        }
     }
-}
+}

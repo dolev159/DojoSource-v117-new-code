@@ -19,8 +19,8 @@ public class NettyPacketEncoder extends MessageToByteEncoder<byte[]> {
             final Lock mutex = client.getLock();
             mutex.lock();
             try {
-                if (client.isFirstPacket()) {
-                    client.setFirstPacket(false);
+                if (client.isFirstSend()) {
+                    client.setFirstSend(false);
                     out.writeBytes(message);
                 } else {
                     final byte[] data = new byte[message.length];

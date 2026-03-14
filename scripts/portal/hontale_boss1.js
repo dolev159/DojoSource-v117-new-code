@@ -8,7 +8,7 @@ function enter(pi) {
 	if (pi.getPlayer().getMap().getReactorByName("tremble1").getState() < 1) {
 		pi.getPlayer().getMap().getReactorByName("tremble1").forceHitReactor(1);
 		pi.forceStartReactor(pi.getPlayer().getMap().getId(), 2408003);
-		pi.getPlayer().getMap().broadcastMessage(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Strange sounds emanated from the depths of the cave."));
+		pi.getPlayer().getMap().broadcastMessage(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "A gigantic creature is approaching from the deep cave."));
 		}
 		return false;
 }

@@ -6,10 +6,10 @@
 
 function start() {
 	if (cm.getPlayer().getProfessionLevel(92020000) > 0) {
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.openUI(42));
+		cm.sendProfessionWindow();
 		cm.dispose();
 		return;
 		}
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Only Blacksmiths can use this."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Only Blacksmiths can use this."));
 		cm.dispose();
 }

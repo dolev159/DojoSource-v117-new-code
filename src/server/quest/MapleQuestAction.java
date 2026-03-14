@@ -19,7 +19,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package server.quest;
-
+ 
+import provider.MapleData;
+import provider.MapleDataTool;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.Serializable;
@@ -104,6 +106,57 @@ public class MapleQuestAction implements Serializable {
                 }
                 rs.close();
                 break;
+            default:
+                break;
+        }
+    }
+
+    public MapleQuestAction(MapleQuestActionType type, MapleData data, MapleQuest quest) {
+        this.type = type;
+        this.quest = quest;
+
+        this.intStore = MapleDataTool.getInt(data, 0);
+        for (MapleData job : data.getChildren()) {
+            if (job.getName().equals("job")) {
+               for (MapleData jobChild : job.getChildren()) {
+                   applicableJobs.add(MapleDataTool.getInt(jobChild));
+               }
+            }
+        }
+        
+        switch (type) {
+            case item:
+                items = new ArrayList<QuestItem>();
+                for (MapleData item : data.getChildren()) {
+                    items.add(new QuestItem(
+                        MapleDataTool.getInt("id", item, 0),
+                        MapleDataTool.getInt("count", item, 0),
+                        MapleDataTool.getInt("period", item, 0),
+                        MapleDataTool.getInt("gender", item, 2),
+                        MapleDataTool.getInt("job", item, -1),
+                        MapleDataTool.getInt("jobEx", item, -1),
+                        MapleDataTool.getInt("prop", item, -2)
+                    ));
+                }
+                break;
+            case quest:
+                state = new ArrayList<Pair<Integer, Integer>>();
+                for (MapleData s : data.getChildren()) {
+                    state.add(new Pair<Integer, Integer>(MapleDataTool.getInt("id", s, 0), MapleDataTool.getInt("state", s, 0)));
+                }
+                break;
+            case skill:
+                skill = new ArrayList<Triple<Integer, Integer, Integer>>();
+                for (MapleData s : data.getChildren()) {
+                    skill.add(new Triple<Integer, Integer, Integer>(
+                        MapleDataTool.getInt("id", s, 0),
+                        MapleDataTool.getInt("skillLevel", s, 0),
+                        MapleDataTool.getInt("masterLevel", s, 0)
+                    ));
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -160,6 +213,9 @@ public class MapleQuestAction implements Serializable {
                 c.gainExp(intStore * GameConstants.getExpRate_Quest(c.getLevel()) * (c.getStat().questBonus) * ((c.getTrait(MapleTraitType.sense).getLevel() * 3 / 10) + 100) / 100, true, true, true);
                 break;
             case item:
+                if (items == null) {
+                    break;
+                }
                 // First check for randomness in item selection
                 Map<Integer, Integer> props = new HashMap<Integer, Integer>();
                 for (QuestItem item : items) {
@@ -225,11 +281,17 @@ public class MapleQuestAction implements Serializable {
                 c.gainMeso(intStore, true, true);
                 break;
             case quest:
+                if (state == null) {
+                    break;
+                }
                 for (Pair<Integer, Integer> q : state) {
                     c.updateQuest(new MapleQuestStatus(MapleQuest.getInstance(q.left), q.right));
                 }
                 break;
             case skill:
+                if (skill == null) {
+                    break;
+                }
                 final Map<Skill, SkillEntry> sa = new HashMap<>();
                 for (Triple<Integer, Integer, Integer> skills : skill) {
                     final int skillid = skills.left;
@@ -319,6 +381,9 @@ public class MapleQuestAction implements Serializable {
     public boolean checkEnd(MapleCharacter c, Integer extSelection) {
         switch (type) {
             case item: {
+                if (items == null) {
+                    return true;
+                }
                 // First check for randomness in item selection
                 final Map<Integer, Integer> props = new HashMap<Integer, Integer>();
 
@@ -377,6 +442,8 @@ public class MapleQuestAction implements Serializable {
                             case CASH:
                                 cash++;
                                 break;
+                            case UNDEFINED:
+                                break;
                         }
                     }
                 }
@@ -409,6 +476,22 @@ public class MapleQuestAction implements Serializable {
                 }
                 return true;
             }
+            case exp:
+            case nextQuest:
+            case quest:
+            case skill:
+            case pop:
+            case buffItemID:
+            case infoNumber:
+            case sp:
+            case charismaEXP:
+            case charmEXP:
+            case willEXP:
+            case insightEXP:
+            case senseEXP:
+            case craftEXP:
+            case UNDEFINED:
+                return true;
         }
         return true;
     }
@@ -420,6 +503,9 @@ public class MapleQuestAction implements Serializable {
                 break;
             }
             case item: {
+                if (items == null) {
+                    break;
+                }
                 // First check for randomness in item selection
                 Map<Integer, Integer> props = new HashMap<Integer, Integer>();
                 for (QuestItem item : items) {
@@ -475,12 +561,18 @@ public class MapleQuestAction implements Serializable {
                 break;
             }
             case quest: {
+                if (state == null) {
+                    break;
+                }
                 for (Pair<Integer, Integer> q : state) {
                     c.updateQuest(new MapleQuestStatus(MapleQuest.getInstance(q.left), q.right));
                 }
                 break;
             }
             case skill:
+                if (skill == null) {
+                    break;
+                }
                 final Map<Skill, SkillEntry> sa = new HashMap<>();
                 for (Triple<Integer, Integer, Integer> skills : skill) {
                     final int skillid = skills.left;
@@ -648,6 +740,14 @@ public class MapleQuestAction implements Serializable {
 
     public List<QuestItem> getItems() {
         return items;
+    }
+
+    public int getIntStore() {
+        return intStore;
+    }
+
+    public List<Pair<Integer, Integer>> getState() {
+        return state;
     }
 
     public static class QuestItem {

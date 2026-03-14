@@ -50,48 +50,50 @@ public class NPCScriptManager extends AbstractScriptManager {
         return true;
     }
 
+    public final void start(final MapleClient c, final int npc) {
+        start(c, npc, 0, null);
+    }
+
     public final void start(final MapleClient c, final int npc, String filename) {
-        
+        start(c, npc, 0, filename);
+    }
+
+    public final void start(MapleClient c, int npc, int npcObjectid, String filename) {
         final Lock lock = c.getNPCLock();
         lock.lock();
         try {
             if (!cms.containsKey(c) && c.canClickNPC()) {
-                Invocable iv = getInvocable("npc/" + npc + ".js", c, true); // Safe disposal
-                if (filename != null) {
-                    iv = getInvocable("npc/" + filename + ".js", c, true); // Safe disposal
-                }
+                String scriptPath = (filename != null) ? "npc/" + filename + ".js" : "npc/" + npc + ".js";
+                Invocable iv = getInvocable(scriptPath, c, true);
+
                 if (iv == null) {
-                    iv = getInvocable("npc/world" + (c.getPlayer() != null ? c.getPlayer().getWorld() : WorldConstants.defaultserver) + "/" + npc + ".js", c, true);
-                    if (filename != null) {
-                        iv = getInvocable("npc/world" + (c.getPlayer() != null ? c.getPlayer().getWorld() : WorldConstants.defaultserver) + "/" + filename + ".js", c, true);
-                    }
+                    iv = getInvocable("npc/default/" + (filename != null ? filename : npc) + ".js", c, true);
                     if (iv == null) {
-                        iv = getInvocable("npc/default/" + npc + ".js", c, true); // Safe disposal
-                        if (filename != null) {
-                            iv = getInvocable("npc/default/" + filename + ".js", c, true); // Safe disposal
-                        }
+                        iv = getInvocable("npc/notcoded.js", c, true);
                         if (iv == null) {
-                            iv = getInvocable("npc/notcoded.js", c, true); // Safe disposal
-                            if (iv == null) {
-                                iv = getInvocable("npc/world" + (c.getPlayer() != null ? c.getPlayer().getWorld() : WorldConstants.defaultserver) + "/notcoded.js", c, true); // Safe disposal
-                                if (iv == null) {
-                                    dispose(c);
-                                    return;
-                                }
-                            }
+                            dispose(c);
+                            return;
                         }
                     }
                 }
+
                 final ScriptEngine scriptengine = (ScriptEngine) iv;
-                final NPCConversationManager cm = new NPCConversationManager(c, npc, -1, (byte) -1, iv);
+                final NPCConversationManager cm = new NPCConversationManager(c, npc, -1, npcObjectid, -1, iv);
                 cms.put(c, cm);
                 scriptengine.put("cm", cm);
 
                 c.getPlayer().setConversation(1);
                 c.setClickedNPC();
-                //System.out.println("NPCID started: " + npc);
+                
                 try {
-                    iv.invokeFunction("start"); // Temporary until I've removed all of start
+                    if (hasMethod(iv, "start")) {
+                        iv.invokeFunction("start");
+                    } else if (hasMethod(iv, "action")) {
+                        iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
+                    } else {
+                        System.err.println("NPC " + npc + " has no start() or action() function.");
+                        dispose(c);
+                    }
                 } catch (NoSuchMethodException nsme) {
                     iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
                 }
@@ -118,7 +120,11 @@ public class NPCScriptManager extends AbstractScriptManager {
                     dispose(c);
                 } else {
                     c.setClickedNPC();
-                    cm.getIv().invokeFunction("action", mode, type, selection);
+                    if (hasMethod(cm.getIv(), "action")) {
+                        cm.getIv().invokeFunction("action", mode, type, selection);
+                    } else {
+                        dispose(c);
+                    }
                 }
             } catch (final Exception e) {
                 System.err.println("Error executing NPC script. NPC ID : " + cm.getNpc() + ":" + e);
@@ -131,6 +137,10 @@ public class NPCScriptManager extends AbstractScriptManager {
     }
 
     public final void startQuest(final MapleClient c, final int npc, final int quest) {
+        startQuest(c, npc, -1, quest);
+    }
+
+    public final void startQuest(final MapleClient c, final int npc, final int npcObjectid, final int quest) {
         if (!MapleQuest.getInstance(quest).canStart(c.getPlayer(), null)) {
             return;
         }
@@ -140,26 +150,40 @@ public class NPCScriptManager extends AbstractScriptManager {
             if (!cms.containsKey(c) && c.canClickNPC()) {
                 final Invocable iv = getInvocable("quest/" + quest + ".js", c, true);
                 if (iv == null) {
+                    MapleQuest.getInstance(quest).start(c.getPlayer(), npc);
                     dispose(c);
                     return;
                 }
                 final ScriptEngine scriptengine = (ScriptEngine) iv;
-                final NPCConversationManager cm = new NPCConversationManager(c, npc, quest, (byte) 0, iv);
+                final NPCConversationManager cm = new NPCConversationManager(c, npc, quest, npcObjectid, 0, iv);
                 cms.put(c, cm);
                 scriptengine.put("qm", cm);
 
                 c.getPlayer().setConversation(1);
                 c.setClickedNPC();
-                //System.out.println("NPCID started: " + npc + " startquest " + quest);
+                
                 try {
-                    iv.invokeFunction("start", (byte) 1, (byte) 0, 0); // Start it off as something
+                    if (hasMethod(iv, "start")) {
+                        iv.invokeFunction("start", (byte) 1, (byte) 0, 0);
+                    } else if (hasMethod(iv, "action")) {
+                        iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
+                    } else {
+                        MapleQuest.getInstance(quest).start(c.getPlayer(), npc);
+                        dispose(c);
+                    }
                 } catch (NoSuchMethodException nsme) {
                     iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
                 }
             }
         } catch (final Exception e) {
-            System.err.println("Error executing Quest script. (" + quest + ")..NPC ID: " + npc + ":" + e);
             FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Error executing Quest script. (" + quest + ")..NPCID: " + npc + ":" + e);
+            try {
+                MapleQuest.getInstance(quest).start(c.getPlayer(), npc);
+            } catch (Exception e2) {
+                // Binary fallback failed, already logged to file in outer catch? 
+                // Actually the outer catch logs 'e', not 'e2'.
+                FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Critical failure: Binary fallback for quest " + quest + " also failed. " + e2);
+            }
             dispose(c);
         } finally {
             lock.unlock();
@@ -179,7 +203,11 @@ public class NPCScriptManager extends AbstractScriptManager {
             } else {
                 c.setClickedNPC();
                 try {
-                    cm.getIv().invokeFunction("start", mode, type, selection);
+                    if (hasMethod(cm.getIv(), "start")) {
+                        cm.getIv().invokeFunction("start", mode, type, selection);
+                    } else {
+                        cm.getIv().invokeFunction("action", mode, type, selection);
+                    }
                 } catch (NoSuchMethodException nsme) {
                     cm.getIv().invokeFunction("action", mode, type, selection);
                 }
@@ -194,6 +222,10 @@ public class NPCScriptManager extends AbstractScriptManager {
     }
 
     public final void endQuest(final MapleClient c, final int npc, final int quest, final boolean customEnd) {
+        endQuest(c, npc, -1, quest, customEnd);
+    }
+
+    public final void endQuest(final MapleClient c, final int npc, final int npcObjectid, final int quest, final boolean customEnd) {
         if (!customEnd && !MapleQuest.getInstance(quest).canComplete(c.getPlayer(), null)) {
             return;
         }
@@ -203,25 +235,37 @@ public class NPCScriptManager extends AbstractScriptManager {
             if (!cms.containsKey(c) && c.canClickNPC()) {
                 final Invocable iv = getInvocable("quest/" + quest + ".js", c, true);
                 if (iv == null) {
+                    MapleQuest.getInstance(quest).complete(c.getPlayer(), npc);
                     dispose(c);
                     return;
                 }
                 final ScriptEngine scriptengine = (ScriptEngine) iv;
-                final NPCConversationManager cm = new NPCConversationManager(c, npc, quest, (byte) 1, iv);
+                final NPCConversationManager cm = new NPCConversationManager(c, npc, quest, npcObjectid, 1, iv);
                 cms.put(c, cm);
                 scriptengine.put("qm", cm);
 
                 c.getPlayer().setConversation(1);
                 c.setClickedNPC();
                 try {
-                    iv.invokeFunction("end", (byte) 1, (byte) 0, 0); // Start it off as something
+                    if (hasMethod(iv, "end")) {
+                        iv.invokeFunction("end", (byte) 1, (byte) 0, 0);
+                    } else if (hasMethod(iv, "action")) {
+                        iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
+                    } else {
+                        MapleQuest.getInstance(quest).complete(c.getPlayer(), npc);
+                        dispose(c);
+                    }
                 } catch (NoSuchMethodException nsme) {
                     iv.invokeFunction("action", (byte) 1, (byte) 0, 0);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error executing Quest script. (" + quest + ")..NPC ID: " + npc + ":" + e);
             FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Error executing Quest script. (" + quest + ")..NPC ID: " + npc + ":" + e);
+            try {
+                MapleQuest.getInstance(quest).complete(c.getPlayer(), npc);
+            } catch (Exception e2) {
+                FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Critical failure: Binary fallback (complete) for quest " + quest + " also failed. " + e2);
+            }
             dispose(c);
         } finally {
             lock.unlock();
@@ -241,7 +285,11 @@ public class NPCScriptManager extends AbstractScriptManager {
             } else {
                 c.setClickedNPC();
                 try {
-                    cm.getIv().invokeFunction("end", mode, type, selection);
+                    if (hasMethod(cm.getIv(), "end")) {
+                        cm.getIv().invokeFunction("end", mode, type, selection);
+                    } else {
+                        cm.getIv().invokeFunction("action", mode, type, selection);
+                    }
                 } catch (NoSuchMethodException nsme) {
                     cm.getIv().invokeFunction("action", mode, type, selection);
                 }
@@ -267,7 +315,7 @@ public class NPCScriptManager extends AbstractScriptManager {
                     return;
                 }
                 final ScriptEngine scriptengine = (ScriptEngine) iv;
-                final NPCConversationManager cm = new NPCConversationManager(c, npc, -1, (byte) -1, iv);
+                final NPCConversationManager cm = new NPCConversationManager(c, npc, -1, 0, -1, iv);
                 cms.put(c, cm);
                 scriptengine.put("im", cm);
                 c.getPlayer().setConversation(1);
@@ -291,6 +339,13 @@ public class NPCScriptManager extends AbstractScriptManager {
                 c.removeScriptEngine("scripts/npc/" + npccm.getNpc() + ".js");
                 c.removeScriptEngine("scripts/npc/notcoded.js");
             } else {
+                // Validation-on-Dispose logic
+                if (c.getPlayer() != null && npccm.getQuest() > 0) {
+                    MapleQuest quest = MapleQuest.getInstance(npccm.getQuest());
+                    if (c.getPlayer().getQuestStatus(npccm.getQuest()) == 1 && quest.canComplete(c.getPlayer(), npccm.getNpc())) {
+                        quest.complete(c.getPlayer(), npccm.getNpc());
+                    }
+                }
                 c.removeScriptEngine("scripts/quest/" + npccm.getQuest() + ".js");
             }
         }
@@ -303,7 +358,5 @@ public class NPCScriptManager extends AbstractScriptManager {
         return cms.get(c);
     }
 
-    public void start(MapleClient client, int i) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+
 }

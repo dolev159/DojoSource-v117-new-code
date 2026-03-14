@@ -19,7 +19,7 @@ function start() {
 		cm.dispose();
 		return;
 		}
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "You have rescued the Piglet."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You have rescued the Piglet."));
 		Packages.server.quest.MapleQuest.getInstance(22015).forceComplete(cm.getPlayer(), 0); //小豬消失
 		cm.gainItem(4032449, 1);
 		cm.dispose();

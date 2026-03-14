@@ -4,8 +4,11 @@
 	描述:	106021400
 */
 
+var map = 106021500;
+var num = 10;
+
 function start() {
-	cm.sendSimple("You will be moved to the #bEntrance to Wedding Hall#k. Where would you like to go?\r\n\r\n#L0##b1. Bringing Dowo King Pepe (Party : 1-6 / Level : 30 or higher)#l\r\n#L1#2. Saving Violetta (Solo only / Level : 30 or higher)#l");
+	cm.sendSimple("You will be moved to the #bEntrance to Wedding Hall#k. Where would you like to go? \r\n\r\n#L0##b1. Bringing Dowo King Pepe (Party : 1-6 / Level : 30 or higher)#l\r\n#L1#2. Saving Violetta (Solo only / Level : 30 or higher)#l");
 }
 
 function action(mode,type,selection) {
@@ -16,15 +19,16 @@ function action(mode,type,selection) {
 			cm.dispose();
 			return;
 			}
-			var em = cm.getEventManager("KingPepeAndYetis");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
+			for (var i = 0; i < num; i++)
+		if (cm.getMap(map + i).getCharacters().size() < 1) {
+			cm.getMap(map + i).resetFully();
+			party = cm.getPlayer().getParty().getMembers();
+			for (var i = 0; i < party.size(); i++)
+			cm.getMap(cm.getPlayer().getMap().getId()).getCharacterById(party.get(i).getId()).changeMap(cm.getMap(map + i), cm.getMap(map + i).getPortal(1));
 			cm.dispose();
 			return;
 			}
 			cm.sendNext("Another party is already inside.");
-			cm.dispose();
 			break;
 	case 1:
 		if (cm.getPlayer().itemQuantity(4032388)) {

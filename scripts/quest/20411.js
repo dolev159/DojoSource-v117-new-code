@@ -36,7 +36,7 @@ function end(mode, type, selection) {
 			Packages.server.quest.MapleQuest.getInstance(20411).forceComplete(qm.getPlayer(), qm.getNpc());
 			qm.getPlayer().changeJob(5112);
 			qm.gainEquip(1098003, -10);
-			qm.getPlayer().gainSP(1, 3);
+			qm.getPlayer().gainSP(4, 3);
 			qm.gainItem(1142402, 1);
 			qm.dispose();
 }

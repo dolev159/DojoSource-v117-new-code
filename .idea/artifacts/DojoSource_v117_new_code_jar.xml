@@ -1,15 +1,10 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="DojoSource-v117-new-code:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/DojoSource_v117_new_code_jar</output-path>
-    <root id="archive" name="DojoSource-v117-new-code.jar">
-      <element id="module-output" name="DojoSource-v117-new-code" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/dist/mina-core.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/dist/slf4j-api.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/dist/Cloudsource.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/dist/slf4j-jdk14.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/dist/HikariCP-4.0.3.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/dist/netty-all-4.1.42.Final.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/dist/mysql-connector-java-bin.jar" path-in-jar="/" />
+  <artifact name="DojoSource-v117-new-code:jar">
+    <output-path>$PROJECT_DIR$/dist</output-path>
+    <root id="root">
+      <element id="archive" name="DojoSource-v117-new-code.jar">
+        <element id="module-output" name="DojoSource-v117-new-code" />
+      </element>
     </root>
   </artifact>
 </component>

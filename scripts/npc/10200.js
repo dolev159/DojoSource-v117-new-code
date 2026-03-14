@@ -13,7 +13,7 @@ function start() {
 
 function action(mode, type, selection) {
 	switch (mode) {
-	case -1:
+	case - 1:
 		cm.dispose();
 		return;
 	case 0:
@@ -37,8 +37,8 @@ function action(mode, type, selection) {
 		break;
 	case 2:
 		cm.dispose();
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroLock(1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroDisableUI(true));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroLock(1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroDisableUI(true));
 		cm.getPlayer().changeMap(cm.getMap(1020300), cm.getMap(1020300).getPortal(0)); //Effect/Direction3.img/archer/Scene00
 }
 }

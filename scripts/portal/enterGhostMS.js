@@ -5,9 +5,9 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24061)).getStatus() == 1 && pi.getPlayer().itemQuantity(4032965) && !pi.getPlayer().itemQuantity(4032966)) {
-	if (pi.getMap(913002000).getCharacters().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24061)).getStatus() == 1 && pi.getPlayer().itemQuantity(4032965)) {
+	if (pi.getMap(910080020).getCharacters().size() > 0) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
 		pi.getMap(910080020).resetFully();

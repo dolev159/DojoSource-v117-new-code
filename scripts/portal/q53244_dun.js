@@ -13,7 +13,7 @@ function enter(pi) {
 }
 
 function start() {
-	pi.sendNextS("lf the #bMatter Disassembler#k really works on the core, I could be in for some trouble. I oughtta just toss this thing out here in the desert rather than risk it falling into the wrong hands.", 16);
+	pi.sendNextS("If the #bMatter Disassembler#k really works on the core, I could be in for some trouble. \r\nI oughtta just toss this thing out here in the desert rather than risk it falling into the wrong hands.", 16);
 }
 
 function action(mode, type, selection) {

@@ -44,13 +44,15 @@ public class MapleData implements MapleDataEntity, Iterable<MapleData> {
     private Node node;
     private File imageDataDir;
 
+    protected MapleData() {
+    }
+
     private MapleData(final Node node) {
         this.node = node;
     }
-
     public MapleData(final InputStream fis, final File imageDataDir) {
         try {
-            this.node = documentBuilderFactory.newDocumentBuilder().parse(fis).getFirstChild();
+            this.node = documentBuilderFactory.newDocumentBuilder().parse(fis).getDocumentElement();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
         } catch (SAXException e) {
@@ -114,8 +116,11 @@ public class MapleData implements MapleDataEntity, Iterable<MapleData> {
             case INT: {
                 return Integer.valueOf(Integer.parseInt(attributes.getNamedItem("value").getNodeValue()));
             }
+            case LONG: {
+                return Long.valueOf(Long.parseLong(attributes.getNamedItem("value").getNodeValue()));
+            }
             case SHORT: {
-                return Short.valueOf(Short.parseShort(attributes.getNamedItem("value").getNodeValue()));
+                return Integer.valueOf(Integer.parseInt(attributes.getNamedItem("value").getNodeValue())).shortValue();
             }
             case STRING:
             case UOL: {
@@ -127,38 +132,41 @@ public class MapleData implements MapleDataEntity, Iterable<MapleData> {
             case CANVAS: {
                 return new MapleCanvas(Integer.parseInt(attributes.getNamedItem("width").getNodeValue()), Integer.parseInt(attributes.getNamedItem("height").getNodeValue()), new File(imageDataDir, getName() + ".png"));
             }
+            default:
+                return null;
         }
-        return null;
     }
 
-    public final MapleDataType getType() {
+    public MapleDataType getType() {
         final String nodeName = node.getNodeName();
-        if (nodeName.equals("imgdir")) {
+        if (nodeName.equalsIgnoreCase("imgdir") || nodeName.equalsIgnoreCase("extended") || nodeName.equalsIgnoreCase("img") || nodeName.equalsIgnoreCase("wzimg")) {
             return MapleDataType.PROPERTY;
-        } else if (nodeName.equals("canvas")) {
+        } else if (nodeName.equalsIgnoreCase("canvas")) {
             return MapleDataType.CANVAS;
-        } else if (nodeName.equals("convex")) {
+        } else if (nodeName.equalsIgnoreCase("convex")) {
             return MapleDataType.CONVEX;
-        } else if (nodeName.equals("sound")) {
+        } else if (nodeName.equalsIgnoreCase("sound")) {
             return MapleDataType.SOUND;
-        } else if (nodeName.equals("uol")) {
+        } else if (nodeName.equalsIgnoreCase("uol")) {
             return MapleDataType.UOL;
-        } else if (nodeName.equals("double")) {
+        } else if (nodeName.equalsIgnoreCase("double")) {
             return MapleDataType.DOUBLE;
-        } else if (nodeName.equals("float")) {
+        } else if (nodeName.equalsIgnoreCase("float")) {
             return MapleDataType.FLOAT;
-        } else if (nodeName.equals("int")) {
+        } else if (nodeName.equalsIgnoreCase("int")) {
             return MapleDataType.INT;
-        } else if (nodeName.equals("short")) {
+        } else if (nodeName.equalsIgnoreCase("long")) {
+            return MapleDataType.LONG;
+        } else if (nodeName.equalsIgnoreCase("short")) {
             return MapleDataType.SHORT;
-        } else if (nodeName.equals("string")) {
+        } else if (nodeName.equalsIgnoreCase("string")) {
             return MapleDataType.STRING;
-        } else if (nodeName.equals("vector")) {
+        } else if (nodeName.equalsIgnoreCase("vector")) {
             return MapleDataType.VECTOR;
-        } else if (nodeName.equals("null")) {
+        } else if (nodeName.equalsIgnoreCase("null")) {
             return MapleDataType.IMG_0x00;
         }
-        return null;
+        return MapleDataType.UNKNOWN_TYPE;
     }
 
     @Override
@@ -175,6 +183,10 @@ public class MapleData implements MapleDataEntity, Iterable<MapleData> {
     @Override
     public String getName() {
         return node.getAttributes().getNamedItem("name").getNodeValue();
+    }
+
+    public String getTagName() {
+        return node.getNodeName();
     }
 
     public Iterator<MapleData> iterator() {

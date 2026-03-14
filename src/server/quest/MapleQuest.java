@@ -19,10 +19,16 @@ import java.util.Collection;
 import scripting.NPCScriptManager;
 import tools.Pair;
 import tools.packet.CField.EffectPacket;
+// NEXUS_OMNI_IMPORT_FIX_V2
+import provider.MapleData;
+import provider.MapleDataProvider;
+import provider.MapleDataProviderFactory;
+import provider.MapleDataTool;
 
 public class MapleQuest implements Serializable {
 
     private static final long serialVersionUID = 9179541993413738569L;
+    private static  MapleDataProvider questData = null;
     private static final Map<Integer, MapleQuest> quests = new LinkedHashMap<Integer, MapleQuest>();
     protected int id;
     protected final List<MapleQuestRequirement> startReqs = new LinkedList<MapleQuestRequirement>();
@@ -127,6 +133,18 @@ public class MapleQuest implements Serializable {
         return completeActs;
     }
 
+    public final List<MapleQuestRequirement> getStartReqs() {
+        return startReqs;
+    }
+
+    public final List<MapleQuestRequirement> getCompleteReqs() {
+        return completeReqs;
+    }
+
+    public final List<MapleQuestAction> getStartActs() {
+        return startActs;
+    }
+
     public static void initQuests() {
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement("SELECT * FROM wz_questdata");
@@ -141,18 +159,78 @@ public class MapleQuest implements Serializable {
                     quests.put(rs.getInt("questid"), loadQuest(rs, psr, psa, pss, psq, psi, psp));
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public static MapleQuest getInstance(int id) {
         MapleQuest ret = quests.get(id);
-        if (ret == null) {
-            ret = new MapleQuest(id);
-            quests.put(id, ret); // By this time we have already initialized
+        if (ret == null || ret.name.isEmpty()) {
+            if (ret == null) {
+                ret = new MapleQuest(id);
+                quests.put(id, ret);
+            }
+            ret.loadFromWZ();
         }
         return ret;
+    }
+
+    private void loadFromWZ() {
+        if (questData == null) {
+            questData = MapleDataProviderFactory.getDataProvider("Quest");
+        }
+        final MapleData infoImg = questData.getData("QuestInfo.img");
+        final MapleData questInfo = infoImg.getChildByPath(String.valueOf(id));
+        if (questInfo != null) {
+            this.name = MapleDataTool.getString("name", questInfo, "");
+            this.autoStart = MapleDataTool.getInt("autoStart", questInfo, 0) > 0;
+            this.autoPreComplete = MapleDataTool.getInt("autoPreComplete", questInfo, 0) > 0;
+            this.autoAccept = MapleDataTool.getInt("autoAccept", questInfo, 0) > 0;
+            this.autoComplete = MapleDataTool.getInt("autoComplete", questInfo, 0) > 0;
+            this.viewMedalItem = MapleDataTool.getInt("viewMedalItem", questInfo, 0);
+            this.selectedSkillID = MapleDataTool.getInt("selectedSkillID", questInfo, 0);
+        }
+
+        final MapleData checkImg = questData.getData("Check.img");
+        final MapleData checkInfo = checkImg.getChildByPath(String.valueOf(id));
+        if (checkInfo != null) {
+            for (MapleData child : checkInfo.getChildren()) {
+                final int type = Integer.parseInt(child.getName());
+                for (MapleData reqData : child.getChildren()) {
+                    final MapleQuestRequirementType reqType = MapleQuestRequirementType.getByWZName(reqData.getName());
+                    if (reqType == null || reqType.equals(MapleQuestRequirementType.UNDEFINED)) {
+                        continue;
+                    }
+                    final MapleQuestRequirement req = new MapleQuestRequirement(this, reqType, reqData);
+                    if (type == 0) {
+                        startReqs.add(req);
+                    } else {
+                        completeReqs.add(req);
+                    }
+                }
+            }
+        }
+
+        final MapleData actImg = questData.getData("Act.img");
+        final MapleData actInfo = actImg.getChildByPath(String.valueOf(id));
+        if (actInfo != null) {
+            for (MapleData child : actInfo.getChildren()) {
+                final int type = Integer.parseInt(child.getName());
+                for (MapleData actData : child.getChildren()) {
+                    final MapleQuestActionType actType = MapleQuestActionType.getByWZName(actData.getName());
+                    if (actType == null || actType.equals(MapleQuestActionType.UNDEFINED)) {
+                        continue;
+                    }
+                    final MapleQuestAction act = new MapleQuestAction(actType, actData, this);
+                    if (type == 0) {
+                        startActs.add(act);
+                    } else {
+                        completeActs.add(act);
+                    }
+                }
+            }
+        }
     }
 
     public static Collection<MapleQuest> getAllInstances() {
@@ -221,10 +299,11 @@ public class MapleQuest implements Serializable {
             for (MapleQuestAction a : startActs) {
                 a.runStart(c, null);
             }
-            if (!customend) {
+            System.out.println("[Quest] " + c.getName() + " started quest " + id);
+            if (!scriptedStart) {
                 forceStart(c, npc, null);
             } else {
-                NPCScriptManager.getInstance().startQuest(c.getClient(), npc, getId());
+                NPCScriptManager.getInstance().startQuest(c.getClient(), npc, 0, getId());
             }
         }
     }
@@ -233,7 +312,7 @@ public class MapleQuest implements Serializable {
         complete(c, npc, null);
     }
 
-    public synchronized void complete(MapleCharacter c, int npc, Integer selection) {
+    public void complete(MapleCharacter c, int npc, Integer selection) {
         if (c.getMap() != null && (autoPreComplete || checkNPCOnMap(c, npc)) && canComplete(c, npc)) {
             for (MapleQuestAction a : completeActs) {
                 if (!a.checkEnd(c, selection)) {
@@ -244,6 +323,7 @@ public class MapleQuest implements Serializable {
             for (MapleQuestAction a : completeActs) {
                 a.runEnd(c, selection);
             }
+            System.out.println("[Quest] " + c.getName() + " completed quest " + id);
             // We save forfeits only for logging purposes, they shouldn't matter anymore
             // completion time is set by the constructor
 
@@ -322,10 +402,10 @@ public class MapleQuest implements Serializable {
         public int[] maps;
 
         private MedalQuest(int questid, int lquestid, int level, int[] maps) {
-            this.questid = questid; // Infoquest = questid -2005, customdata = questid -1995
-            this.level = level;
+            this.questid = questid;
             this.lquestid = lquestid;
-            this.maps = maps; // Note # of maps
+            this.level = level;
+            this.maps = maps;
         }
     }
 

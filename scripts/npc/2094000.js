@@ -41,46 +41,28 @@ function action(mode, type, selection) {
 function action0(mode, type, selection) {
 	switch (status) {
 	case 1:
-		if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+		if (cm.getPlayer().getParty() == null) {
+			cm.sendOk("You can't enter alone. You need a party.");
+			cm.dispose();
+			return;
+		}
+		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
 			cm.sendNext("I need your representative to talk to me.");
 			cm.dispose();
 			return;
-			}
-			party = cm.getPlayer().getParty().getMembers();
-			for (var i = 0; i < party.size(); i++)
-		if (party.size() < 3) {
-			cm.sendNext("You can't participate in this quest because the party you belong to does not have at least 3 party members. Adjust the party member count so that you have at least 3 members in the party.");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getMapid() != 251010404) {
-			cm.sendNext("Some of your party members are in a different map. Make sure they're all here!");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getLevel() < 70) {
-			cm.sendNext("Someone in your party is under Lv. 70. Get some levels under your belt before challenging the Lord Pirate.");
-			cm.dispose();
-			return;
-			}
-			var em = cm.getEventManager("Pirate");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("There's another party already doing this quest. Try again later.");
-			cm.dispose();
+		}
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Lord Pirate", cm)) {
+			cm.sendNext("Your party does not meet the requirements or another party is already doing this quest. Try again later.");
+		}
+		cm.dispose();
+		break;
 }
 }
 
 function action1(mode, type, selection) {
 	switch (status) {
 	case 1:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.sendUIWindow(7, 1));
+		cm.sendPartyWindow();
 		cm.dispose();
 }
 }

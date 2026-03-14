@@ -5,10 +5,9 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() != 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
 		return false;
 		}
-		pi.getPlayer().changeMap(pi.getMap(271040100), pi.getMap(271040100).getPortal(1)); //西格諾斯殿堂
+		pi.getPlayer().changeMap(pi.getMap(271040100), pi.getMap(271040100).getPortal(0)); //西格諾斯殿堂
 		return true;
 }

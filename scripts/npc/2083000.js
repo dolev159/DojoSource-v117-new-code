@@ -10,6 +10,11 @@ function start() {
 		cm.dispose();
 		return;
 		}
+	//if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+	//	cm.sendOk("Please proceed through the Party Leader.");
+	//	cm.dispose();
+	//	return;
+	//	}
 		cm.sendYesNo("The letters on the slate glitter and the backdoor opens. Do you want to go to the secret path?");
 }
 

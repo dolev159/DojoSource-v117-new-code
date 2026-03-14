@@ -9,6 +9,6 @@ function enter(pi) {
 		pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31144)).setCustomData("find");
 		pi.getPlayer().updateQuest(pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31144)), true);
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Cygnus's forces have destroyed the Six Path Crossway, blocking the road."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Cygnus's forces have destroyed the Six Path Crossway, blocking the road."));
 		return false;
 }

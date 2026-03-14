@@ -30,8 +30,8 @@ function action(mode, type, selection) {
 			cm.dispose();
 			return;
 			}
-			cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(1));
-			cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+			cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(1));
+			cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 			break;
 	case 1:
 		cm.sendNextS("Vita! Vita, wake up! Can you hear me?!", 3);
@@ -82,7 +82,7 @@ function action(mode, type, selection) {
 	case 16:
 		cm.removeNpc(cm.getPlayer().getMap().getId(), cm.getNpc());
 		cm.removeNpc(cm.getPlayer().getMap().getId(), 2159349);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(0));
 		var tick = 0;
 		schedule = Packages.server.Timer.EtcTimer.getInstance().register(function () {
 		if (tick == 1) {

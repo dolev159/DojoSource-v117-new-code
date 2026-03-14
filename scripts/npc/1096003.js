@@ -10,7 +10,7 @@ function start() {
 
 function action(mode, type, selection) {
 	if (mode > 0)
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(0));
 		cm.getPlayer().addHP(cm.getPlayerStat("HP") > 40 ? -(cm.getPlayerStat("HP") / 2) : 0);
 		cm.dispose();
 }

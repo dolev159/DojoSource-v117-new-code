@@ -54,14 +54,10 @@ function action(mode, type, selection) {
 			cm.dispose();
 			return;
 			}
-			var em = cm.getEventManager("BossBalrog_EASY");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
+			if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Boss Balrog Easy", cm)) {
+                 cm.sendNext("Your party does not meet the requirements or another party is already attempting this quest. Please try again later.");
+            }
 			cm.dispose();
 			return;
-			}
-			cm.sendNext("Another party is already inside.");
-			cm.dispose();
 }
 }

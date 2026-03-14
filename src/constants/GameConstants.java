@@ -2160,6 +2160,8 @@ public class GameConstants {
                 return -70;
             case SPEED:
                 return -50;
+            default:
+                break;
         }
         return 0;
     }
@@ -2170,6 +2172,8 @@ public class GameConstants {
                 return 1111003;
             case SPEED:
                 return 3121007;
+            default:
+                break;
         }
         return 0;
     }
@@ -3003,12 +3007,7 @@ public class GameConstants {
     }
 
     public static int getCustomReactItem(final int rid, final int original) {
-        if (rid == 2008006) { // Orbis pq LOL
-            return (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) + 4001055);
-            // 4001056 = sunday. 4001062 = saturday
-        } else {
-            return original;
-        }
+        return getCustomReactItem(rid, original, -1);
     }
 
     public static int getJobNumber(int jobz) {
@@ -3738,7 +3737,7 @@ public class GameConstants {
     }
     private static int[] azwanRecipes = {2510483, 2510484, 2510485, 2510486, 2510487, 2510488, 2510489, 2510490, 2510491, 2510492, 2510493, 2510494, 2510495, 2510496, 2510497, 2510498, 2510499, 2510500, 2510501, 2510502, 2510503, 2510504, 2510505, 2510506, 2510507, 2510508, 2510509, 2510510, 2510511, 2510512, 2510513, 2510514, 2510515, 2510516, 2510517, 2510518, 2510519, 2510520, 2510521, 2510522, 2510523, 2510524, 2510525, 2510526, 2510527, 2511153, 2511154, 2511155};
     private static int[] azwanScrolls = {2046060, 2046061, 2046062, 2046063, 2046064, 2046065, 2046066, 2046067, 2046068, 2046069, 2046141, 2046142, 2046143, 2046144, 2046145, 2046519, 2046520, 2046521, 2046522, 2046523, 2046524, 2046525, 2046526, 2046527, 2046528, 2046529, 2046530, 2046701, 2046702, 2046703, 2046704, 2046705, 2046706, 2046707, 2046708, 2046709, 2046710, 2046711, 2046712};
-    private static Pair[] useItems = {new Pair<>(2002010, 500), new Pair<>(2002006, 600), new Pair<>(2002007, 600), new Pair<>(2002008, 600), new Pair<>(2002009, 600), new Pair<>(2022003, 770), new Pair<>(2022000, 1155), new Pair<>(2001001, 2300), new Pair<>(2001002, 4000), new Pair<>(2020012, 4680), new Pair<>(2020013, 5824), new Pair<>(2020014, 8100), new Pair<>(2020015, 10200), new Pair<>(2000007, 5), new Pair<>(2000000, 5), new Pair<>(2000008, 48), new Pair<>(2000001, 48), new Pair<>(2000009, 96), new Pair<>(2000002, 96), new Pair<>(2000010, 20), new Pair<>(2000003, 20), new Pair<>(2000011, 186), new Pair<>(2000006, 186), new Pair<>(2050000, 200), new Pair<>(2050001, 200), new Pair<>(2050002, 300), new Pair<>(2050003, 500)};
+    private static Pair<Integer, Integer>[] useItems = new Pair[] {new Pair<>(2002010, 500), new Pair<>(2002006, 600), new Pair<>(2002007, 600), new Pair<>(2002008, 600), new Pair<>(2002009, 600), new Pair<>(2022003, 770), new Pair<>(2022000, 1155), new Pair<>(2001001, 2300), new Pair<>(2001002, 4000), new Pair<>(2020012, 4680), new Pair<>(2020013, 5824), new Pair<>(2020014, 8100), new Pair<>(2020015, 10200), new Pair<>(2000007, 5), new Pair<>(2000000, 5), new Pair<>(2000008, 48), new Pair<>(2000001, 48), new Pair<>(2000009, 96), new Pair<>(2000002, 96), new Pair<>(2000010, 20), new Pair<>(2000003, 20), new Pair<>(2000011, 186), new Pair<>(2000006, 186), new Pair<>(2050000, 200), new Pair<>(2050001, 200), new Pair<>(2050002, 300), new Pair<>(2050003, 500)};
 
     public static int[] getAzwanRecipes() {
         return azwanRecipes;
@@ -3748,7 +3747,7 @@ public class GameConstants {
         return azwanScrolls;
     }
 
-    public static Pair[] getUseItems() {
+    public static Pair<Integer, Integer>[] getUseItems() {
         return useItems;
     }
 
@@ -3921,5 +3920,16 @@ public class GameConstants {
                 return true;
         }
         return false;
+    }
+
+    public static int getCustomReactItem(int rid, int original, int map) {
+        if (rid == 2008006) { //orbis pq LOL
+            return (java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK) + 4001055);
+            //4001056 = sunday. 4001062 = saturday
+        } else if (rid == 2408002) {
+            return map == 240050101 ? 4001088 : map == 240050102 ? 4001089 : map == 240050103 ? 4001090 : 4001091;
+        } else {
+            return original;
+        }
     }
 }

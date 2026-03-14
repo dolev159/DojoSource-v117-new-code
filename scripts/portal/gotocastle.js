@@ -13,11 +13,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(106020500), pi.getMap(106020500).getPortal(1)); //城壁邊邊
 		return true;
 		}
-	if (pi.getPlayer().itemQuantity(4000507)) {
-		pi.gainItem(4000507, -1);
-		pi.getPlayer().changeMap(pi.getMap(106020500), pi.getMap(106020500).getPortal(1)); //城壁邊邊
-		return true;
-		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The path ahead is covered with sprawling vine thorns, only a Thorn Remover to clear this out..."));
+		pi.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("You cannot move forward due to the barrier."));
 		return false;
 }

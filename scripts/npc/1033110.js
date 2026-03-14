@@ -18,7 +18,7 @@ function action(mode, type, selection) {
 		if (selection < 1 && cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(24101)).getStatus() == 1) {
 			Packages.server.quest.MapleQuest.getInstance(24103).forceStart(cm.getPlayer(), 0, 1);
 			}
-			cm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange(songs[selection][1], 6));
+			cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange(songs[selection][1], 6));
 			}
 			cm.dispose();
 }

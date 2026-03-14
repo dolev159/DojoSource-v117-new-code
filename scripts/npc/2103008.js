@@ -11,12 +11,12 @@ function start() {
 function action(mode, type, selection) {
 	if (mode > 0) {
 		if (cm.getText() == "Open Sesame") {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "When I yelled out the password, this mysterious force leads me inside the cave."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "When I yelled out the password, this mysterious force leads me inside the cave."));
 			cm.getPlayer().changeMap(cm.getMap(260010402), cm.getMap(260010402).getPortal(1));
 			cm.dispose();
 			return;
 			}
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The door doesn't seem to budge."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The door doesn't seem to budge."));
 			}
 			cm.dispose();
 }

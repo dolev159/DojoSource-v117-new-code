@@ -14,18 +14,17 @@ function enter(pi) {
 		pi.getPlayer().startMapTimeLimitTask(600, pi.getMap(310000000));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "This field has already been taken by someone. Please try again later, or try a different channel."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23023)).getStatus() == 1 || pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23024)).getStatus() == 1 || pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23025)).getStatus() == 1) {
 	if (pi.getMap(931000100).getCharacters().size() < 1) {
 		pi.getMap(931000100).resetFully();
 		pi.getPlayer().changeMap(pi.getMap(931000100), pi.getMap(931000100).getPortal(1)); //2次轉職
-		pi.getPlayer().getMap().spawnNpc(2159100, new java.awt.Point(-157, -23)); //須勒
 		pi.getPlayer().startMapTimeLimitTask(600, pi.getMap(310000000));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "This field has already been taken by someone. Please try again later, or try a different channel."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 		return false;
 		}
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23141)).getStatus() > 0 && pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23142)).getStatus() < 2) {

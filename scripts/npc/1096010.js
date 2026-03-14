@@ -10,11 +10,11 @@ function start() {
 		return;
 		}
 	if (cm.getPlayer().itemQuantity(4032985)) {
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("You already have the lgnition Device."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("You already have the lgnition Device."));
 		cm.dispose();
 		return;
 		}
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("You found the Ignition Device. Bring it to Cutter."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("You found the Ignition Device. Bring it to Cutter."));
 		cm.gainItem(4032985, 1);
 		cm.dispose();
 }

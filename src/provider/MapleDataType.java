@@ -28,6 +28,7 @@ public enum MapleDataType {
     INT,
     FLOAT,
     DOUBLE,
+    LONG,
     STRING,
     EXTENDED,
     PROPERTY,

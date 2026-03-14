@@ -36,7 +36,7 @@ function action(mode, type, selection) {
 			break;
 	case 2:
 		if (cm.getMap(677000004).getCharacters().size() > 0 || cm.getMap(677000005).getCharacters().size() > 0) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Try again soon."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
 			return false;
 			}
 			cm.getPlayer().changeMap(cm.getMap(677000004), cm.getMap(677000004).getPortal(2));

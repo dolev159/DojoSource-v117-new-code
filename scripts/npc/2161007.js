@@ -37,7 +37,7 @@ function action(mode, type, selection) {
 		break;
 	case 2:
 		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "You're carrying too much to take Jenn's brother."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You're carrying too much to take Jenn's brother."));
 			cm.dispose();
 			return;
 			}

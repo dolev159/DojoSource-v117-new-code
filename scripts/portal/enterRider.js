@@ -9,7 +9,12 @@ function enter(pi) {
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Rider's Field. You cannot enter without a reason."));
 		return false;
 		}
+	if (pi.getMap(921110000).getCharacters().size() < 1) {
 		pi.getPlayer().changeMap(pi.getMap(921110000), pi.getMap(921110000).getPortal(2)); //騎士的平原
 		pi.getPlayer().startMapTimeLimitTask(300, pi.getMap(211050000));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You have entered the Rider's Field. Ride to the end of the field to clear the mission."));
 		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Someone is already in the Rider's Field. Come back a little later."));
+		return false;
 }

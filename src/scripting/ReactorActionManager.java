@@ -45,7 +45,7 @@ public class ReactorActionManager extends AbstractPlayerInteraction {
     private MapleReactor reactor;
 
     public ReactorActionManager(MapleClient c, MapleReactor reactor) {
-        super(c, reactor.getReactorId(), c.getPlayer().getMapId());
+        super(c, reactor.getReactorId(), c.getPlayer().getMapId(), 0);
         this.reactor = reactor;
     }
 

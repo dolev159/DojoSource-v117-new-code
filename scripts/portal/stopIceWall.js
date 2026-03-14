@@ -5,8 +5,9 @@
 */
 
 function enter(pi) {
-	Packages.server.quest.MapleQuest.getInstance(22599).forceStart(pi.getPlayer(), 0, 2);
-	pi.getPlayer().changeMap(pi.getPlayer().getMap(), pi.getPlayer().getMap().getPortal(1));
-	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the protection of magic, cannot be approached."));
-	return true;
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(22580)).getStatus() == 1) {
+		Packages.server.quest.MapleQuest.getInstance(22599).forceStart(pi.getPlayer(), 0, 2);
+		}
+		pi.getPlayer().changeMap(pi.getPlayer().getMap(), pi.getPlayer().getMap().getPortal(1));
+		return true;
 }

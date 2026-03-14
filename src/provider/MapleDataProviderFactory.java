@@ -25,15 +25,41 @@ import java.io.File;
 public class MapleDataProviderFactory {
 
     private final static String wzPath = System.getProperty("net.sf.odinms.wzpath");
+    private final static String resPath = System.getProperty("net.sf.odinms.res_path", "resources");
+    private static WzBinaryProvider binaryProvider;
+
+    public static synchronized WzBinaryProvider getBinaryProvider() {
+        if (binaryProvider == null) {
+            binaryProvider = new WzBinaryProvider(new File(resPath));
+        }
+        return binaryProvider;
+    }
 
     private static MapleDataProvider getWZ(Object in) {
         if (in instanceof File) {
-            return new MapleDataProvider((File) in);
+            File file = (File) in;
+            String name = file.getName();
+            if (name.endsWith(".wz")) {
+                name = name.substring(0, name.length() - 3);
+            }
+            File binFile = new File(resPath, name + ".bin");
+            if (binFile.exists()) {
+                return new BinaryDataProvider(binFile);
+            }
+            return new WzXMLDataProvider(file);
         }
-        throw new IllegalArgumentException("Can't create data provider for input " + in);
+        throw new IllegalArgumentException("Invalid data input: " + in);
     }
 
     public static MapleDataProvider getDataProvider(Object in) {
+        if (in instanceof String) {
+            String name = (String) in;
+            File binFile = new File(resPath, name + ".bin");
+            if (binFile.exists()) {
+                return new BinaryDataProvider(binFile);
+            }
+            return getWZ(new File(wzPath, name));
+        }
         return getWZ(in);
     }
 

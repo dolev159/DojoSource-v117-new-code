@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(914021000), pi.getMap(914021000).getPortal(2)); //大將翁的鐵舖
+	pi.getPlayer().changeMap(pi.getMap(pi.getPlayer().getMap().getId() - 10), pi.getMap(pi.getPlayer().getMap().getId() - 10).getPortal(2)); //大將翁的鐵舖
 	return true;
 }

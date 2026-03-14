@@ -1,5 +1,5 @@
 /*
-	名字:	漢斯
+	名字:	Black Bark
 	地圖:	Wrecked Airship 1
 	描述:	552000030
 */
@@ -43,7 +43,7 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("#v1352303# It looks like this. My dad gave it to me... and he wasn't one to hand out goodies. I gofta get it back.", 3);
 		break;
 	case 4:
-		cm.sendNextPrevS("You come hurtling out of the sky at a thousand miles an hour, explode, and you're already askin' about fancy necklaces? I like your style.", 3);
+		cm.sendNextPrevS("You come hurtling out of the sky at a thousand miles an hour, explode, and you're already askin' about fancy necklaces? I like your style.", 1);
 		break;
 	case 5:
 		cm.sendNextPrevS("#b(The core must have saved my hide... but I don't feel its power anymore.)", 3);

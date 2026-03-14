@@ -17,7 +17,7 @@ function enter(pi) {
 		pi.getPlayer().startMapTimeLimitTask(600, pi.getMap(100000000));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It looks like someone is receiving Bowman training inside. Enter later so you don't cause any disruptions."));
 		return false;
 		}
 		pi.getPlayer().changeMap(pi.getMap(100000201), pi.getMap(100000201).getPortal(10));

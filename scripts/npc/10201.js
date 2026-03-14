@@ -37,8 +37,8 @@ function action(mode, type, selection) {
 		break;
 	case 2:
 		cm.dispose();
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroLock(1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroDisableUI(true));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroLock(1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroDisableUI(true));
 		cm.getPlayer().changeMap(cm.getMap(1020200), cm.getMap(1020200).getPortal(0)); //Effect/Direction3.img/magician/Scene00
 }
 }

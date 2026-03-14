@@ -10,6 +10,6 @@ function enter(pi) {
 		}
 		pi.getPlayer().updateInfoQuest(21002, pi.getPlayer().getInfoQuest(21002) + ";chain=o");
 		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("aran/tutorialGuide2", 3));
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You can use Consecutive Attacks by pressing the Ctrl key multiple times."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You can use Consecutive Attacks by pressing the Ctrl key multiple times."));
 		return false;
 }

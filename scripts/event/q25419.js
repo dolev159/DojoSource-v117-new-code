@@ -21,8 +21,8 @@ function playerEntry(eim, player) {//傳送進事件地圖
 function scheduledTimeout(eim) {//規定時間結束
 }
 
-function monsterValue(eim, player, mob) {//殺怪後觸發
-	if (mob.getId() == 9300500 || mob.getId() == 9300501 || mob.getId() == 9300502) {
+function monsterValue(eim, mobId) {//殺怪後觸發
+	if (mobId == 9300500 || mobId == 9300501 || mobId == 9300502) {
 		eim.schedule("changeMap", 2 * 1000);
 		}
 		return 1;

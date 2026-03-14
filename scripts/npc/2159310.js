@@ -67,8 +67,8 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("Goodness, how modest of you! That must be why you're the Black Mage's favorite. You really just put the rest of us to shame, don't you? My, my, my...", 5, 2159308);
 		break;
 	case 14:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/10", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/10", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 15:
 		cm.sendNextS("Enough! Both of you.", 1);
@@ -80,8 +80,8 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("And I am only complimenting the true HERO of our forces, the MIGHTY #h0#! Ha ha ha...", 5, 2159308);
 		break;
 	case 18:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/10", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/10", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 19:
 		cm.sendNextS("#p2159308#, I've heard enough from you. #h0# stunned the Goddess of Time, allowing for our victory. THAT was the turning point in the battle. Accept it.", 1);
@@ -111,15 +111,15 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("You see, our great leader, the Black Mage, ordered all of us, except you, to eliminate everything. And I mean, EVERYTHING!", 5, 2159308);
 		break;
 	case 28:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/18", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/18", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 29:
 		cm.sendNextS("Indeed. For example, I saw Leafre burned to cinders. Nothing remained...", 1);
 		break;
 	case 30:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/3", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/3", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 31:
 		cm.sendNextS("(Leafre! That's in the Southern Region, near my family's home..!)", 3);
@@ -137,8 +137,8 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("Which parts? Ha! All of them, of course! We took our orders quite seriously. Why...is something bothering you?", 5, 2159308);
 		break;
 	case 36:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/11", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/11", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 37:
 		cm.sendNextS("...Please excuse me. There is a matter I must attend to.", 3);
@@ -147,8 +147,8 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("Hold it right there! No matter how favored you are by the Black Mage, you follow orders. No one has dismissed you yet. Sit down. THAT is an order.", 5, 2159308);
 		break;
 	case 39:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 2));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1200));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 2));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1200));
 		break;
 	case 40:
 		cm.sendNextS("(Damian... Mother... Please be safe...)", 3);

@@ -33,17 +33,17 @@ function action(mode, type, selection) {
 		cm.getNPCDirectionEffect(2159340, "Effect/Direction6.img/effect/tuto/balloonMsg1/3", 1500, 0, -100);
 		cm.getNPCDirectionEffect(2159341, "Effect/Direction6.img/effect/tuto/balloonMsg1/3", 1500, 0, -100);
 		cm.getNPCDirectionEffect(2159342, "Effect/Direction6.img/effect/tuto/balloonMsg1/3", 1500, 0, -100);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159340, "panic"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159341, "panic"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg2/0", 1500, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.setNPCSpecialAction(2159340, "panic"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.setNPCSpecialAction(2159341, "panic"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg2/0", 1500, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 1:
 		cm.sendNextS("W-what is that?", 1);
 		break;
 	case 2:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg2/1", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 900));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg2/1", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 900));
 		break;
 	case 3:
 		cm.sendNextS("(What's going on? My Fury is...nearly gone! And what is this thing? Did it take my power...?)", 3);
@@ -58,57 +58,57 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("I'd better take care of this, or there's gonna be questions...", 1);
 		break;
 	case 7:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/16", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/16", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 8:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(0, 373));//角色攻擊
-		cm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("demonSlayer/31121006", 4));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Skill/3112.img/skill/31121006/effect", 2000, 100, 0, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 900));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(0, 373));//角色攻擊
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("demonSlayer/31121006", 4));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Skill/3112.img/skill/31121006/effect", 2000, 100, 0, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 900));
 		break;
 	case 9:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction6.img/DemonTutorial/Scene3"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/17", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 900));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction6.img/DemonTutorial/Scene3"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/17", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 900));
 		break;
 	case 10:
 		Packages.server.quest.MapleQuest.getInstance(23207).forceStart(cm.getPlayer(), 0, null);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159340, "die"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159341, "die"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("demonSlayer/31121006h", 4));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.setNPCSpecialAction(2159340, "die"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.setNPCSpecialAction(2159341, "die"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("demonSlayer/31121006h", 4));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 11:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.removeNPCController(2159340));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.removeNPCController(2159341));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.removeNPCController(2159340));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.removeNPCController(2159341));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 12:
 		cm.sendNextS("(Who is that? I've never seen such a powerful skill...)", 5, 2159342);
 		break;
 	case 13:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 14:
 		cm.sendNextS("(Ugh... I wasted too much power fighting them. Where am I? If nothing else, I know I need to get out of here.)", 3);
 		break;
 	case 15:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 2));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 2));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 16:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/12", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/12", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 17:
 		cm.getNPCDirectionEffect(2159342, "Effect/Direction6.img/effect/tuto/balloonMsg1/4", 2000, 0, -100);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1200));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1200));
 		break;
 	case 18:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.NPCSpecialAction(2159342, -1, 150, 100));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.NPCSpecialAction(2159342, -1, 150, 100));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 19:
 		cm.sendNextS("(Ugh... I'm... losing consciousness. If they catch me now...!)", 3);
@@ -126,8 +126,8 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("(An Energy Conducting Device? This machine? And who are the Black Wings? None of this makes any sense...)", 3);
 		break;
 	case 24:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/13", 2000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg0/13", 2000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 25:
 		cm.sendNextS("Who are you? And...*cough* How do you know about these things?", 3);
@@ -139,13 +139,13 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("No... I have...no energy...", 3);
 		break;
 	case 28:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(0, 372));//角色隱身
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(cm.getPlayer().getGender() == 0 ? "Effect/Direction6.img/effect/tuto/fallMale" : "Effect/Direction6.img/effect/tuto/fallFemale", 3000, 0, 0, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 600));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(0, 372));//角色隱身
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(cm.getPlayer().getGender() == 0 ? "Effect/Direction6.img/effect/tuto/fallMale" : "Effect/Direction6.img/effect/tuto/fallFemale", 3000, 0, 0, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 600));
 		break;
 	case 29:
 		cm.getNPCDirectionEffect(2159342, "Effect/Direction6.img/effect/tuto/balloonMsg1/13", 2000, 0, -100);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 30:
 		cm.dispose();

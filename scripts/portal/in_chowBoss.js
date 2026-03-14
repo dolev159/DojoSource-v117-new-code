@@ -6,5 +6,5 @@
 
 function enter(pi) {
 	pi.openNpc(2133005);
-	return false;
+	return true;
 }

@@ -10,6 +10,6 @@ function enter(pi) {
 		}
 		pi.getPlayer().updateInfoQuest(21002, pi.getPlayer().getInfoQuest(21002) + ";normal=o");
 		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("aran/tutorialGuide1", 3));
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "To use a Regular Attack on monsters, press the Ctrl key."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "To use a Regular Attack on monsters, press the Ctrl key."));
 		return false;
 }

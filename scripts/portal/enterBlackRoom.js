@@ -9,6 +9,10 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(200080601), pi.getMap(200080601).getPortal(1)); //天空之城塔&amp;lt;16層&gt;
 		return true;
 		}
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(22567)).getStatus() > 1) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "I don't want to enter again."));
+		return false;
+		}
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The entrance was destroyed. It will be difficult to get in."));
 		return false;
 }

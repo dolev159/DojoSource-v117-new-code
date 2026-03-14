@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(914100021), pi.getMap(914100021).getPortal(1)); //寂靜的洞穴
-	return true;
+	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Go talk to Afrien. He is tired from the battle."));
+	return false;
 }

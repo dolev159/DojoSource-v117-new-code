@@ -13,6 +13,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(map[i]), pi.getMap(map[i]).getPortal(4));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Only the adventurers that have been trained by Mai may enter."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Only the adventurers that have been trained by Mai may enter."));
 		return false;
 }

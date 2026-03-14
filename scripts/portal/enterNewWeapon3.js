@@ -6,15 +6,9 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23051)).getStatus() != 1) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Before entering, it's best to inquire about the situation."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You can enter only after talking to your Job Instructor to get the corresponding quest."));
 		return false;
 		}
-	if (pi.getMap(931000322).getCharacters().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
-		return false;
-		}
-		pi.getMap(931000322).resetFully();
 		pi.getPlayer().changeMap(pi.getMap(931000322), pi.getMap(931000322).getPortal(1)); //新武器開發實驗室
-		pi.getPlayer().startMapTimeLimitTask(1200, pi.getMap(931000312));
 		return true;
 }

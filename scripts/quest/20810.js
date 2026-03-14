@@ -28,14 +28,14 @@ function start(mode, type, selection) {
 		break;
 	case 1:
 		if (qm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.EQUIP).getNumFreeSlot() < 1) {
-			qm.sendNext("Make sure you have at least 2 Equip lnventory slots available.");
+			qm.sendNext("You'll need to empty at least #b2 slots#k in your #bEquip tab#k before you can complete your job advancement.");
 			qm.dispose();
 			return;
 			}
 			Packages.server.quest.MapleQuest.getInstance(20810).forceComplete(qm.getPlayer(), qm.getNpc());
 			qm.getPlayer().changeJob(5110);
 			qm.gainEquip(1098001, -10);
-			qm.getPlayer().gainSP(1, 1);
+			qm.getPlayer().gainSP(2, 3);
 			qm.gainItem(1142400, 1);
 			qm.sendOk("I now pronounce you an Apprentice Knight! I've given you some SP to use. Make us proud.");
 			break;

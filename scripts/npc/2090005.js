@@ -43,7 +43,7 @@ function action(mode, type, selection) {
 			cm.sendSimple("Hello there. How's the traveling so far? I've been transporting other travelers like you to other regions in 30 seconds, and... are you interested? If so, then select the town you'd like to head to. \r\n#L0##bMu Lung(1500 Mesos)#l");
 			}
 		if (cm.getPlayer().getMap().getId() == 250000100) {
-			cm.sendSimple("Heya! You having fun with your travels? It must suck to not have wings, but I'm here to help. Where do you wanna go? Keep in mind that it takes about 30 seconds to get to Orbis. \r\n#L0##bOrbis(1500 Mesos)#l\r\n#L1#Herb Town(500 Mesos)#l\r\n#L2#<Theme Dungeon>Golden Temple (1000 Mesos)");
+			cm.sendSimple("Heya! You having fun with your travels? It must suck to not have wings, but I'm here to help. Where do you wanna go? Keep in mind that it takes about 30 seconds to get to Orbis. \r\n#L0##bOrbis(1500 Mesos)#l\r\n#L1#Herb Town(500 Mesos)#l");
 			}
 		if (cm.getPlayer().getMap().getId() == 251000000) {
 			cm.sendYesNo("How goes it, Explorer? Enjoying your travels? I've made a habit of taking wingless folk over to #bMu Lung#k recently, so do you need a lift? It's perfectly safe, as long as you sit perfectly still and hang on perfectly tight. And more importantly, it's way faster! I'll give you a ride for #b500 mesos.");
@@ -84,17 +84,6 @@ function action(mode, type, selection) {
 		if (selection == 1) {
 			cm.sendYesNo("Do you wish to fly to #b#m251000000##k right now? As long as you don't act silly while in the air, you should reach your destination in no time. It'll only cost you #b500 mesos.");
 			}
-		if (selection == 2) {
-			if (cm.getPlayer().getMeso() > 1000) {
-			cm.gainMeso(-1000);
-			cm.getPlayer().changeMap(cm.getMap(252000000), cm.getMap(252000000).getPortal(0));
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("Are you sure you have enough mesos?");
-			cm.dispose();
-			return;
-			}
 			select = selection;
 			break;
 	case 2:
@@ -127,10 +116,6 @@ function action(mode, type, selection) {
 		if (cm.getPlayer().getMeso() > 5000) {
 			cm.gainMeso(-5000);
 			cm.giveBuff(selection < 1 ? 80001027 : 80001028, 1);
-			cm.getMap(200110040).setTimeLimit(selection < 1 ? 20 : 10);
-			cm.getMap(200110041).setTimeLimit(selection < 1 ? 20 : 10);
-			cm.getMap(200110040).setForcedReturnMap(200000141);
-			cm.getMap(200110041).setForcedReturnMap(250000100);
 			cm.getPlayer().changeMap(cm.getMap(cm.getPlayer().getMap().getId() == 250000100 ? 200110040 : 200110041), cm.getMap(cm.getPlayer().getMap().getId() == 250000100 ? 200110040 : 200110041).getPortal(0));
 			cm.dispose();
 			return;

@@ -51,7 +51,7 @@ function action0(mode, type, selection) {
 			cm.dispose();
 			return;
 			}
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Someone is already in the Subway Construction Site. Please try again later."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Someone is already in the Subway Construction Site. Please try again later."));
 			cm.dispose();
 }
 }
@@ -68,8 +68,8 @@ function action2(mode, type, selection) {
 	switch (status) {
 	case 1:
 		cm.getPlayer().changeMap(cm.getMap(103020010), cm.getMap(103020010).getPortal(0));
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("The next stop is at Kerning Square Station. The exit is to your left."));
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(6, "The next stop is at Kerning Square Station. The exit is to your left."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("The next stop is at Kerning Square Station. The exit is to your left."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The next stop is at Kerning Square Station. The exit is to your left."));
 		cm.getPlayer().startMapTimeLimitTask(10, cm.getMap(103020020));
 		cm.dispose();
 }

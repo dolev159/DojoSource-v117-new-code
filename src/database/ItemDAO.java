@@ -93,12 +93,12 @@ public class ItemDAO {
                             }
                             if (equip.getUniqueId() > -1) {
                                 if (GameConstants.isEffectRing(itemId)) {
-                                    MapleRing ring = MapleRing.loadFromDb(equip.getUniqueId(), mit.equals(MapleInventoryType.EQUIPPED));
+                                    MapleRing ring = MapleRing.loadFromDb(con, equip.getUniqueId(), mit.equals(MapleInventoryType.EQUIPPED));
                                     if (ring != null) {
                                         equip.setRing(ring);
                                     }
                                 } else if (itemId / 10000 == 166) {
-                                    MapleAndroid ring = MapleAndroid.loadFromDb(itemId, equip.getUniqueId());
+                                    MapleAndroid ring = MapleAndroid.loadFromDb(con, itemId, equip.getUniqueId());
                                     if (ring != null) {
                                         equip.setAndroid(ring);
                                     }
@@ -115,12 +115,12 @@ public class ItemDAO {
                         item.setGiftFrom(rs.getString("sender"));
                         if (GameConstants.isPet(itemId)) {
                             if (item.getUniqueId() > -1) {
-                                MaplePet pet = MaplePet.loadFromDb(itemId, item.getUniqueId(), item.getPosition());
+                                MaplePet pet = MaplePet.loadFromDb(con, itemId, item.getUniqueId(), item.getPosition());
                                 if (pet != null) {
                                     item.setPet(pet);
                                 }
                             } else {
-                                item.setPet(MaplePet.createPet(itemId, MapleInventoryIdentifier.getInstance()));
+                                item.setPet(MaplePet.createPet(itemId, MapleInventoryIdentifier.getInstance())); // Note: creation still uses its own connection, but this branch is rarely hit during load
                             }
                         }
                         items.put(rs.getLong("inventoryitemid"), new Pair<Item, MapleInventoryType>(item.copy(), mit));

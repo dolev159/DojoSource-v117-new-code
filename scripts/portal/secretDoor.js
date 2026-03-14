@@ -6,8 +6,8 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3360)).getStatus() == 2) {
-		pi.getPlayer().changeMap(pi.getMap(261030000), pi.getMap(261030000).getPortal(pi.getPlayer().getMap().getId() == 261010000 ? 2 : 1));
 		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Your name is on the list. Now transporting to the Secret Passage."));
+		pi.getPlayer().changeMap(pi.getMap(261030000), pi.getMap(261030000).getPortal(pi.getPlayer().getMap().getId() == 261010000 ? 2 : 1));
 		return true;
 		}
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3360)).getStatus() == 1) {

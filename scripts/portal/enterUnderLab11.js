@@ -5,11 +5,13 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() < 5) {
-		for (var i = 0; i < 10; i++)
-		pi.getPlayer().getMap().spawnMonsterOnGroundBelow(Packages.server.life.MapleLifeFactory.getMonster(9300492), new java.awt.Point(-248, -164));
+	if (pi.getPlayer().itemQuantity(4033095) < 1) {
+	if (pi.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.ETC).getNumFreeSlot() < 1) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You don't have enough room in your Inventory for this..."));
+		return false;
 		}
-		pi.gainItem(4033095, pi.getPlayer().itemQuantity(4033095) ? 0 : 1);
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The research log has been found, it's best to leave here as soon as possible."));
-		return true;
+		pi.gainItem(4033095, 1);
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "What's this...a Research Journal? Take it to Claudine!"));
+		}
+		return false;
 }

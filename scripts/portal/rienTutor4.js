@@ -9,6 +9,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(140090500), pi.getMap(140090500).getPortal(1)); //寒冷的森林５
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You must complete the quest before proceeding to the next map."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You must complete the quest before proceeding to the next map."));
 		return false;
 }

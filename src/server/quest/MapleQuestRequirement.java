@@ -1,5 +1,7 @@
 package server.quest;
 
+import provider.MapleData;
+import provider.MapleDataTool;
 import client.Skill;
 import java.util.Calendar;
 import java.util.List;
@@ -66,20 +68,98 @@ public class MapleQuestRequirement implements Serializable {
             case interval:
             case mbmin:
             case lvmax:
-            case lvmin: {
+            case lvmin:
+            case charmMin:
+            case senseMin:
+            case craftMin:
+            case willMin:
+            case charismaMin:
+            case insightMin: {
                 intStore = Integer.parseInt(rse.getString("stringStore"));
                 break;
             }
-            case end: {
+            case end:
+            case endscript:
+            case startscript: {
                 stringStore = rse.getString("stringStore");
                 break;
             }
+            case UNDEFINED:
+                break;
+        }
+    }
+
+    public MapleQuestRequirement(MapleQuest quest, MapleQuestRequirementType type, MapleData data) {
+        this.type = type;
+        this.quest = quest;
+
+        switch (type) {
+            case pet:
+            case mbcard:
+            case mob:
+            case item:
+            case quest:
+            case skill:
+            case job: {
+                dataStore = new LinkedList<Pair<Integer, Integer>>();
+                for (MapleData child : data.getChildren()) {
+                    if (child.getName().equalsIgnoreCase("id")) {
+                        // Sometimes it's a single value
+                        dataStore.add(new Pair<Integer, Integer>(MapleDataTool.getInt(child), MapleDataTool.getInt("count", data, 0)));
+                    } else {
+                        try {
+                            int id = Integer.parseInt(child.getName());
+                            int count = MapleDataTool.getInt(child, 0);
+                            if (type == MapleQuestRequirementType.quest) {
+                                count = MapleDataTool.getInt("state", child, 0);
+                            }
+                            dataStore.add(new Pair<Integer, Integer>(id, count));
+                        } catch (NumberFormatException e) {
+                            // Skip non-integer nodes
+                        }
+                    }
+                }
+                break;
+            }
+            case partyQuest_S:
+            case dayByDay:
+            case normalAutoStart:
+            case subJobFlags:
+            case fieldEnter:
+            case pettamenessmin:
+            case npc:
+            case questComplete:
+            case pop:
+            case interval:
+            case mbmin:
+            case lvmax:
+            case lvmin:
+            case charmMin:
+            case senseMin:
+            case craftMin:
+            case willMin:
+            case charismaMin:
+            case insightMin: {
+                intStore = MapleDataTool.getInt(data, 0);
+                break;
+            }
+            case end:
+            case endscript:
+            case startscript: {
+                stringStore = MapleDataTool.getString(data, "");
+                break;
+            }
+            case UNDEFINED:
+                break;
         }
     }
 
     public boolean check(MapleCharacter c, Integer npcid) {
         switch (type) {
             case job:
+                if (dataStore == null) {
+                    return true;
+                }
                 for (Pair<Integer, Integer> a : dataStore) {
                     if (a.getRight() == c.getJob() || c.isGM()) {
                         return true;
@@ -87,6 +167,9 @@ public class MapleQuestRequirement implements Serializable {
                 }
                 return false;
             case skill: {
+                if (dataStore == null) {
+                    return true;
+                }
                 for (Pair<Integer, Integer> a : dataStore) {
                     final boolean acquire = a.getRight() > 0;
                     final int skill = a.getLeft();
@@ -110,6 +193,9 @@ public class MapleQuestRequirement implements Serializable {
                 return true;
             }
             case quest:
+                if (dataStore == null) {
+                    return true;
+                }
                 for (Pair<Integer, Integer> a : dataStore) {
                     final MapleQuestStatus q = c.getQuest(MapleQuest.getInstance(a.getLeft()));
                     final int state = a.getRight();
@@ -124,6 +210,9 @@ public class MapleQuestRequirement implements Serializable {
                 }
                 return true;
             case item:
+                if (dataStore == null) {
+                    return true;
+                }
                 MapleInventoryType iType;
                 int itemId;
                 short quantity;
@@ -154,6 +243,9 @@ public class MapleQuestRequirement implements Serializable {
                 cal.set(Integer.parseInt(timeStr.substring(0, 4)), Integer.parseInt(timeStr.substring(4, 6)), Integer.parseInt(timeStr.substring(6, 8)), Integer.parseInt(timeStr.substring(8, 10)), 0);
                 return cal.getTimeInMillis() >= System.currentTimeMillis();
             case mob:
+                if (dataStore == null) {
+                    return true;
+                }
                 for (Pair<Integer, Integer> a : dataStore) {
                     final int mobId = a.getLeft();
                     final int killReq = a.getRight();
@@ -172,6 +264,9 @@ public class MapleQuestRequirement implements Serializable {
             case mbmin:
                 return c.getMonsterBook().getSeen() >= intStore;
             case mbcard:
+                if (dataStore == null) {
+                    return true;
+                }
                 for (Pair<Integer, Integer> a : dataStore) {
                     final int cardId = a.getLeft();
                     final int killReq = a.getRight();
@@ -187,6 +282,9 @@ public class MapleQuestRequirement implements Serializable {
             case interval:
                 return c.getQuest(quest).getStatus() != 2 || c.getQuest(quest).getCompletionTime() <= System.currentTimeMillis() - intStore * 60 * 1000L;
             case pet:
+                if (dataStore == null) {
+                    return true;
+                }
                 for (Pair<Integer, Integer> a : dataStore) {
                     if (c.getPetById(a.getRight()) != -1) {
                         return true;
@@ -217,8 +315,13 @@ public class MapleQuestRequirement implements Serializable {
             case charismaMin:
             case insightMin:
             case charmMin:
-            case senseMin:
+            case senseMin: {
                 return c.getTrait(MapleTraitType.getByQuestName(type.name())).getLevel() >= intStore;
+            }
+            case startscript:
+            case endscript:
+                return true;
+            case UNDEFINED:
             default:
                 return true;
         }

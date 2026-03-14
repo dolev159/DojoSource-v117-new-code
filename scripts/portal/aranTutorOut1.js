@@ -6,7 +6,7 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(21000)).getStatus() < 1) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You can only exit after you accept the quest from Athena Pierce, who is to your right."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You can only exit after you accept the quest from Athena Pierce, who is to your right."));
 		return false;
 		}
 		pi.getPlayer().changeSingleSkillLevel(Packages.client.SkillFactory.getSkill(20000017), 1, 1, -1);

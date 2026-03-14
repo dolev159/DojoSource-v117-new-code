@@ -5,7 +5,7 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1035)).getStatus() == 2) {
+	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(1035)).getStatus() > 1) {
 		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("UI/tutorial.img/23"));
 		}
 		return false;

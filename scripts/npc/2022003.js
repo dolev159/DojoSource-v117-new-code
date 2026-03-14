@@ -75,9 +75,11 @@ function action0(mode, type, selection) {
 		cm.sendNextPrevS("Normally, l don't trust humans, but I'm making an exception you all. Now, let's go through the secret path to get to the Ice Ravine.", 1);
 		break;
 	case 3:
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Hoblin King", cm)) {
+            cm.sendNext("Your party does not meet the requirements or another party is already attempting this quest. Please try again later.");
+		}
 		cm.dispose();
-		for (var i = 0; i < party.size(); i++)
-		cm.getMap(211000002).getCharacterById(party.get(i).getId()).changeMap(cm.getMap(921120000), cm.getMap(921120000).getPortal(0));
+		return;
 }
 }
 

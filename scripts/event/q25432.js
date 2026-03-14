@@ -28,9 +28,9 @@ function scheduledTimeout(eim) {//規定時間結束
 	eim.disposeIfPlayerBelow(100, 222020000);
 }
 
-function monsterValue(eim, player, mob) {//殺怪後觸發
-	if (mob.getId() == 9300505) {
-		player.changeMap(eim.getMapInstance(222020000), eim.getMapInstance(222020000).getPortal(0));
+function monsterValue(eim, mobId) {//殺怪後觸發
+	if (mobId == 9300505) {
+		eim.getPlayers().get(0).changeMap(eim.getMapInstance(222020000), eim.getMapInstance(222020000).getPortal(0));
 		}
 		return 1;
 }

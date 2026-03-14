@@ -52,6 +52,7 @@ import handling.world.MaplePartyCharacter;
 import handling.world.World;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public class InventoryHandler {
         }
         final java.util.concurrent.locks.Lock lock = c.getPlayer().getInventoryLock();
         if (!lock.tryLock()) {
-            System.err.println("[Anti-Dupe] Potential Dupe Exploit caught for " + c.getPlayer().getName() + " on ItemMove.");
+            FileoutputUtil.log(FileoutputUtil.Hacker_Log, "[Anti-Dupe] Potential Dupe Exploit caught for " + c.getPlayer().getName() + " on ItemMove.");
             c.getSession().write(CWvsContext.enableActions());
             return;
         }
@@ -214,7 +215,7 @@ public class InventoryHandler {
         final MapleInventoryType invType = MapleInventoryType.getByType(mode);
         MapleInventory Inv = c.getPlayer().getInventory(invType);
 
-        final List<Item> itemMap = new LinkedList<Item>();
+        final List<Item> itemMap = new LinkedList<>();
         for (Item item : Inv.list()) {
             itemMap.add(item.copy()); // Clone all  items T___T.
         }
@@ -224,7 +225,7 @@ public class InventoryHandler {
 
         final List<Item> sortedItems = sortItems(itemMap);
         for (Item item : sortedItems) {
-            MapleInventoryManipulator.addFromDrop(c, item, false);
+            MapleInventoryManipulator.addFromDrop(c, item, false, false);
         }
         c.getSession().write(CWvsContext.finishedGather(mode));
         c.getSession().write(CWvsContext.enableActions());
@@ -233,13 +234,13 @@ public class InventoryHandler {
     }
 
     private static final List<Item> sortItems(final List<Item> passedMap) {
-        final List<Integer> itemIds = new ArrayList<Integer>(); // Empty list.
+        final List<Integer> itemIds = new ArrayList<>(); // Empty list.
         for (Item item : passedMap) {
             itemIds.add(item.getItemId()); // Adds all item ids to the empty list to be sorted.
         }
         Collections.sort(itemIds); // Sorts item ids
 
-        final List<Item> sortedList = new LinkedList<Item>(); // Ordered list pl0x <3.
+        final List<Item> sortedList = new LinkedList<>(); // Ordered list pl0x <3.
 
         for (Integer val : itemIds) {
             for (Item item : passedMap) {
@@ -553,8 +554,8 @@ public class InventoryHandler {
     }
 
     public static final void addToScrollLog(int accountID, int charID, int scrollID, int itemID, byte oldSlots, byte newSlots, byte viciousHammer, String result, boolean ws, boolean ls, int vega) {
-        try {
-            PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement("INSERT INTO scroll_log VALUES(DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("INSERT INTO scroll_log VALUES(DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             ps.setInt(1, accountID);
             ps.setInt(2, charID);
             ps.setInt(3, scrollID);
@@ -567,7 +568,6 @@ public class InventoryHandler {
             ps.setByte(10, (byte) (ls ? 1 : 0));
             ps.setInt(11, vega);
             ps.execute();
-            ps.close();
         } catch (SQLException e) {
             FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
         }
@@ -3067,7 +3067,7 @@ public class InventoryHandler {
                     if (numLines > 3) {
                         return;
                     }
-                    final List<String> messages = new LinkedList<String>();
+                    final List<String> messages = new LinkedList<>();
                     String message;
                     for (int i = 0; i < numLines; i++) {
                         message = slea.readMapleAsciiString();
@@ -3738,8 +3738,7 @@ public class InventoryHandler {
                 } else if (itemId / 10000 == 553) {
                     UseRewardItem(slot, itemId, c, c.getPlayer());// This too
                 } else if (itemId / 10000 != 519) {
-                    System.out.println("Unhandled CS item : " + itemId);
-                    System.out.println(slea.toString(true));
+                    FileoutputUtil.log(FileoutputUtil.PacketEx_Log, "Unhandled CS item : " + itemId + "\n" + slea.toString(true));
                 }
                 break;
         }
@@ -3810,7 +3809,7 @@ public class InventoryHandler {
             }
             if (mapitem.getMeso() > 0) {
                 if (chr.getParty() != null && mapitem.getOwner() != chr.getId()) {
-                    final List<MapleCharacter> toGive = new LinkedList<MapleCharacter>();
+                    final List<MapleCharacter> toGive = new LinkedList<>();
                     final int splitMeso = mapitem.getMeso() * 40 / 100;
                     for (MaplePartyCharacter z : chr.getParty().getMembers()) {
                         MapleCharacter m = chr.getMap().getCharacterById(z.getId());
@@ -3925,7 +3924,7 @@ public class InventoryHandler {
             //System.err.println("Petdrop 5");
             if (mapitem.getMeso() > 0) {
                 if (chr.getParty() != null && mapitem.getOwner() != chr.getId()) {
-                    final List<MapleCharacter> toGive = new LinkedList<MapleCharacter>();
+                    final List<MapleCharacter> toGive = new LinkedList<>();
                     final int splitMeso = mapitem.getMeso() * 40 / 100;
                     for (MaplePartyCharacter z : chr.getParty().getMembers()) {
                         MapleCharacter m = chr.getMap().getCharacterById(z.getId());

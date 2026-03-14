@@ -23,6 +23,6 @@ function start() {
 		cm.showNpcSpecialEffect(2111023, "act33454");
 		cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3345)).setCustomData(4);
 		cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3345)), true);
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "The Magic Pentagram is starting to light up."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The Magic Pentagram is starting to light up."));
 		cm.dispose();
 }

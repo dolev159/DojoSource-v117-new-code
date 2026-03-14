@@ -28,7 +28,7 @@ function playerEntry(eim, player) {//傳送進事件地圖
 function scheduledTimeout(eim) {//規定時間結束
 }
 
-function monsterValue(eim, player, mob) {//殺怪後觸發
+function monsterValue(eim, mobId) {//殺怪後觸發
 	return 1;
 }
 

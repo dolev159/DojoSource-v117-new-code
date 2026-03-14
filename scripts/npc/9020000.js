@@ -81,22 +81,18 @@ function action2(mode, type, selection) {
 			cm.dispose();
 			return;
 			}
-			var em = cm.getEventManager("KerningPQ");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
+			cm.getPQEngine().startInstance(cm.getParty(), "First Time Together", cm);
 			return;
-			}
-			cm.sendNext("Some other party has already gotten in to try clearing the quest. Please try again later.");
+		default:
 			cm.dispose();
-}
+			break;
+	}
 }
 
 function action3(mode, type, selection) {
 	switch (status) {
 	case 1:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.sendUIWindow(7, 1));
+		cm.sendPartyWindow();
 		cm.dispose();
 }
 }
@@ -120,7 +116,7 @@ function action5(mode, type, selection) {
 			return;
 			}
 		if (cm.getPlayer().getInventory(Packages.client.inventory.MapleInventoryType.EQUIP).getNumFreeSlot() < 1) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(1, "Equip item inventory is full."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(1, "Equip item inventory is full."));
 			cm.dispose();
 			return;
 			}

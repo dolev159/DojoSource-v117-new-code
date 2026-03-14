@@ -5,10 +5,10 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
-		return false;
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(300000010), pi.getMap(300000010).getPortal(0)); //營地會議場
+		return true;
 		}
-		pi.getPlayer().changeMap(pi.getMap(300030300), pi.getMap(300030300).getPortal(2)); //蝴蝶精的森林2
+		pi.openNpc(2133007);
 		return true;
 }

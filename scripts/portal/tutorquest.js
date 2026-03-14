@@ -4,9 +4,9 @@
 	描述:	130030001
 */
 
-var map = [130030001, 130030002, 130030003, 130030004]
-var quest = [20010, 20011, 20012, 20013]
-var state = [1, 2, 2, 2]
+var map = [130030001, 130030002, 130030003, 130030004];
+var quest = [20010, 20011, 20012, 20013];
+var state = [1, 2, 2, 2];
 
 function enter(pi) {
 	for (var i = 0; i < map.length; i ++)
@@ -15,6 +15,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(pi.getPlayer().getMap().getId() + 1), pi.getMap(pi.getPlayer().getMap().getId() + 1).getPortal(1));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, pi.getPlayer().getMap().getId() == 130030001 ? "Please click the NPC to receive a quest." : "Please complete the quest."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, pi.getPlayer().getMap().getId() == 130030001 ? "I should talk to Kisha first." : "You must complete the quest before proceeding to the next map."));
 		return false;
 }

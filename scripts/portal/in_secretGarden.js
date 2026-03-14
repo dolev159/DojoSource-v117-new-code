@@ -4,11 +4,21 @@
 	描述:	271030400
 */
 
+var map = 271030410;
+var num = 10;
+
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31146)).getStatus() < 1) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "You cannot access this area."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You cannot enter the Secret Garden at this time."));
 		return false;
 		}
-		pi.getPlayer().changeMap(pi.getMap(271030410), pi.getMap(271030410).getPortal(1)); //秘密庭院
+		for (var i = 0; i < num; i++)
+	if (pi.getMap(map + i).getCharacters().size() < 1) {
+		pi.getMap(map + i).resetFully();
+		pi.getPlayer().changeMap(pi.getMap(map + i), pi.getMap(map + i).getPortal(1)); //秘密庭院
+		pi.getPlayer().startMapTimeLimitTask(600, pi.getMap(271030400));
 		return true;
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Try again soon."));
+		return false;
 }

@@ -9,6 +9,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(272000200), pi.getMap(272000200).getPortal(1)); //燃燒的神木村2
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Crow, there seems to be something going on."));
+		pi.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.getNPCTalk(2144003, 0, "You will not be able to proceed to the next area without a request from me.", "00 00", 0));
 		return false;
 }

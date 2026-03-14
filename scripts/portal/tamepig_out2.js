@@ -5,6 +5,6 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().changeMap(pi.getMap(230000003), pi.getMap(230000003).getPortal(3)); //動物園
+	pi.getPlayer().changeMap(pi.getMap(230000003), pi.getMap(230000003).getPortal(0)); //動物園
 	return true;
 }

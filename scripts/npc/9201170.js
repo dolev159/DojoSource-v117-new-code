@@ -34,8 +34,8 @@ function action(mode, type, selection) {
 			cm.dispose();
 			return;
 			}
-			cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(1));
-			cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+			cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(1));
+			cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 			break;
 	case 1:
 		cm.sendNextS("Help! I yelled at some aliens about digging without a permit and they nabbed me! I don't deserve this!", 1);
@@ -50,9 +50,9 @@ function action(mode, type, selection) {
 function action0(mode, type, selection) {
 	switch (status) {
 	case 2:
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.getTopMsg("(Press the Ctrl key rapidly to break the lock)"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/guide1/0", 5000, 0, -200, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 5000));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.getTopMsg("(Press the Ctrl key rapidly to break the lock)"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/guide1/0", 5000, 0, -200, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 5000));
 		break;
 	case 3:
 		cm.sendNextS("(The lock popped off with a couple of good whacks.)", 3);
@@ -68,7 +68,7 @@ function action0(mode, type, selection) {
 		break;
 	case 7:
 		Packages.server.quest.MapleQuest.getInstance(28762).forceStart(cm.getPlayer(), 0, null);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(0));
 		cm.dispose();
 }
 }
@@ -88,8 +88,8 @@ function action1(mode, type, selection) {
 		cm.sendNextPrevS("The townspeople are safe. Time to go talk to the mayor.", 3);
 		break;
 	case 6:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/3", 1000, 0, -100, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/Direction6.img/effect/tuto/balloonMsg1/3", 1000, 0, -100, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 7:
 		cm.sendNextS("You! You're the one messing with our mining operation!", 5, 9201174);
@@ -122,20 +122,20 @@ function action1(mode, type, selection) {
 		cm.sendNextPrevS("It's never clean enough! Knock this stinky beast out!", 5, 9201174);
 		break;
 	case 17:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.environmentChange("demonSlayer/whiteOut", 3));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo("Effect/BasicEff.img/CannonJump", 0, 0, -50, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.environmentChange("demonSlayer/whiteOut", 3));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo("Effect/BasicEff.img/CannonJump", 0, 0, -50, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 500));
 		break;
 	case 18:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.ShowWZEffect("Effect/Direction4.img/cannonshooter/face00"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 4));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 2000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.ShowWZEffect("Effect/Direction4.img/cannonshooter/face00"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 4));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 2000));
 		break;
 	case 19:
 		cm.dispose();
 		Packages.server.quest.MapleQuest.getInstance(28762).forceStart(cm.getPlayer(), 0, null);
 		Packages.server.quest.MapleQuest.getInstance(28749).forceComplete(cm.getPlayer(), 0);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(0));
 		cm.getPlayer().changeMap(cm.getMap(610040500), cm.getMap(610040500).getPortal(0));
 }
 }

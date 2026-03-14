@@ -82,38 +82,21 @@ function action1(mode, type, selection) {
 function action2(mode, type, selection) {
 	switch (status) {
 	case 1:
-		if (cm.getPlayer().getParty() == null || cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
+		if (cm.getPlayer().getParty() == null) {
+			cm.sendOk("You need a party to participate.");
+			cm.dispose();
+			return;
+		}
+		if (cm.getPlayer().getParty().getLeader().getId() != cm.getPlayer().getId()) {
 			cm.sendOk("The party leader can proceed to the next stage.");
 			cm.dispose();
 			return;
-			}
-			party = cm.getPlayer().getParty().getMembers();
-		if (party.size() < 1) {
-			cm.sendNext("Your party does not meet the requirements. You need a party with exactly four members to participate in this quest.");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getMapid() != 261000021) {
-			cm.sendNext("Some of your party members are in a different map. Make sure they're all here!");
-			cm.dispose();
-			return;
-			}
-			for (var i = 0; i < party.size(); i++)
-		if (party.get(i).getLevel() < 70) {
-			cm.sendNext("Someone in your party isn't above Lv. 70. Make sure you're all the right level for this quest!");
-			cm.dispose();
-			return;
-			}
-			var em = cm.getEventManager("Juliet");
-			var prop = em.getProperty("state");
-		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
-			cm.dispose();
-			return;
-			}
-			cm.sendNext("Some other party has already gotten in to try clearing the quest. Please try again later.");
-			cm.dispose();
+		}
+		if (!cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Juliet", cm)) {
+			cm.sendNext("Your party does not meet the requirements or another party is already inside.");
+		}
+		cm.dispose();
+		break;
 }
 }
 

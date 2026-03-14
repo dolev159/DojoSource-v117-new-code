@@ -9,6 +9,6 @@ function enter(pi) {
 		pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31124)).setCustomData("end");
 		pi.getPlayer().updateQuest(pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(31124)), true);
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Security in the Stronghold has been increased. Getting in won't be easy."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "It's the Cygnus Knights' fortress. The security seems very tight."));
 		return false;
 }

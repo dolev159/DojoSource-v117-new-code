@@ -5,7 +5,7 @@
 */
 
 var map = [924010200, 924010100, 924010000];
-var quest = [20407, 20406, 20404]
+var quest = [20407, 20406, 20404];
 
 function enter(pi) {
 	for (var i = 0; i < quest.length; i ++)
@@ -13,6 +13,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(map[i]), pi.getMap(map[i]).getPortal(1));
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "I shouldn't go here.. it's creepy!"));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "An invisible force is preventing us from entering."));
 		return false;
 }

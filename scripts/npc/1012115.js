@@ -12,6 +12,6 @@ function start() {
 		}
 		cm.showNpcSpecialEffect(1012115, "blackShadow");
 		Packages.server.quest.MapleQuest.getInstance(20731).forceStart(cm.getPlayer(), 0, 1);
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "A suspicious shadow appeared!"));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "A suspicious shadow appeared!"));
 		cm.dispose();
 }

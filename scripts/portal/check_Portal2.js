@@ -9,6 +9,6 @@ function enter(pi) {
 		pi.getPlayer().changeMap(pi.getMap(272000310), pi.getMap(272000310).getPortal(1)); //燃燒的廢墟
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Aran needs your help."));
+		pi.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.getNPCTalk(2144005, 0, "You can't leave without helping us! Come quick!", "00 00", 0));
 		return false;
 }

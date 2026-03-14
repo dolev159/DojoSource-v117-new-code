@@ -97,16 +97,16 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("Okay...I'm going. Whatever it is you're doing...good luck.", 1);
 		break;
 	case 24:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.setNPCSpecialAction(2159307, "teleportation"));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1200));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.setNPCSpecialAction(2159307, "teleportation"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1200));
 		break;
 	case 25:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.removeNPCController(2159307));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.removeNPCController(2159307));
 		cm.sendNextS("(Your loyalty means so much to me, #p2151009#. Thank you.)", 3);
 		break;
 	case 26:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 2));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 2));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 27:
 		cm.dispose();

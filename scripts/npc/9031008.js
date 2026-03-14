@@ -94,12 +94,12 @@ function action5(mode, type, selection) {
 	case 1:
 		if (cm.getPlayer().itemQuantity(ticket[selection])) {
 			cm.gainItem(ticket[selection], -1);
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Yon will now enter the " + name[selection] + ". You will not be able to re-enter after you leave."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Yon will now enter the " + name[selection] + ". You will not be able to re-enter after you leave."));
 			cm.getPlayer().changeMap(cm.getMap(map[selection]), cm.getMap(map[selection]).getPortal(1));
 			cm.dispose();
 			return;
 			}
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "You cannot enter without an " + name[selection] + " Ticket."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You cannot enter without an " + name[selection] + " Ticket."));
 			cm.dispose();
 }
 }

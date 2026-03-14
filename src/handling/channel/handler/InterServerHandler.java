@@ -38,6 +38,14 @@ import handling.world.MapleParty;
 import handling.world.MaplePartyCharacter;
 import handling.world.PartyOperation;
 import handling.world.PlayerBuffStorage;
+import java.sql.Connection;
+import java.sql.SQLException;
+import database.DatabaseConnection;
+import tools.FileoutputUtil;
+import tools.packet.CField;
+import tools.packet.CWvsContext;
+import server.maps.MapleMap;
+import server.maps.SavedLocationType;
 import handling.world.World;
 import handling.world.exped.MapleExpedition;
 import handling.world.guild.MapleGuild;
@@ -111,8 +119,12 @@ public class InterServerHandler {
         PlayerBuffStorage.addDiseaseToStorage(chr.getId(), chr.getAllDiseases());
         World.ChannelChange_Data(new CharacterTransfer(chr), chr.getId(), mts ? -20 : -10);
         ch.removePlayer(chr);
-        c.updateLoginState(MapleClient.CHANGE_CHANNEL, c.getSessionIPAddress());
-        chr.saveToDB(false, false);
+        try (Connection con = DatabaseConnection.getConnection()) {
+            c.updateLoginState(MapleClient.CHANGE_CHANNEL, c.getSessionIPAddress());
+            chr.saveToDB(con, false, false);
+        } catch (SQLException e) {
+            FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
+        }
         chr.getMap().removePlayer(chr);
         c.getSession().write(CField.getChannelChange(c, Integer.parseInt(CashShopServer.getIP().split(":")[1])));
         c.setPlayer(null);
@@ -221,7 +233,11 @@ public class InterServerHandler {
          * }
          */
         c.getSession().write(CWvsContext.temporaryStats_Reset()); // .
-        player.getMap().addPlayer(player);
+        if (player.getMap() != null) {
+            player.getMap().addPlayer(player);
+        } else {
+            System.err.println("[CRITICAL] Map is null for player " + player.getName() + " on login.");
+        }
         try {
             // Start of buddylist
             final int buddyIds[] = player.getBuddylist().getBuddyIds();

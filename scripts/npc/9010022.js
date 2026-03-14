@@ -4,11 +4,11 @@
 	描述:	104000000
 */
 
-var text = ["#0# Ariant Coliseum", "#1# Mu Lung Training Center", "#2# Monster Carnival 1", "#3# Monster Carnival 2", "#4# Dual Raid", "#5# Nett's Pyramid", "#6# Kerning Subway", "#7# Happyville", "#8# Golden Temple", "#9# Moon Bunny", "#10# First Time Togethe", "#11# Dimensional Crack", "#12# Forest of Poison Haze", "#13# Remnant of the Goddess", "#14# Lord Pirate", "#15# Romeo and Juliet", "#16# Resurrection of the Hoblin King", "#17# Dragon's Nest", "#18#", "#19#", "#20#", "#21# Kenta in Danger", "#22# Escape", "#23# The Ice Knight's Curse"];
+var text = ["#0# Ariant Coliseum", "#1# Mu Lung Training Center", "#2# Monster Carnival 1", "#3# Monster Carnival 2", "#4# Dual Raid", "#5# Nett's Pyramid", "#6# Kerning Subway", "#7# Happyville", "#8# Golden Temple", "#9# Moon Bunny", "#10# First Time Togethe", "#11# Dimensional Crack", "#12# Forest of Poison Haze", "#13# Remnant of the Goddess", "#14# Lord Pirate", "#15# Romeo and Juliet", "#16# Resurrection of the Hoblin King", "#17# Dragon's Nest", "#18#", "#19#", "#20#", "#21# Kenta in Danger", "#22# Escape", "#23# The Ice Knight's Curse", "#24#", "#25#", "#26#", "#27# Aswan", "#28# Golden Temple", "#29# Spiegelmann's Gonzo Gallery"];
 
-var map = [980010000, 925020000, 980000000, 980030000, 923020000, 926010000, 910320000, 209000000, 950100000, 910010500, 910340700, 221023300, 300030100, 200080101, 251010404, 261000021, 211000002, 240080000, 0, 0, 0, 923040000, 921160000, 932000000];
+var map = [980010000, 925020000, 980000000, 980030000, 923020000, 926010000, 910320000, 209000000, 950100000, 910010500, 910340700, 221023300, 300030100, 200080101, 251010404, 261000021, 211000002, 240080000, 0, 0, 0, 923040000, 921160000, 932000000, , , , 262010000, 252000000, 956000100];
 
-var level = [255, 90, 255, 255, 90, 60, 25, 255, 0, 20, 20, 20, 70, 70, 70, 70, 120, 120, 255, 255, 255, 120, 120, 20];
+var level = [255, 90, 255, 255, 90, 60, 25, 255, 255, 20, 20, 20, 70, 70, 70, 70, 120, 120, 255, 255, 255, 120, 120, 20, 255, 255, 255, 45, 100, 25];
 
 var chat = "";
 

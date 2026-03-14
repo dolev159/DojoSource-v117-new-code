@@ -144,6 +144,20 @@ public class PlayerStorage {
         }
     }
 
+    public final MapleCharacter getCharacterByAccountId(final int id) {
+        rL.lock();
+        try {
+            for (MapleCharacter chr : idToChar.values()) {
+                if (chr.getAccountID() == id) {
+                    return chr;
+                }
+            }
+        } finally {
+            rL.unlock();
+        }
+        return null;
+    }
+
     public final int getConnectedClients() {
         return idToChar.size();
     }

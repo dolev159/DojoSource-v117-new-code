@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import scripting.EventInstanceManager;
 import scripting.EventManager;
@@ -611,6 +612,53 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
         return loadCharFromDB(charid, client, channelserver, null);
     }
 
+    public static MapleCharacter loadCharList(int charid, MapleClient client) {
+        final MapleCharacter ret = new MapleCharacter(false);
+        ret.client = client;
+        ret.id = charid;
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM characters WHERE id = ?")) {
+                ps.setInt(1, charid);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        return null;
+                    }
+                    ret.name = rs.getString("name");
+                    ret.level = rs.getShort("level");
+                    ret.fame = rs.getInt("fame");
+                    ret.stats.str = rs.getShort("str");
+                    ret.stats.dex = rs.getShort("dex");
+                    ret.stats.int_ = rs.getShort("int");
+                    ret.stats.luk = rs.getShort("luk");
+                    ret.stats.maxhp = rs.getInt("maxhp");
+                    ret.stats.maxmp = rs.getInt("maxmp");
+                    ret.stats.hp = rs.getInt("hp");
+                    ret.stats.mp = rs.getInt("mp");
+                    ret.job = rs.getShort("job");
+                    ret.skinColor = rs.getByte("skincolor");
+                    ret.gender = rs.getByte("gender");
+                    ret.hair = rs.getInt("hair");
+                    ret.face = rs.getInt("face");
+                    ret.accountid = rs.getInt("accountid");
+                    ret.mapid = rs.getInt("map");
+                    ret.world = rs.getByte("world");
+                    ret.rank = rs.getInt("rank");
+                    ret.rankMove = rs.getInt("rankMove");
+                    ret.jobRank = rs.getInt("jobRank");
+                    ret.jobRankMove = rs.getInt("jobRankMove");
+                }
+            }
+            // Load ONLY equipped items for the lobby look
+            for (Pair<Item, MapleInventoryType> mit : ItemLoader.INVENTORY.loadItems(con, charid, true).values()) {
+                ret.getInventory(mit.getRight()).addFromDB(mit.getLeft());
+            }
+        } catch (SQLException e) {
+            System.err.println("Error loading character list: " + e);
+        }
+        return ret;
+    }
+
     public static MapleCharacter loadCharFromDB(int charid, MapleClient client, boolean channelserver,
             final Map<Integer, CardData> cads) {
         final MapleCharacter ret = new MapleCharacter(channelserver);
@@ -704,12 +752,21 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                         if (ret.map == null) {
                             ret.map = mapFactory.getMap(100000000);
                         }
-                        MaplePortal portal = ret.map.getPortal(ret.initialSpawnPoint);
-                        if (portal == null) {
-                            portal = ret.map.getPortal(0);
-                            ret.initialSpawnPoint = 0;
+                        if (ret.map != null) {
+                            MaplePortal portal = ret.map.getPortal(ret.initialSpawnPoint);
+                            if (portal == null) {
+                                portal = ret.map.getPortal(0);
+                                ret.initialSpawnPoint = 0;
+                            }
+                            if (portal != null) {
+                                ret.setPosition(portal.getPosition());
+                            } else {
+                                ret.setPosition(new Point(0, 0));
+                            }
+                        } else {
+                            System.err.println("[CRITICAL] Could not load map for character: " + ret.name + " (MapID: " + ret.mapid + ")");
+                            ret.setPosition(new Point(0, 0));
                         }
-                        ret.setPosition(portal.getPosition());
 
                         int partyid = rs.getInt("party");
                         if (partyid >= 0) {
@@ -787,7 +844,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                     }
                 }
 
-                for (Pair<Item, MapleInventoryType> mit : ItemLoader.INVENTORY.loadItems(false, charid).values()) {
+                for (Pair<Item, MapleInventoryType> mit : ItemLoader.INVENTORY.loadItems(con, charid, false).values()) {
                     ret.getInventory(mit.getRight()).addFromDB(mit.getLeft());
                     if (mit.getLeft().getPet() != null) {
                         ret.pets.add(mit.getLeft().getPet());
@@ -826,6 +883,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
 
                 ret.questinfo = QuestDAO.loadQuestInfo(con, charid);
 
+                // Load character skills
                 try (PreparedStatement psSkills = con.prepareStatement(
                         "SELECT skillid, skilllevel, masterlevel, expiration FROM skills WHERE characterid = ?")) {
                     psSkills.setInt(1, charid);
@@ -860,6 +918,7 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
 
                 ret.expirationTask(false, true);
 
+                // Load Bless of Fairy / Empress
                 try (PreparedStatement psBof = con
                         .prepareStatement("SELECT * FROM characters WHERE accountid = ? ORDER BY level DESC")) {
                     psBof.setInt(1, ret.accountid);
@@ -998,9 +1057,9 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                     }
                 }
 
-                ret.buddylist.loadFromDb(charid);
-                ret.storage = MapleStorage.loadStorage(ret.accountid);
-                ret.cs = new CashShop(ret.accountid, charid, ret.getJob());
+                ret.buddylist.loadFromDb(con, charid);
+                ret.storage = MapleStorage.loadStorage(ret.accountid, con);
+                ret.cs = new CashShop(ret.accountid, charid, ret.getJob(), con);
 
                 try (PreparedStatement psWish = con.prepareStatement("SELECT sn FROM wishlist WHERE characterid = ?")) {
                     psWish.setInt(1, charid);
@@ -1364,12 +1423,30 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
         }
     }
 
+    private final ReentrantLock savingLock = new ReentrantLock();
+
     public void saveToDB(boolean dc, boolean fromcs) {
         if (isClone()) {
             return;
         }
-
         try (Connection con = DatabaseConnection.getConnection()) {
+            saveToDB(con, dc, fromcs);
+        } catch (SQLException e) {
+            FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
+            System.err.println(MapleClient.getLogMessage(this, "[Character Save DB Error] ") + e);
+        }
+    }
+
+    public void saveToDB(Connection con, boolean dc, boolean fromcs) {
+        if (isClone()) {
+            return;
+        }
+
+        savingLock.lock();
+        try {
+            int oldIsolation = con.getTransactionIsolation();
+            boolean oldAutoCommit = con.getAutoCommit();
+
             con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             con.setAutoCommit(false);
 
@@ -1387,16 +1464,23 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                 FileoutputUtil.log(FileoutputUtil.PacketEx_Log,
                         "[Character Save Fail] CID: " + id + " | Error: " + e.getMessage());
                 e.printStackTrace();
-                throw new RuntimeException("Character save failed. Transaction rolled back.", e);
             } finally {
-                con.setAutoCommit(true);
-                con.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ); // Reset isolation level
+                con.setAutoCommit(oldAutoCommit);
+                con.setTransactionIsolation(oldIsolation);
             }
-
         } catch (SQLException e) {
             FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
             System.err.println(MapleClient.getLogMessage(this, "[Character Save DB Error] ") + e);
+        } finally {
+            savingLock.unlock();
         }
+    }
+
+    public void saveToDBAsync(boolean dc, boolean fromcs) {
+        if (isClone()) {
+            return;
+        }
+        server.Timer.DatabaseTimer.getInstance().execute(() -> saveToDB(dc, fromcs));
     }
 
     public void saveItemsToDB() {
@@ -4017,17 +4101,17 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
                     if (exp + total < 0) { // Overflow check
                         exp = needed;
                     } else {
-                        while (exp + total >= needed && level < 250) {
-                            exp += total;
+                        exp += total;
+                        while (exp >= needed && level < 250) {
                             levelUp();
                             leveled = true;
                             if ((level >= 250 || (GameConstants.isKOC(job) && level >= 250)) && !isIntern()) {
                                 setExp(0);
+                                break;
                             } else {
                                 needed = getNeededExp();
                             }
                         }
-                        exp += total;
                     }
                     familyRep(prevexp, needed, leveled);
                 } else if (total < 0) {
@@ -4109,21 +4193,17 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             // }
         } else {
             boolean leveled = false;
-            while ((exp + total >= needed || exp >= needed) && level < 250) {
-                exp += total;
+            exp += total;
+            while (exp >= needed && level < 250) {
                 levelUp();
                 leveled = true;
                 if ((level >= 250 || (GameConstants.isKOC(job) && level >= 250)) && !isIntern()) {
                     setExp(0);
+                    break;
                 } else {
                     needed = getNeededExp();
-                    // if (exp >= needed) {
-                    // setExp(needed);
-                    // }
                 }
-            } // else {
-            exp += total;
-            // }
+            }
             if (total > 0) {
                 familyRep(prevexp, needed, leveled);
             } else {
@@ -5803,10 +5883,9 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
     }
 
     public void saveFamilyStatus() {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con.prepareStatement(
-                    "UPDATE characters SET familyid = ?, seniorid = ?, junior1 = ?, junior2 = ? WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                    "UPDATE characters SET familyid = ?, seniorid = ?, junior1 = ?, junior2 = ? WHERE id = ?")) {
             if (mfc == null) {
                 ps.setInt(1, 0);
                 ps.setInt(2, 0);
@@ -5820,9 +5899,8 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
             }
             ps.setInt(5, id);
             ps.executeUpdate();
-            ps.close();
         } catch (SQLException se) {
-            System.out.println("SQLException: " + se.getLocalizedMessage());
+            System.err.println("SQLException: " + se.getLocalizedMessage());
             se.printStackTrace();
         }
         // MapleFamily.setOfflineFamilyStatus(familyid, seniorid, junior1, junior2,
@@ -5921,21 +5999,17 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
     }
 
     public static boolean tempban(String reason, Calendar duration, int greason, int accountid) {
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            PreparedStatement ps = con
-                    .prepareStatement("UPDATE accounts SET tempban = ?, banreason = ?, greason = ? WHERE id = ?");
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE accounts SET tempban = ?, banreason = ?, greason = ? WHERE id = ?")) {
             Timestamp TS = new Timestamp(duration.getTimeInMillis());
             ps.setTimestamp(1, TS);
             ps.setString(2, reason);
             ps.setInt(3, greason);
             ps.setInt(4, accountid);
             ps.executeUpdate();
-            ps.close();
             return true;
         } catch (SQLException ex) {
             ex.printStackTrace();
-            // log.error("Error while tempbanning", ex);
         }
         return false;
     }
@@ -9591,5 +9665,8 @@ public class MapleCharacter extends AnimatedMapleMapObject implements Serializab
         }
     }
 
-
+    public int getQuestCheckValue(int questid) {
+        server.quest.BinaryQuestInfo bqi = provider.MapleDataProviderFactory.getBinaryProvider().getQuestData(questid);
+        return bqi != null ? bqi.getCheckEndValue() : 0;
+    }
 }

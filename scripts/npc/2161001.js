@@ -11,7 +11,7 @@ function start() {
 		return;
 		}
 	if (cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3173)).getStatus() != 1 && cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(3175)).getStatus() != 1) {
-		cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "You cannot enter the Audience Room at this time."));
+		cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You cannot enter the Audience Room at this time."));
 		cm.dispose();
 		return;
 		}

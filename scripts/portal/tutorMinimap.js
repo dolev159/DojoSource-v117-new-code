@@ -5,8 +5,9 @@
 */
 
 function enter(pi) {
-	if (!pi.getPlayer().hasSummon())
-	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonHelper(true));
-	pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonMessage(1));
-	return true;
+	if (pi.getPlayer().hasSummon() == false) {
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonHelper(true));
+		}
+		pi.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.summonMessage(1));
+		return true;
 }

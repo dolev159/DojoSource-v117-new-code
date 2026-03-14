@@ -28,7 +28,7 @@ function action(mode, type, selection) {
 	switch (status) {
 	case 0:
 		if (cm.getPlayer().getPosition().y > - 1586) {
-			cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "You're too far from Trainer Frod. Get closer."));
+			cm.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "You're too far from Trainer Frod. Get closer."));
 			cm.dispose();
 			return;
 			}

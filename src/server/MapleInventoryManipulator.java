@@ -17,6 +17,7 @@ import client.Skill;
 import client.SkillEntry;
 import client.SkillFactory;
 import server.quest.MapleQuest;
+import scripting.EventManager;
 import tools.FileoutputUtil;
 import tools.packet.CWvsContext;
 import tools.packet.CWvsContext.InfoPacket;
@@ -369,18 +370,43 @@ public class MapleInventoryManipulator {
         return null;
     }
 
-    public static boolean addFromDrop(final MapleClient c, final Item item, final boolean show) {
-        return addFromDrop(c, item, show, false);
+    private static boolean handleLudiPQDrop(final MapleClient c, final Item item) {
+        final EventManager LudiPQ = c.getChannelServer().getEventSM().getEventManager("LudiPQ");
+        if (item.getItemId() == 4001022 && LudiPQ != null && c.getPlayer().getEventInstance() != null && c.getPlayer().getEventInstance().getProperty("drop") == null) {
+            String count = c.getPlayer().getEventInstance().getProperty("count");
+            int currentCount = count == null ? 0 : Integer.parseInt(count);
+            currentCount++;
+            c.getPlayer().getEventInstance().setProperty("count", String.valueOf(currentCount));
+
+            c.getPlayer().getMap().broadcastMessage(tools.packet.CWvsContext.getTopMsg("You have collected " + currentCount + " Passes."));
+
+            if (currentCount >= 20) {
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CWvsContext.getTopMsg("A portal to the next stage has opened."));
+                c.getPlayer().getMap().startMapEffect("All of the passes have been gathered. Proceed to the next stage by talking to the Red Balloon.", 5120018);
+
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CField.environmentChange("gate", 2));
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CField.environmentChange("quest/party/clear", 3));
+                c.getPlayer().getMap().broadcastMessage(tools.packet.CField.environmentChange("Party1/Clear", 4));
+
+                c.getPlayer().getEventInstance().setProperty("stage1", "1");
+                c.getPlayer().getEventInstance().setProperty("drop", "1");
+            }
+            return true;
+        }
+        return false;
     }
 
     public static boolean addFromDrop(final MapleClient c, final Item item, final boolean show, final boolean enhance) {
-        final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+        if (handleLudiPQDrop(c, item)) {
+            return false;
+        }
 
         // 1. Defensive Checks (Null-safety & Existence)
         if (c == null || c.getPlayer() == null || item == null) {
             return false;
         }
 
+        final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         if ((ii.isPickupRestricted(item.getItemId()) && c.getPlayer().haveItem(item.getItemId(), 1, true, false))
                 || (!ii.itemExists(item.getItemId()))) {
             c.sendPacket(InventoryPacket.getInventoryFull());

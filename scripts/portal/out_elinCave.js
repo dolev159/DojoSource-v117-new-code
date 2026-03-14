@@ -5,10 +5,10 @@
 */
 
 function enter(pi) {
-	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() > 0) {
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Due to the monster's obstruction, the exit has been closed."));
-		return false;
+	if (pi.getPlayer().getMap().getAllMonstersThreadsafe().size() < 1) {
+		pi.getPlayer().changeMap(pi.getMap(300010400), pi.getMap(300010400).getPortal(2)); //石山入口
+		return true;
 		}
-		pi.getPlayer().changeMap(pi.getMap(300010410), pi.getMap(300010410).getPortal(2)); //岩石山洞穴
+		pi.openNpc(2132000);
 		return true;
 }

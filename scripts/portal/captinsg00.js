@@ -12,9 +12,13 @@ function enter(pi) {
 		em.startInstance(pi.getPlayer());
 		return true;
 		}
+	if (pi.getPlayer().getParty().getLeader().getId() != pi.getPlayer().getId()) {
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Only party leaders can initiate entry."));
+		return false;
+		}
 		em.startInstance(pi.getPlayer().getParty(), pi.getPlayer().getMap(), 200);
 		return true;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "The battle against the boss has already begun, so you may not enter this place yet."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Another party is already inside."));
 		return false;
 }

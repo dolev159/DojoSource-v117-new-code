@@ -7,6 +7,7 @@ public enum MapleStat {
     SKIN(0x1), // byte
     FACE(0x2), // int
     HAIR(0x4), // int
+    PET(0x180008), // Pets: 0x8 + 0x80000 + 0x100000  [3 longs]
     LEVEL(0x10), // byte
     JOB(0x20), // short
     STR(0x40), // short
@@ -22,7 +23,6 @@ public enum MapleStat {
     EXP(0x10000), // int
     FAME(0x20000), // int
     MESO(0x40000), // int
-    PET(0x180008), // Pets: 0x8 + 0x80000 + 0x100000  [3 longs]
     GACHAPONEXP(0x200000), // int
     FATIGUE(0x400000), // byte
     CHARISMA(0x800000), // ambition int

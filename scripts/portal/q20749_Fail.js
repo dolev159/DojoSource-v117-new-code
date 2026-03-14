@@ -5,5 +5,6 @@
 */
 
 function enter(pi) {
+	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "The door is impossible to open."));
 	return false;
 }

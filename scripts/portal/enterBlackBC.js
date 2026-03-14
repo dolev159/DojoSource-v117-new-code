@@ -6,21 +6,23 @@
 
 function enter(pi) {
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(22583)).getStatus() == 1) {
-	if (pi.getMap(922030010).getCharacters().size() < 1 && pi.getMap(922030011).getCharacters().size() < 1) {
-		pi.getMap(922030011).resetFully();
-		pi.getPlayer().changeMap(pi.getMap(922030010), pi.getMap(922030010).getPortal(1)); //天空露臺
-		return true;
+		var em = pi.getEventManager("q22583");
+		var prop = em.getProperty("state");
+	if (prop == null || prop == 0) {
+		em.startInstance(pi.getPlayer());
+		return false;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Someone seems to be on the terrace. Try again later."));
 		return false;
 		}
 	if (pi.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(22584)).getStatus() == 1) {
-	if (pi.getMap(922030020).getCharacters().size() < 1 && pi.getMap(922030021).getCharacters().size() < 1 && pi.getMap(922030022).getCharacters().size() < 1) {
-		pi.getMap(922030022).resetFully();
-		pi.getPlayer().changeMap(pi.getMap(922030020), pi.getMap(922030020).getPortal(1)); //天空露臺
-		return true;
+		var em = pi.getEventManager("q22584");
+		var prop = em.getProperty("state");
+	if (prop == null || prop == 0) {
+		em.startInstance(pi.getPlayer());
+		return false;
 		}
-		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(6, "Someone is already in this map, Better come back later."));
+		pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "Someone seems to be on the terrace. Try again later."));
 		return false;
 		}
 		pi.getPlayer().changeMap(pi.getMap(220011001), pi.getMap(220011001).getPortal(1)); //天空陽台

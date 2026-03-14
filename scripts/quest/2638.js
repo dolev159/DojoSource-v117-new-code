@@ -32,7 +32,7 @@ function start(mode, type, selection) {
 		break;
 	case 2:
 		qm.dispose();
-		qm.getPlayer().changeMap(qm.getMap(910350300), qm.getMap(910350300).getPortal(0));
+		qm.getPlayer().changeMap(qm.getMap(910350300), qm.getMap(910350300).getPortal(1));
 		Packages.server.quest.MapleQuest.getInstance(2638).forceStart(qm.getPlayer(), qm.getNpc(), null);
 }
 }

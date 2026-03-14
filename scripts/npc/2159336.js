@@ -26,13 +26,13 @@ function action(mode, type, selection) {
 	switch (status) {
 	case 0:
 		cm.spawnNPCRequestController(2159336, 20, -300, 0);
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 4000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 4000));
 		break;
 	case 1:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 500));
 		break;
 	case 2:
 		cm.sendNextS("Are you #h0#?", 1);
@@ -41,12 +41,12 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("#bLong time no see, #r#p2159336##k.", 3);
 		break;
 	case 4:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 1));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 1));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1500));
 		break;
 	case 5:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(3, 0));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 500));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(3, 0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 500));
 		break;
 	case 6:
 		cm.sendNextS("And what does the betrayer want with me?", 1);
@@ -64,8 +64,8 @@ function action(mode, type, selection) {
 		cm.sendNextPrevS("I'm surprised someone who offered their soul to the Black Mage after losing their own family would say that.", 3);
 		break;
 	case 11:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.NPCPacket.NPCSpecialAction(2159336, 1, 3, 100));
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.getDirectionInfo(1, 1000));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.NPCPacket.NPCSpecialAction(2159336, 1, 3, 100));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.getDirectionInfo(1, 1000));
 		break;
 	case 12:
 		cm.sendNextS("Silence!", 1);
@@ -90,7 +90,7 @@ function action(mode, type, selection) {
 		break;
 	case 19:
 		cm.dispose();
-		cm.getClient().getSession().write(Packages.tools.packet.CField.UIPacket.IntroEnableUI(0));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.UIPacket.IntroEnableUI(0));
 		cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23272)).setCustomData(1);
 		cm.getPlayer().updateQuest(cm.getPlayer().getQuestNAdd(Packages.server.quest.MapleQuest.getInstance(23272)), true);
 		cm.getPlayer().changeMap(cm.getMap(211060010), cm.getMap(211060010).getPortal(0));

@@ -60,7 +60,11 @@ function action(mode, type, selection) {
 			var em = cm.getEventManager("Rex");
 			var prop = em.getProperty("state");
 		if (prop == null || prop == 0) {
-			em.startInstance(cm.getPlayer().getParty(), cm.getPlayer().getMap(), 200);
+			if (cm.getPQEngine().startInstance(cm.getPlayer().getParty(), "Resurrection of the Hoblin King", cm)) {
+				// successful
+			} else {
+				cm.getClient().getSession().write(Packages.tools.packet.CWvsContext.serverNotice(5, "Your party does not meet the requirements or another party is already attempting the quest."));
+			}
 			cm.dispose();
 			return;
 			}

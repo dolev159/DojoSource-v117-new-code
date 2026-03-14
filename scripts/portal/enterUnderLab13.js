@@ -5,6 +5,7 @@
 */
 
 function enter(pi) {
-	pi.getPlayer().addHP(-1500);
-	return true;
+	pi.getPlayer().addHP(pi.getPlayerStat("HP") > 100 ? -(pi.getPlayerStat("HP") / 2) : 0);
+	pi.getClient().getSession().write(Packages.tools.packet.MaplePacketCreator.serverNotice(5, "OUCH! You just got shocked! This can't be the right lab."));
+	return false;
 }

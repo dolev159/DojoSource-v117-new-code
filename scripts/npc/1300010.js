@@ -29,7 +29,7 @@ function action(mode, type, selection) {
 		}
 	switch (status) {
 	case 0:
-		cm.sendYesNo("#bDo you want to use the Killer Mushroom Spore?#k\r\n\r\n#r#e<Caution>#n\r\nNot for human consumption!\r\nIf ingested, seek medical attention immediately!");
+		cm.sendYesNo("#bDo you want to use the Killer Mushroom Spore?#k \r\n\r\n#r#e<Caution>#n\r\nNot for human consumption! \r\nIf ingested, seek medical attention immediately!");
 		break;
 	case 1:
 		cm.gainItem(2430014, -1);

@@ -47,7 +47,7 @@ function action(mode, type, selection) {
 		cm.sendNextPrev("I ran into the rabbits in the hallway today. How dare they bump into me? With my powers, I can turn them to dust instantly, but I must resist. Uncontrolled, my power could destroy the world...so I wait...");
 		break;
 	case 4:
-		cm.getClient().getSession().write(Packages.tools.packet.CField.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/normalEffect/demonSlayer/chatBalloon2"));
+		cm.getClient().getSession().write(Packages.tools.packet.EtcPacket.EffectPacket.AranTutInstructionalBalloon("Effect/OnUserEff.img/normalEffect/demonSlayer/chatBalloon2"));
 		cm.sendNextPrevS("(I feel such overpowering magic... My hands are shaking. All from reading this diary? These Black Wings are extraordinary.)", 2);
 		break;
 	case 5:
